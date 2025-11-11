@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Speler toevoegen | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 700px;
+            margin: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        h1 {
+            color: #0077cc;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        button, a.button {
+            margin-top: 20px;
+            display: inline-block;
+            background-color: #00a884;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        button:hover, a.button:hover {
+            background-color: #008e6e;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-btn {
+            background-color: #0077cc;
+        }
+        .back-btn:hover {
+            background-color: #005fa3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="topbar">
+        <h1>➕ Speler toevoegen</h1>
+        <a href="{{ url_for('coach_dashboard') }}" class="button back-btn">⬅ Terug naar dashboard</a>
+    </div>
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label>Kies speler:</label>
+        <select name="player_id" required>
+             <option value="">-- Selecteer speler --</option>
+                {% for speler in spelers %}
+             <option value="{{ speler[0] }}">{{ speler[1] }}</option>
+                {% endfor %}
+        </select>
+
+
+        <label>Handvoorkeur:</label>
+        <select name="hand">
+            <option value="">Selecteer...</option>
+            <option value="links">Linkshandig</option>
+            <option value="rechts">Rechtshandig</option>
+            <option value="beide">Beide</option>
+        </select>
+
+        <label>P-ranking:</label>
+        <input type="text" name="p_ranking">
+
+        <label>Doel van padel:</label>
+        <select name="doel">
+            <option value="">Selecteer...</option>
+            <option value="fun">Fun</option>
+            <option value="competitie">Competitie</option>
+        </select>
+
+        <label>Lesvoorkeur:</label>
+        <select name="les_voorkeur">
+            <option value="">Selecteer...</option>
+            <option value="individueel">Individueel</option>
+            <option value="groep">Groep</option>
+        </select>
+
+        <label>Les type voorkeur:</label>
+        <select name="les_type">
+            <option value="">Selecteer...</option>
+            <option value="technisch">Technisch</option>
+            <option value="tactisch">Tactisch</option>
+        </select>
+
+        <label>Aantal jaren ervaring:</label>
+        <input type="number" name="ervaring" min="0">
+
+        <label>Sterktes:</label>
+        <textarea name="strengths"></textarea>
+
+        <label>Zwaktes:</label>
+        <textarea name="weaknesses"></textarea>
+
+        <button type="submit">💾 Opslaan</button>
+    </form>
+</div>
+</body>
+</html>
+
+
+
+

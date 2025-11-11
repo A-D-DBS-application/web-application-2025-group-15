@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Les inplannen | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .box {
+            background: white;
+            color: #333;
+            text-align: center;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            width: 400px;
+        }
+        h1 {
+            color: #0077cc;
+        }
+        a {
+            display: block;
+            text-decoration: none;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .btn-group {
+            background: #00a884;
+        }
+        .btn-individual {
+            background: #0077cc;
+        }
+        a:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>📅 Les inplannen</h1>
+        <p>Kies het type les dat je wil inplannen:</p>
+        <a href="{{ url_for('schedule_group_lesson') }}" class="btn-group">👥 Groepsles</a>
+        <a href="{{ url_for('schedule_individual_lesson') }}" class="btn-individual">🎾 Individuele les</a>
+        <a href="{{ url_for('coach_dashboard') }}" style="color:#0077cc; margin-top:20px; display:block;">← Terug</a>
+    </div>
+</body>
+</html>

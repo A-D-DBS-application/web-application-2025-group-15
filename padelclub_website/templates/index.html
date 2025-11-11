@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welkom bij Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            font-family: "Poppins", sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .links {
+            display: flex;
+            gap: 20px;
+        }
+
+        a {
+            text-decoration: none;
+            background-color: white;
+            color: #0083b0;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #0083b0;
+            color: white;
+            box-shadow: 0 0 10px rgba(255,255,255,0.6);
+        }
+
+        footer {
+            position: absolute;
+            bottom: 15px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welkom bij <br>Fit Out Padel Destelbergen</h1>
+
+    <div class="links">
+        <a href="{{ url_for('login') }}">Bestaande gebruiker</a>
+        <a href="{{ url_for('register') }}">Nieuwe gebruiker</a>
+    </div>
+
+    <footer>© 2025 Fit Out Padel Destelbergen</footer>
+</body>
+</html>

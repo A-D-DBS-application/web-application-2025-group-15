@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Administrator | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logout-btn {
+            background-color:#dc3545;
+            color:white;
+            padding:10px 15px;
+            border-radius:8px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        h1 { color: #0077cc; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-top: 25px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #0077cc;
+            color: white;
+        }
+
+        a.delete {
+            color: red;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a.delete:hover {
+            text-decoration: underline;
+        }
+
+        a.username-link {
+            color: #0077cc;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a.username-link:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <h1>👑 Administrator Dashboard</h1>
+            <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
+        </div>
+
+        <p>Hieronder vind je een overzicht van alle geregistreerde gebruikers.</p>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Gebruikersnaam</th>
+                <th>Rol</th>
+                <th>Sport</th>
+                <th>Actie</th>
+            </tr>
+            {% for user in users %}
+            <tr>
+                <td>{{ user[0] }}</td>
+                <td>
+                    {% if user[2] == 'player' %}
+                        <a href="{{ url_for('admin_view_player', player_id=user[0]) }}" class="username-link">
+                            {{ user[1] }}
+                        </a>
+                    {% else %}
+                        {{ user[1] }}
+                    {% endif %}
+                </td>
+                <td>{{ user[2] }}</td>
+                <td>{{ user[3] }}</td>
+                <td>
+                    {% if user[2] != 'admin' %}
+                        <a href="{{ url_for('delete_user', user_id=user[0]) }}" class="delete">❌ Verwijder</a>
+                    {% else %}
+                        (administrator)
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <footer>© 2025 Fit Out Padel Destelbergen</footer>
+</body>
+</html>
+
+
+

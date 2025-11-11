@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Les evalueren</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0f8ff;
+            padding: 40px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 700px;
+            margin: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        textarea, input {
+            width: 100%;
+            margin-top: 8px;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #0077cc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #005fa3; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>✏️ Les evalueren - {{ lesson[2] }}</h1>
+
+    <form method="POST">
+        <label>Sterktes (Strengths):</label>
+        <textarea name="swot_strengths" rows="3"></textarea>
+
+        <label>Zwaktes (Weaknesses):</label>
+        <textarea name="swot_weaknesses" rows="3"></textarea>
+
+        <label>Kansen (Opportunities):</label>
+        <textarea name="swot_opportunities" rows="3"></textarea>
+
+        <label>Bedreigingen (Threats):</label>
+        <textarea name="swot_threats" rows="3"></textarea>
+
+        <label>Notities na de les:</label>
+        <textarea name="notes" rows="3"></textarea>
+
+        <label>Nieuwe P-score:</label>
+        <input type="number" name="rating" min="0" max="100" required>
+
+        <button type="submit">💾 Evaluatie opslaan</button>
+        <a href="{{ url_for('coach_dashboard') }}" style="margin-left:10px;">Annuleren</a>
+    </form>
+</div>
+</body>
+</html>
+

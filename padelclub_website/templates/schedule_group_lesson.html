@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Groepsles inplannen | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-width: 700px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #0077cc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input:not([type="checkbox"]), select, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #00a884;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover { background-color: #008e6e; }
+
+        a {
+            color: #0077cc;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* 📋 Spelerslijst */
+        .player-list {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+       .player-item {
+        display: flex;
+        align-items: center; /* ✅ corrigeert verticale uitlijning */
+        justify-content: flex-start; /* ✅ zorgt dat checkbox links staat */
+        gap: 8px;
+        margin: 6px 0;
+        padding: 6px 10px;
+        border-radius: 6px;
+        transition: background 0.2s;
+        }
+
+        .player-item:hover {
+            background-color: #f3f8ff;
+        }
+
+        .player-item label {
+        font-weight: normal;
+        flex-grow: 1;
+        cursor: pointer;
+        margin: 0;
+        line-height: 1; /* voorkomt dat tekst zelf hoger uitlijnt */
+        }
+
+       .player-item input[type="checkbox"] {
+        transform: scale(1.2);
+        margin: 0;
+        position: relative;
+        top: 1px; /* 🔧 schuift checkbox iets naar beneden voor perfecte uitlijning */
+        }
+
+    </style>
+
+    <script>
+        function validateSelection() {
+            const checkboxes = document.querySelectorAll('input[name="player_ids"]:checked');
+            if (checkboxes.length < 2) {
+                alert("❌ Selecteer minstens 2 spelers voor een groepsles.");
+                return false;
+            }
+            if (checkboxes.length > 5) {
+                alert("❌ Je mag maximaal 5 spelers selecteren.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+
+<body>
+<div class="container">
+    <h1>👥 Groepsles inplannen</h1>
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" onsubmit="return validateSelection()">
+        <label>Spelers (2-5 selecteren):</label>
+        <div class="player-list">
+            {% for speler in spelers %}
+            <div class="player-item">
+                <input type="checkbox" name="player_ids" id="speler_{{ speler[0] }}" value="{{ speler[0] }}">
+                <label for="speler_{{ speler[0] }}">{{ speler[1] }}</label>
+            </div>
+            {% endfor %}
+        </div>
+
+        <label>Datum:</label>
+        <input type="date" name="date" required>
+
+        <label>Starttijd:</label>
+        <input type="time" name="start_time" required>
+
+        <label>Eindtijd:</label>
+        <input type="time" name="end_time" required>
+
+        <label>Les type:</label>
+        <select name="lesson_type" required>
+            <option value="Tactisch">Tactisch</option>
+            <option value="Fun">Fun</option>
+        </select>
+
+        <label>Notities:</label>
+        <textarea name="notes" rows="3" placeholder="Eventuele opmerkingen..."></textarea>
+
+        <button type="submit">💾 Les opslaan</button>
+        <a href="{{ url_for('coach_dashboard') }}">Annuleren</a>
+    </form>
+</div>
+</body>
+</html>
+
+
+
+

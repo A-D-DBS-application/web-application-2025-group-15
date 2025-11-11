@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Speler voortgang | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            margin: 0;
+            padding: 40px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-width: 900px;
+            margin: auto;
+        }
+        h1, h2 { color: #0077cc; }
+        label { display:block; font-weight:bold; margin-top:10px; }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 5px;
+        }
+        button {
+            background-color: #00a884;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+        button:hover { background-color: #008e6e; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        th { background-color: #0077cc; color: white; }
+        tr:nth-child(even) { background: #f8f8f8; }
+        .back-btn {
+            display: inline-block;
+            background-color: #0077cc;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-btn:hover { background-color: #005fa3; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="{{ url_for('coach_dashboard') }}" class="back-btn">⬅ Terug naar dashboard</a>
+    <h1>🏅 Voortgang van {{ speler[0] }}</h1>
+    <p><strong>Email:</strong> {{ speler[1] }} | <strong>Telefoon:</strong> {{ speler[2] }} | <strong>Sport:</strong> {{ speler[3] }}</p>
+
+    <h2>Nieuwe voortgang toevoegen</h2>
+    <form method="POST">
+        <label>Handvoorkeur:</label>
+        <select name="hand">
+            <option value="">Selecteer...</option>
+            <option value="links">Links</option>
+            <option value="rechts">Rechts</option>
+            <option value="beide">Beide</option>
+        </select>
+
+        <label>P-ranking:</label>
+        <input type="text" name="p_ranking">
+
+        <label>Doel:</label>
+        <select name="doel">
+            <option value="">Selecteer...</option>
+            <option value="fun">Fun</option>
+            <option value="competitie">Competitie</option>
+        </select>
+
+        <label>Lesvoorkeur:</label>
+        <select name="les_voorkeur">
+            <option value="">Selecteer...</option>
+            <option value="individueel">Individueel</option>
+            <option value="groep">Groep</option>
+        </select>
+
+        <label>Les type:</label>
+        <select name="les_type">
+            <option value="">Selecteer...</option>
+            <option value="technisch">Technisch</option>
+            <option value="tactisch">Tactisch</option>
+        </select>
+
+        <label>Aantal jaren ervaring:</label>
+        <input type="number" name="ervaring" min="0">
+
+        <label>Sterktes:</label>
+        <textarea name="strengths"></textarea>
+
+        <label>Zwaktes:</label>
+        <textarea name="weaknesses"></textarea>
+
+        <button type="submit">💾 Opslaan</button>
+    </form>
+
+    <h2>📊 Eerdere voortgang</h2>
+    {% if progressies %}
+    <table>
+        <tr>
+            <th>Datum</th>
+            <th>Hand</th>
+            <th>P-ranking</th>
+            <th>Doel</th>
+            <th>Lesvoorkeur</th>
+            <th>Les type</th>
+            <th>Ervaring</th>
+            <th>Sterktes</th>
+            <th>Zwaktes</th>
+        </tr>
+        {% for p in progressies %}
+        <tr>
+            <td>{{ p[8] }}</td>
+            <td>{{ p[0] }}</td>
+            <td>{{ p[1] }}</td>
+            <td>{{ p[2] }}</td>
+            <td>{{ p[3] }}</td>
+            <td>{{ p[4] }}</td>
+            <td>{{ p[7] }}</td>
+            <td>{{ p[5] }}</td>
+            <td>{{ p[6] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Er is nog geen voortgang geregistreerd.</p>
+    {% endif %}
+</div>
+</body>
+</html>
+
