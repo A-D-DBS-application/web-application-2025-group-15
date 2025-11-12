@@ -1,10 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 from datetime import date
-
+from config import Config
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # verander dit later naar iets veiliger
+app.config.from_object(Config)
+
+
+
+
+
 
 # -----------------------------
 # DATABASE SETUP
