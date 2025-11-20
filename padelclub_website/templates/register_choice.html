@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Kies je rol | Fit Out Padel</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 50px;
+            border-radius: 16px;
+            width: 500px; 
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { color: #0077cc; margin-bottom: 10px; }
+        h2 { color: #555; font-weight: normal; font-size: 16px; margin-bottom: 40px; }
+
+ 
+        .choice-card {
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+            gap: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .choice-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .player-btn {
+            background: linear-gradient(to right, #0077cc, #005fa3);
+        }
+
+        .coach-btn {
+            background: linear-gradient(to right, #00c6a7, #009e86);
+        }
+
+        .icon { font-size: 30px; }
+
+        .login-link { margin-top: 30px; font-size: 14px; }
+        .login-link a { color: #0077cc; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welkom!</h1>
+        <h2>Hoe wil je je registreren?</h2>
+
+        <a href="/register/player" class="choice-card player-btn">
+            <span class="icon">🎾</span>
+            <span>Ik ben een Speler</span>
+        </a>
+
+        <a href="/register/coach" class="choice-card coach-btn">
+            <span class="icon">🧢</span>
+            <span>Ik ben een Coach</span>
+        </a>
+
+        <div class="login-link">
+            <p>Heb je al een account? <a href="/login">Log hier in</a></p>
+        </div>
+    </div>
+
+</body>
+</html>
