@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Les aanvragen | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            margin: 0;
+            padding: 40px;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #0077cc;
+            text-align: center;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #00a884;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #008e6e;
+        }
+
+        p.error {
+            color: red;
+            text-align: center;
+        }
+
+        a {
+            text-decoration: none;
+            color: #0077cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Les aanvragen</h1>
+
+        {% if error %}
+        <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <form method="post">
+            <label for="coach_id">Kies coach:</label>
+            <select name="coach_id" required>
+                <option value="">-- Selecteer coach --</option>
+                {% for coach in coaches %}
+                    <option value="{{ coach[0] }}">{{ coach[1] }} ({{ coach[2] }})</option>
+                {% endfor %}
+            </select>
+
+            <label for="date">Datum:</label>
+            <input type="date" name="date" required>
+
+            <label for="start_time">Starttijd:</label>
+            <input type="time" name="start_time" required>
+
+            <label for="end_time">Eindtijd:</label>
+            <input type="time" name="end_time" required>
+
+            <button type="submit">Les boeken</button>
+        </form>
+
+        <p style="text-align:center; margin-top:15px;">
+            <a href="{{ url_for('player_dashboard') }}">← Terug naar dashboard</a>
+        </p>
+    </div>
+</body>
+</html>

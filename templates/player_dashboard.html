@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Speler Dashboard | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logout-btn {
+            background-color:#dc3545;
+            color:white;
+            padding:10px 15px;
+            border-radius:8px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        h1 {
+            color: #0077cc;
+        }
+
+        h2 {
+            color: #00a884;
+            margin-top: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th { background: #0077cc; color: white; }
+        tr:nth-child(even) { background: #f8f8f8; }
+
+        a.button {
+            display: inline-block;
+            background-color: #00a884;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        a.button:hover { background-color: #008e6e; }
+
+        footer {
+            text-align: center;
+            color: white;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <h1>🎾 Speler Dashboard</h1>
+            <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
+        </div>
+
+        <p>Welkom! Hier zie je jouw lessen, coach en voortgang.</p>
+
+        <h2>Jouw geplande lessen</h2>
+        <table>
+            <tr>
+                <th>Datum</th>
+                <th>Coach</th>
+            </tr>
+            {% if lessen %}
+                {% for les in lessen %}
+                <tr>
+                    <td>{{ les[2] }}</td>
+                    <td>{{ les[1] }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="2">Nog geen lessen gepland.</td>
+                </tr>
+            {% endif %}
+        </table>
+
+        <h2>Voortgang</h2>
+        <table>
+            <tr>
+                <th>P-score</th>
+                <th>Handvoorkeur</th>
+                <th>Sterktes</th>
+                <th>Zwaktes</th>
+            </tr>
+            {% if progress %}
+                <tr>
+                    <td>{{ progress[0] }}</td>
+                    <td>{{ progress[1] }}</td>
+                    <td>{{ progress[2] }}</td>
+                    <td>{{ progress[3] }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4">Nog geen voortgang geregistreerd.</td>
+                </tr>
+            {% endif %}
+        </table>
+
+        <div style="text-align:center; margin-top:25px;">
+            <a href="{{ url_for('book_lesson') }}" class="button">📅 Les aanvragen</a>
+        </div>
+    </div>
+
+    <footer>© 2025 Fit Out Padel Destelbergen</footer>
+</body>
+</html>
+
+
+

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Coach Dashboard | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 1000px;
+            margin: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            color: #0077cc;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #00a884;
+            margin-top: 35px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar a {
+            text-decoration: none;
+            color: white;
+            background-color: #dc3545;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .topbar a:hover {
+            background-color: #b82e3a;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #0077cc;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+
+        .button {
+            display: inline-block;
+            background-color: #00a884;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #008e6e;
+        }
+
+        .remove-link {
+            color: #dc3545;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .remove-link:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            font-size: 13px;
+            margin-top: 40px;
+        }
+
+        .evaluate-btn {
+            background-color: #0077cc;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .evaluate-btn:hover {
+            background-color: #005fa3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="topbar">
+        <h1>🎾 Coach Dashboard</h1>
+        <a href="{{ url_for('logout') }}">⎋ Uitloggen</a>
+    </div>
+
+    <p>Welkom coach! Hier vind je een overzicht van jouw spelers, hun voortgang en je lessen.</p>
+
+    <!-- 📋 Mijn spelers -->
+    <h2>📋 Mijn spelers</h2>
+    <table>
+        <tr>
+            <th>Naam</th>
+            <th>Email</th>
+            <th>Telefoon</th>
+            <th>Sport</th>
+            <th>Hand</th>
+            <th>Sterktes</th>
+            <th>Zwaktes</th>
+            <th>Actie</th>
+        </tr>
+        {% if spelers %}
+            {% for speler in spelers %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('view_player', player_id=speler[0]) }}" 
+                       style="color:#0077cc; font-weight:bold; text-decoration:none;">
+                       {{ speler[1] }}
+                    </a>
+                </td>
+                <td>{{ speler[2] }}</td>
+                <td>{{ speler[3] }}</td>
+                <td>{{ speler[4] }}</td>
+                <td>{{ speler[6] }}</td>
+                <td>{{ speler[7] }}</td>
+                <td>{{ speler[8] }}</td>
+                <td>
+                    <a href="{{ url_for('remove_player', player_id=speler[0]) }}" 
+                       class="remove-link" 
+                       onclick="return confirm('Weet je zeker dat je deze speler wil verwijderen?');">
+                       ❌ Verwijderen
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="8">Nog geen spelers toegevoegd.</td>
+            </tr>
+        {% endif %}
+    </table>
+
+    <a href="{{ url_for('add_player') }}" class="button">+ Speler toevoegen</a>
+
+
+    <!-- 📘 Geplande lessen -->
+    <h2>📘 Geplande lessen</h2>
+    <table>
+        <tr>
+            <th>Datum</th>
+            <th>Tijd</th>
+            <th>Speler</th>
+            <th>Status</th>
+        </tr>
+        {% if lessen %}
+            {% for les in lessen %}
+            <tr>
+                <td>{{ les[2] }}</td>
+                <td>{{ les[3] }} - {{ les[4] }}</td>
+                <td>
+                    {% for speler in spelers %}
+                        {% if speler[0] == les[1] %}
+                            {{ speler[1] }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ les[5] }}</td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="4">Nog geen lessen ingepland.</td></tr>
+        {% endif %}
+    </table>
+
+    <!-- 📅 Les inplannen -->
+    <a href="{{ url_for('schedule_lesson') }}" class="button">+ Les inplannen</a>
+
+    <!-- ✅ Afgelopen lessen -->
+    <h2>✅ Afgelopen lessen</h2>
+    {% if completed %}
+    <table>
+        <tr>
+            <th>Datum</th>
+            <th>Speler</th>
+            <th>Actie</th>
+        </tr>
+        {% for les in completed %}
+        <tr>
+            <td>{{ les[2] }}</td>
+            <td>
+                {% for speler in spelers %}
+                    {% if speler[0] == les[1] %}
+                        {{ speler[1] }}
+                    {% endif %}
+                {% endfor %}
+            </td>
+            <td style="text-align: right;">
+                <a href="{{ url_for('evaluate_lesson', lesson_id=les[0]) }}" class="evaluate-btn">
+                    ✏️ Les evalueren
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>Geen afgeronde lessen.</p>
+    {% endif %}
+
+</div>
+
+<footer>© 2025 Fit Out Padel Destelbergen</footer>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
