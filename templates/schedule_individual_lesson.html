@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Individuele les inplannen | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            padding: 40px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            margin: auto;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        h1 { color: #0077cc; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            background-color: #00a884;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        button:hover { background-color: #008e6e;
+        }
+        a {
+            color: #0077cc;
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🎾 Individuele les inplannen</h1>
+
+    <form method="POST">
+        <label>Speler:</label>
+        <select name="player_id" required>
+            <option value="">Kies een speler...</option>
+            {% for speler in spelers %}
+                <option value="{{ speler[0] }}">{{ speler[1] }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Datum:</label>
+        <input type="date" name="date" required>
+
+        <label>Starttijd:</label>
+        <input type="time" name="start_time" required>
+
+        <label>Eindtijd:</label>
+        <input type="time" name="end_time" required>
+
+        <label>Les type:</label>
+        <select name="lesson_type" required>
+            <option value="tactisch">Tactisch</option>
+            <option value="fun">Fun</option>
+        </select>
+
+        <label>Notities:</label>
+        <textarea name="notes"></textarea>
+
+        <button type="submit">💾 Les opslaan</button>
+        <a href="{{ url_for('schedule_lesson') }}" style="margin-left:15px; color:#0077cc;">Annuleren</a>
+    </form>
+</div>
+</body>
+</html>
+
