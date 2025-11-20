@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Registreren | Fit Out Padel Destelbergen</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .register-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 420px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #0077cc;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #555;
+            font-weight: normal;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #005fa3;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #0077cc;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h1>Welkom bij</h1>
+        <h1><strong>Fit Out Padel Destelbergen</strong></h1>
+        <h2>Maak je account aan</h2>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST" action="/register">
+            <label for="username">Gebruikersnaam:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="email">E-mailadres:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Telefoonnummer:</label>
+            <input type="text" id="phone" name="phone">
+
+            <label for="role">Rol:</label>
+            <select name="role" id="role" required>
+                <option value="player">Speler</option>
+                <option value="coach">Coach</option>
+            </select>
+
+            <label for="sport">Sport:</label>
+            <select name="sport" id="sport" required>
+                <option value="padel">Padel</option>
+                <option value="tennis">Tennis</option>
+                <option value="badminton">Badminton</option>
+            </select>
+
+            <label for="password">Wachtwoord:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Registreren</button>
+        </form>
+
+        <div class="login-link">
+            <p>Heb je al een account? <a href="{{ url_for('login') }}">Log hier in</a></p>
+        </div>
+    </div>
+
+    <footer>
+        © 2025 Fit Out Padel Destelbergen — Alle rechten voorbehouden
+    </footer>
+</body>
+</html>
+
+
+
