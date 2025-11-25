@@ -140,24 +140,24 @@
             <th>Zwaktes</th>
             <th>Actie</th>
         </tr>
-        {% if spelers %}
+        {% if spelers and spelers|length > 0 %}
             {% for speler in spelers %}
             <tr>
                 <td>
-                    <a href="{{ url_for('view_player', player_id=speler[0]) }}" 
+                    <a href="{{ url_for('view_player', player_id=speler.player_id) }}"
                        style="color:#0077cc; font-weight:bold; text-decoration:none;">
-                       {{ speler[1] }}
+                        {{ speler.first_name }} {{ speler.last_name }}
                     </a>
                 </td>
-                <td>{{ speler[2] }}</td>
-                <td>{{ speler[3] }}</td>
-                <td>{{ speler[4] }}</td>
-                <td>{{ speler[6] }}</td>
-                <td>{{ speler[7] }}</td>
-                <td>{{ speler[8] }}</td>
+                <td>{{ speler.email }}</td>
+                <td>{{ speler.phone or '' }}</td>
+                <td>{{ speler.sport or '' }}</td>
+                <td>{{ speler.hand or '' }}</td>
+                <td>{{ speler.strengths or '' }}</td>
+                <td>{{ speler.weaknesses or '' }}</td>
                 <td>
-                    <a href="{{ url_for('remove_player', player_id=speler[0]) }}" 
-                       class="remove-link" 
+                    <a href="{{ url_for('remove_player', player_id=speler.player_id) }}"
+                       class="remove-link"
                        onclick="return confirm('Weet je zeker dat je deze speler wil verwijderen?');">
                        ❌ Verwijderen
                     </a>
@@ -183,15 +183,15 @@
             <th>Speler</th>
             <th>Status</th>
         </tr>
-        {% if lessen %}
+        {% if lessen and lessen|length > 0 %}
             {% for les in lessen %}
             <tr>
                 <td>{{ les[2] }}</td>
                 <td>{{ les[3] }} - {{ les[4] }}</td>
                 <td>
                     {% for speler in spelers %}
-                        {% if speler[0] == les[1] %}
-                            {{ speler[1] }}
+                        {% if speler.player_id == les[1] %}
+                            {{ speler.first_name }} {{ speler.last_name }}
                         {% endif %}
                     {% endfor %}
                 </td>
@@ -208,7 +208,7 @@
 
     <!-- ✅ Afgelopen lessen -->
     <h2>✅ Afgelopen lessen</h2>
-    {% if completed %}
+    {% if completed and completed|length > 0 %}
     <table>
         <tr>
             <th>Datum</th>
@@ -220,8 +220,8 @@
             <td>{{ les[2] }}</td>
             <td>
                 {% for speler in spelers %}
-                    {% if speler[0] == les[1] %}
-                        {{ speler[1] }}
+                    {% if speler.player_id == les[1] %}
+                        {{ speler.first_name }} {{ speler.last_name }}
                     {% endif %}
                 {% endfor %}
             </td>
@@ -243,11 +243,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-

@@ -10,7 +10,7 @@
             color: #333;
             margin: 0;
             padding: 40px;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         .container {
@@ -48,6 +48,7 @@
             cursor: pointer;
             font-weight: bold;
             width: 100%;
+            margin-top: 10px;
         }
 
         button:hover {
@@ -63,6 +64,11 @@
             text-decoration: none;
             color: #0077cc;
         }
+
+        .back-link {
+            text-align:center;
+            margin-top:15px;
+        }
     </style>
 </head>
 <body>
@@ -73,28 +79,52 @@
         <p class="error">{{ error }}</p>
         {% endif %}
 
+        <!-- STAP 1: Coach + datum kiezen -->
         <form method="post">
+            <input type="hidden" name="step" value="choose">
+
             <label for="coach_id">Kies coach:</label>
             <select name="coach_id" required>
                 <option value="">-- Selecteer coach --</option>
                 {% for coach in coaches %}
-                    <option value="{{ coach[0] }}">{{ coach[1] }} ({{ coach[2] }})</option>
+                    <option value="{{ coach.coach_id }}"
+                        {% if selected_coach_id and selected_coach_id|string == coach.coach_id|string %}selected{% endif %}>
+                        {{ coach.first_name }} {{ coach.last_name }} ({{ coach.email }})
+                    </option>
                 {% endfor %}
             </select>
 
             <label for="date">Datum:</label>
-            <input type="date" name="date" required>
+            <input type="date" name="date" required
+                   value="{{ selected_date if selected_date }}">
 
-            <label for="start_time">Starttijd:</label>
-            <input type="time" name="start_time" required>
+            <button type="submit">Toon beschikbare timeslots</button>
+        </form>
 
-            <label for="end_time">Eindtijd:</label>
-            <input type="time" name="end_time" required>
+        <!-- STAP 2: Timeslot kiezen (alleen tonen als we slots hebben) -->
+        {% if available_slots and available_slots|length > 0 %}
+        <hr style="margin: 25px 0;">
+
+        <form method="post">
+            <input type="hidden" name="step" value="book">
+            <input type="hidden" name="coach_id" value="{{ selected_coach_id }}">
+            <input type="hidden" name="date" value="{{ selected_date }}">
+
+            <label for="time_slot">Kies een vrij tijdslot:</label>
+            <select name="time_slot" required>
+                <option value="">-- Selecteer tijdslot --</option>
+                {% for slot in available_slots %}
+                    <option value="{{ slot.start }}-{{ slot.end }}">
+                        {{ slot.start }} – {{ slot.end }}
+                    </option>
+                {% endfor %}
+            </select>
 
             <button type="submit">Les boeken</button>
         </form>
+        {% endif %}
 
-        <p style="text-align:center; margin-top:15px;">
+        <p class="back-link">
             <a href="{{ url_for('player_dashboard') }}">← Terug naar dashboard</a>
         </p>
     </div>

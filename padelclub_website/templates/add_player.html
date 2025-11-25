@@ -78,14 +78,17 @@
     {% endif %}
 
     <form method="POST">
-        <label>Kies speler:</label>
-        <select name="player_id" required>
-             <option value="">-- Selecteer speler --</option>
-                {% for speler in spelers %}
-             <option value="{{ speler[0] }}">{{ speler[1] }}</option>
-                {% endfor %}
-        </select>
 
+        <!-- SPELER SELECTIE -->
+        <label for="player_id">Kies speler:</label>
+        <select name="player_id" id="player_id" required>
+            <option value="">-- Selecteer speler --</option>
+            {% for speler in spelers %}
+                <option value="{{ speler['player_id'] }}">
+                    {{ speler['first_name'] }} {{ speler['last_name'] }} ({{ speler['email'] }})
+                </option>
+            {% endfor %}
+        </select>
 
         <label>Handvoorkeur:</label>
         <select name="hand">
@@ -133,7 +136,3 @@
 </div>
 </body>
 </html>
-
-
-
-
