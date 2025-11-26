@@ -165,73 +165,75 @@ def register():
     return render_template("register_choice.html")
 
 @app.route("/register/player", methods=["GET", "POST"])
-def register_player():
+def register_player_step1():
     if request.method == "POST":
         first_name = request.form.get("first_name")
         last_name = request.form.get("last_name")
-        email_input = request.form.get("email")
-        phone_input = request.form.get("phone")
+        email = request.form.get("email")
+        phone = request.form.get("phone")
 
-        # wachtwoord is niet meer nodig
-        if not email_input or not first_name or not last_name:
-            return render_template(
-                "register_player.html",
-                error="Vul minstens voornaam, achternaam en e-mail in."
-            )
-        
-        user_data = {
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email_input,
-            "phone": phone_input,
-            # geen 'wachtwoord' meer
+        if not email or not first_name or not last_name:
+            return render_template("register_player_step1.html", error="Vul alle verplichte velden in.")
+
+        # Check duplicaten
+        try:
+            if supabase.table("players").select("player_id").eq("email", email).execute().data:
+                return render_template("login.html", error="Dit e-mailadres bestaat al. Log hier in.")
+            if supabase.table("coaches").select("coach_id").eq("email", email).execute().data:
+                return render_template("login.html", error="Dit e-mailadres is al geregistreerd als coach.")
+        except: pass
+
+        session["player_data"] = {
+            "first_name": first_name, "last_name": last_name, "email": email, "phone": phone
         }
+        return redirect(url_for("register_player_step2"))
+
+    return render_template("register_player_step1.html")
+
+@app.route("/register/player/step2", methods=["GET", "POST"])
+def register_player_step2():
+    if "player_data" not in session: 
+        return redirect(url_for("register_player_step1"))
+
+    if request.method == "POST":
+        data = session["player_data"]
+        data["ranking"] = request.form.get("ranking")
+        data["hand_preference"] = request.form.get("hand_preference")
+        data["gender"] = request.form.get("gender")
 
         try:
-            supabase.table("players").insert(user_data).execute()
-            return redirect(url_for("login"))
+            supabase.table("players").insert(data).execute()
+            session.pop("player_data", None)
+            return render_template("login.html", error="Account aangemaakt! Je kunt nu inloggen.")
         except Exception as e:
-            print(f"Registratiefout speler: {e}")
-            return render_template(
-                "register_player.html",
-                error="Er ging iets mis. Bestaat dit e-mailadres al?"
-            )
+            print(f"Reg error: {e}")
+            return render_template("register_player_step2.html", error="Er ging iets mis bij het opslaan.")
 
-    return render_template("register_player.html")
+    return render_template("register_player_step2.html")
 
 @app.route("/register/coach", methods=["GET", "POST"])
-def register_coach(): 
+def register_coach():
     if request.method == "POST":
-        first_name = request.form.get("first_name")
-        last_name = request.form.get("last_name")
-        email_input = request.form.get("email")
-        phone_input = request.form.get("phone")
-
-        if not email_input or not first_name or not last_name:
-            return render_template(
-                "register_coach.html",
-                error="Vul minstens voornaam, achternaam en e-mail in."
-            )
-        
-        user_data = {
-            "first_name": first_name,
-            "last_name": last_name,
-            "email": email_input,
-            "phone": phone_input,
-            # geen 'wachtwoord' meer
+        data = {
+            "first_name": request.form.get("first_name"),
+            "last_name": request.form.get("last_name"),
+            "email": request.form.get("email"),
+            "phone": request.form.get("phone")
         }
+        
+        try:
+            if supabase.table("coaches").select("coach_id").eq("email", data["email"]).execute().data:
+                return render_template("login.html", error="Coach bestaat al. Log hier in.")
+        except: pass
 
         try:
-            supabase.table("coaches").insert(user_data).execute()
-            return redirect(url_for("login"))
+            supabase.table("coaches").insert(data).execute()
+            return render_template("login.html", error="Coach account aangemaakt!")
         except Exception as e:
-            print(f"Registratiefout coach: {e}")
-            return render_template(
-                "register_coach.html",
-                error="Er ging iets mis. Bestaat dit e-mailadres al?"
-            )
+            return render_template("register_coach.html", error=f"Fout: {e}")
 
     return render_template("register_coach.html")
+
 
 
 
@@ -809,99 +811,6 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
-# ---------- COACH: Les evalueren ----------        #werkt niet want geen link van lessons naar completed_lessons, dus kan de les niet vinden om te evalueren en evaluate les.html is ook niet in orde
-@app.route("/coach/evaluate_lesson/<int:lesson_id>", methods=["GET", "POST"])
-def evaluate_lesson(lesson_id):
-    if session.get("role") != "coach":
-        return redirect(url_for("login"))
-
-    coach_id = session.get("user_id")
-
-    # -----------------------------
-    # Les ophalen uit completed_lessons
-    # -----------------------------
-    try:
-        resp_lesson = (
-            supabase.table("completed_lessons")
-            .select("id, player_id, date, start_time, end_time, swot_strengths, swot_weaknesses, swot_opportunities, swot_threats, notes, rating")
-            .eq("id", lesson_id)
-            .eq("coach_id", coach_id)
-            .single()
-            .execute()
-        )
-        lesson = resp_lesson.data
-    except Exception as e:
-        print(f"Fout bij ophalen les {lesson_id}: {e}")
-        lesson = None
-
-    if not lesson:
-        return redirect(url_for("coach_dashboard"))
-
-    player_id = lesson.get("player_id")
-
-    # -----------------------------
-    # Spelerinformatie ophalen
-    # -----------------------------
-    speler = None
-    try:
-        resp_speler = (
-            supabase.table("players")
-            .select("first_name, last_name")
-            .eq("player_id", player_id)
-            .single()
-            .execute()
-        )
-        if resp_speler.data:
-            speler = f"{resp_speler.data.get('first_name', '')} {resp_speler.data.get('last_name', '')}".strip()
-        else:
-            speler = "Onbekende speler"
-    except Exception as e:
-        print(f"Fout bij ophalen speler {player_id}: {e}")
-        speler = "Onbekende speler"
-
-    if request.method == "POST":
-        swot_strengths = request.form.get("swot_strengths")
-        swot_weaknesses = request.form.get("swot_weaknesses")
-        swot_opportunities = request.form.get("swot_opportunities")
-        swot_threats = request.form.get("swot_threats")
-        notes = request.form.get("notes")
-        rating = request.form.get("rating")
-
-        try:
-            # -----------------------------
-            # Evaluatie opslaan in completed_lessons
-            # -----------------------------
-            supabase.table("completed_lessons").update({
-                "swot_strengths": swot_strengths,
-                "swot_weaknesses": swot_weaknesses,
-                "swot_opportunities": swot_opportunities,
-                "swot_threats": swot_threats,
-                "notes": notes,
-                "rating": rating,
-            }).eq("id", lesson_id).execute()
-
-            # -----------------------------
-            # Progress van speler updaten
-            # -----------------------------
-            supabase.table("progress").update({
-                "strengths": swot_strengths,
-                "weaknesses": swot_weaknesses,
-                "p_score": rating,
-            }).eq("player_id", player_id).eq("coach_id", coach_id).execute()
-
-            return redirect(url_for("coach_dashboard"))
-
-        except Exception as e:
-            print(f"Fout bij evalueren les {lesson_id}: {e}")
-            return render_template(
-                "evaluate_lesson.html",
-                lesson=lesson,
-                speler=speler,
-                error="Er ging iets mis bij het opslaan van de evaluatie. Probeer later opnieuw."
-            )
-
-    # GET: toon evaluatieformulier
-    return render_template("evaluate_lesson.html", lesson=lesson, speler=speler)
 
 # ---------- MAIN ----------
 if __name__ == "__main__":
