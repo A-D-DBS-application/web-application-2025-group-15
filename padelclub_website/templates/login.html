@@ -2,143 +2,114 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Fit Out Padel Destelbergen | Inloggen</title>
+    <title>Inloggen | Fit Out Padel Destelbergen</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #0077cc, #00c6a7);
             color: #333;
-            height: 100vh;
             margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-container {
-            background: white;
             padding: 40px;
-            border-radius: 16px;
-            width: 400px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            animation: fadeIn 0.6s ease-in-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .container {
+            background: white;
+            padding: 35px;
+            border-radius: 16px;
+            max-width: 450px;
+            margin: auto;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.15);
         }
 
         h1 {
             text-align: center;
-            font-size: 24px;
             color: #0077cc;
-            margin-bottom: 5px;
+            margin-bottom: 20px;
         }
 
-        h2 {
+        p {
             text-align: center;
             color: #555;
-            font-weight: normal;
-            margin-bottom: 25px;
-            font-size: 16px;
         }
 
         label {
             font-weight: bold;
             display: block;
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        button {
+        input[type="email"] {
             width: 100%;
             padding: 12px;
-            background-color: #0077cc;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 6px;
+            font-size: 15px;
+        }
+
+        .login-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #00a884;
             color: white;
             border: none;
             border-radius: 8px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: bold;
-            transition: background-color 0.3s;
+            cursor: pointer;
         }
 
-        button:hover {
-            background-color: #005fa3;
+        .login-btn:hover {
+            background-color: #008e6e;
         }
 
         .error {
-            color: red;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 14px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #ffdddd;
+            border-left: 4px solid #d9534f;
+            border-radius: 6px;
+            color: #a94442;
         }
 
         .register-link {
+            display: block;
+            margin-top: 20px;
             text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .register-link a {
-            color: #0077cc;
             text-decoration: none;
+            color: #0077cc;
             font-weight: bold;
         }
 
-        .register-link a:hover {
+        .register-link:hover {
             text-decoration: underline;
         }
 
-        footer {
-            position: absolute;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-size: 13px;
-        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Welkom bij</h1>
-        <h1><strong>Fit Out Padel Destelbergen</strong></h1>
-        <h2>Meld je aan om verder te gaan</h2>
+
+<div class="container">
+    <h1>🎾 Inloggen</h1>
+    <p>Log in met je e-mailadres (geen wachtwoord nodig).</p>
+
+    <form method="POST" action="/login">
+
+        <label for="email">E-mailadres</label>
+        <input type="email" id="email" name="email" required placeholder="jouw@email.com">
+
+        <button type="submit" class="login-btn">Inloggen</button>
 
         {% if error %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
-
-        <form method="POST" action="/login">
-            <label for="email">E-mailadres</label>
-            <input type="email" id="email" name="email" required>
-
-            <label for="password">Wachtwoord:</label>
-            <input type="password" id="password" name="password" required>
-
-            <button type="submit">Inloggen</button>
-        </form>
-
-        <div class="register-link">
-            <p>Nog geen account? <a href="/register">Registreer hier</a></p>
+        <div class="error">
+            {{ error }}
         </div>
-    </div>
+        {% endif %}
+    </form>
 
-    <footer>
-        © 2025 Fit Out Padel Destelbergen — Alle rechten voorbehouden
-    </footer>
+    <a class="register-link" href="{{ url_for('register') }}">Nog geen account? Registreer hier</a>
+</div>
+
 </body>
 </html>
-
-

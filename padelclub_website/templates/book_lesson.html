@@ -7,126 +7,114 @@
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #0077cc, #00c6a7);
-            color: #333;
             margin: 0;
             padding: 40px;
-            min-height: 100vh;
+            color: #333;
         }
-
         .container {
             background: white;
             padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            max-width: 600px;
+            max-width: 700px;
             margin: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
-
-        h1 {
-            color: #0077cc;
-            text-align: center;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input, select {
+        h1 { color: #0077cc; }
+        label { font-weight: bold; display:block; margin-top:10px; }
+        select, input {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+            padding: 8px;
+            margin-top:5px;
+            border-radius:8px;
+            border:1px solid #ccc;
         }
-
-        button {
-            background-color: #00a884;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 10px;
+        .button {
+            display:inline-block;
+            margin-top:20px;
+            background:#00a884;
+            color:white;
+            padding:10px 18px;
+            border-radius:8px;
+            text-decoration:none;
+            font-weight:bold;
+            border:none;
+            cursor:pointer;
         }
-
-        button:hover {
-            background-color: #008e6e;
+        .button.secondary {
+            background:#0077cc;
         }
-
-        p.error {
-            color: red;
-            text-align: center;
+        .button:hover { opacity:0.9; }
+        .error {
+            margin-top:10px;
+            color:red;
+            font-weight:bold;
         }
-
-        a {
-            text-decoration: none;
-            color: #0077cc;
+        ul.timeslots {
+            list-style:none;
+            padding-left:0;
+            margin-top:10px;
         }
-
-        .back-link {
-            text-align:center;
-            margin-top:15px;
+        ul.timeslots li {
+            margin:4px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📅 Les aanvragen</h1>
+<div class="container">
+    <h1>📅 Les aanvragen</h1>
 
-        {% if error %}
+    {% if error %}
         <p class="error">{{ error }}</p>
-        {% endif %}
+    {% endif %}
 
-        <!-- STAP 1: Coach + datum kiezen -->
-        <form method="post">
-            <input type="hidden" name="step" value="choose">
+    <!-- STAP 1: Coach + datum kiezen + tijdsloten tonen -->
+    <form method="POST">
+        <label for="coach_id">Kies coach:</label>
+        <select name="coach_id" id="coach_id" required>
+            <option value="">-- Selecteer coach --</option>
+            {% for c in coaches %}
+                <option value="{{ c.coach_id }}"
+                    {% if selected_coach_id and selected_coach_id|int == c.coach_id %}selected{% endif %}>
+                    {{ c.first_name }} {{ c.last_name }}
+                </option>
+            {% endfor %}
+        </select>
 
-            <label for="coach_id">Kies coach:</label>
-            <select name="coach_id" required>
-                <option value="">-- Selecteer coach --</option>
-                {% for coach in coaches %}
-                    <option value="{{ coach.coach_id }}"
-                        {% if selected_coach_id and selected_coach_id|string == coach.coach_id|string %}selected{% endif %}>
-                        {{ coach.first_name }} {{ coach.last_name }} ({{ coach.email }})
-                    </option>
-                {% endfor %}
-            </select>
+        <label for="date">Kies datum:</label>
+        <input type="date" id="date" name="date"
+               value="{{ selected_date or '' }}" required>
 
-            <label for="date">Datum:</label>
-            <input type="date" name="date" required
-                   value="{{ selected_date if selected_date }}">
+        <!-- Actie = toon tijdsloten -->
+        <button type="submit" name="action" value="show_slots" class="button secondary">
+            Toon beschikbare tijdsloten
+        </button>
+    </form>
 
-            <button type="submit">Toon beschikbare timeslots</button>
-        </form>
-
-        <!-- STAP 2: Timeslot kiezen (alleen tonen als we slots hebben) -->
-        {% if available_slots and available_slots|length > 0 %}
-        <hr style="margin: 25px 0;">
-
-        <form method="post">
-            <input type="hidden" name="step" value="book">
+    <!-- STAP 2: beschikbare tijdsloten tonen + boeken -->
+    {% if available_slots %}
+        <hr>
+        <h2>Beschikbare tijdsloten</h2>
+        <form method="POST">
+            <!-- coach + datum opnieuw meesturen -->
             <input type="hidden" name="coach_id" value="{{ selected_coach_id }}">
             <input type="hidden" name="date" value="{{ selected_date }}">
 
-            <label for="time_slot">Kies een vrij tijdslot:</label>
-            <select name="time_slot" required>
-                <option value="">-- Selecteer tijdslot --</option>
+            <ul class="timeslots">
                 {% for slot in available_slots %}
-                    <option value="{{ slot.start }}-{{ slot.end }}">
-                        {{ slot.start }} – {{ slot.end }}
-                    </option>
+                    <li>
+                        <label>
+                            <input type="radio" name="slot" value="{{ slot.id }}" required>
+                            {{ slot.label }}
+                        </label>
+                    </li>
                 {% endfor %}
-            </select>
+            </ul>
 
-            <button type="submit">Les boeken</button>
+            <button type="submit" name="action" value="book" class="button">
+                Boek deze les
+            </button>
         </form>
-        {% endif %}
-
-        <p class="back-link">
-            <a href="{{ url_for('player_dashboard') }}">← Terug naar dashboard</a>
-        </p>
-    </div>
+    {% endif %}
+</div>
 </body>
 </html>
