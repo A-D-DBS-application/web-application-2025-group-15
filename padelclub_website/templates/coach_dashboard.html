@@ -31,13 +31,19 @@
             margin-top: 35px;
         }
 
+        p {
+            margin-top: 5px;
+            margin-bottom: 20px;
+        }
+
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 10px;
         }
 
-        .topbar a {
+        .topbar a.logout-btn {
             text-decoration: none;
             color: white;
             background-color: #dc3545;
@@ -46,7 +52,7 @@
             font-weight: bold;
         }
 
-        .topbar a:hover {
+        .topbar a.logout-btn:hover {
             background-color: #b82e3a;
         }
 
@@ -60,6 +66,7 @@
             border: 1px solid #ccc;
             padding: 10px;
             text-align: left;
+            font-size: 14px;
         }
 
         th {
@@ -69,6 +76,34 @@
 
         tr:nth-child(even) {
             background-color: #f8f8f8;
+        }
+
+        /* Mooie groene actieknop (speler toevoegen) */
+        .button {
+            display: inline-block;
+            background-color: #00a884;
+            color: white;
+            padding: 12px 18px;
+            margin-top: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.2s ease;
+        }
+
+        .button:hover {
+            background-color: #008f73;
+        }
+
+        /* Verwijder-link in de tabel */
+        .remove-link {
+            color: #dc3545;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .remove-link:hover {
+            text-decoration: underline;
         }
 
         footer {
@@ -84,7 +119,7 @@
 <div class="container">
     <div class="topbar">
         <h1>🎾 Coach Dashboard</h1>
-        <a href="{{ url_for('logout') }}">⎋ Uitloggen</a>
+        <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
     </div>
 
     <p>Welkom coach! Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
@@ -96,21 +131,33 @@
             <th>Naam</th>
             <th>Email</th>
             <th>Telefoon</th>
+            <th>Actie</th>
         </tr>
+
         {% if spelers and spelers|length > 0 %}
             {% for speler in spelers %}
             <tr>
                 <td>{{ speler.first_name }} {{ speler.last_name }}</td>
                 <td>{{ speler.email }}</td>
                 <td>{{ speler.phone or '' }}</td>
+                <td>
+                    <a href="{{ url_for('remove_player', player_id=speler.player_id) }}"
+                       onclick="return confirm('Weet je zeker dat je deze speler wil verwijderen?');"
+                       class="remove-link">
+                        ❌ Verwijderen
+                    </a>
+                </td>
             </tr>
             {% endfor %}
         {% else %}
             <tr>
-                <td colspan="4">Nog geen spelers gekoppeld aan deze coach.</td>
+                <td colspan="4">Nog geen spelers gekoppeld.</td>
             </tr>
         {% endif %}
     </table>
+
+    <!-- Knop: speler toevoegen -->
+    <a href="{{ url_for('add_player') }}" class="button">+ Speler toevoegen</a>
 
     <!-- 📘 Geplande lessen -->
     <h2>📘 Geplande lessen</h2>
@@ -120,6 +167,7 @@
             <th>Tijd</th>
             <th>Speler(s)</th>
         </tr>
+
         {% if lessen and lessen|length > 0 %}
             {% for les in lessen %}
             <tr>

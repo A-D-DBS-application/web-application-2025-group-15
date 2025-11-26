@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Speler toevoegen | Fit Out Padel Destelbergen</title>
+    <title>Speler koppelen | Fit Out Padel Destelbergen</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -15,124 +15,147 @@
             background: white;
             padding: 30px;
             border-radius: 16px;
-            max-width: 700px;
+            max-width: 900px;
             margin: auto;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
         h1 {
             color: #0077cc;
-        }
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 10px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-        button, a.button {
-            margin-top: 20px;
-            display: inline-block;
-            background-color: #00a884;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        button:hover, a.button:hover {
-            background-color: #008e6e;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
+            margin-bottom: 10px;
         }
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 16px;
         }
         .back-btn {
             background-color: #0077cc;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
         }
         .back-btn:hover {
             background-color: #005fa3;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        form.search-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        form.search-form input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        form.search-form button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background-color: #00a884;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        form.search-form button:hover {
+            background-color: #008e6e;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #0077cc;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+        .link-btn {
+            background-color: #00a884;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .link-btn:hover {
+            background-color: #008e6e;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="topbar">
-        <h1>➕ Speler toevoegen</h1>
-        <a href="{{ url_for('coach_dashboard') }}" class="button back-btn">⬅ Terug naar dashboard</a>
+        <h1>➕ Speler koppelen</h1>
+        <a href="{{ url_for('coach_dashboard') }}" class="back-btn">⬅ Terug naar dashboard</a>
     </div>
 
+    <p>Zoek een speler op naam en koppel hem/haar aan jouw spelerslijst.</p>
+
     {% if error %}
-    <p class="error">{{ error }}</p>
+        <p class="error">{{ error }}</p>
     {% endif %}
 
-    <form method="POST">
-
-        <!-- SPELER SELECTIE -->
-        <label for="player_id">Kies speler:</label>
-        <select name="player_id" id="player_id" required>
-            <option value="">-- Selecteer speler --</option>
-            {% for speler in spelers %}
-                <option value="{{ speler['player_id'] }}">
-                    {{ speler['first_name'] }} {{ speler['last_name'] }} ({{ speler['email'] }})
-                </option>
-            {% endfor %}
-        </select>
-
-        <label>Handvoorkeur:</label>
-        <select name="hand">
-            <option value="">Selecteer...</option>
-            <option value="links">Linkshandig</option>
-            <option value="rechts">Rechtshandig</option>
-            <option value="beide">Beide</option>
-        </select>
-
-        <label>P-ranking:</label>
-        <input type="text" name="p_ranking">
-
-        <label>Doel van padel:</label>
-        <select name="doel">
-            <option value="">Selecteer...</option>
-            <option value="fun">Fun</option>
-            <option value="competitie">Competitie</option>
-        </select>
-
-        <label>Lesvoorkeur:</label>
-        <select name="les_voorkeur">
-            <option value="">Selecteer...</option>
-            <option value="individueel">Individueel</option>
-            <option value="groep">Groep</option>
-        </select>
-
-        <label>Les type voorkeur:</label>
-        <select name="les_type">
-            <option value="">Selecteer...</option>
-            <option value="technisch">Technisch</option>
-            <option value="tactisch">Tactisch</option>
-        </select>
-
-        <label>Aantal jaren ervaring:</label>
-        <input type="number" name="ervaring" min="0">
-
-        <label>Sterktes:</label>
-        <textarea name="strengths"></textarea>
-
-        <label>Zwaktes:</label>
-        <textarea name="weaknesses"></textarea>
-
-        <button type="submit">💾 Opslaan</button>
+    <!-- 🔍 Zoekformulier (GET) -->
+    <form method="GET" class="search-form">
+        <input
+            type="text"
+            name="q"
+            placeholder="Zoek op voornaam (bv. 'Tiebe')"
+            value="{{ q or '' }}"
+        >
+        <button type="submit">Zoeken</button>
     </form>
+
+    <table>
+        <tr>
+            <th>Naam</th>
+            <th>Email</th>
+            <th>Telefoon</th>
+            <th>Actie</th>
+        </tr>
+        {% if spelers and spelers|length > 0 %}
+            {% for speler in spelers %}
+            <tr>
+                <td>{{ speler.first_name }} {{ speler.last_name }}</td>
+                <td>{{ speler.email }}</td>
+                <td>{{ speler.phone or '' }}</td>
+                <td>
+                    <!-- POST-formulier om deze speler te koppelen -->
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="player_id" value="{{ speler.player_id }}">
+                        <button type="submit" class="link-btn">Koppelen</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="4">
+                    Geen spelers gevonden zonder coach
+                    {% if q %} voor zoekterm "{{ q }}"{% endif %}.
+                </td>
+            </tr>
+        {% endif %}
+    </table>
 </div>
 </body>
 </html>
