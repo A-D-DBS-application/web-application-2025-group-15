@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Registreren Stap 1/2</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0077cc, #00c6a7);
+            color: #333;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 400px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            animation: fadeIn 0.6s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { text-align: center; color: #0077cc; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
+        
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 6px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-family: inherit;
+        }
+        
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background-color: #0077cc; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 15px; 
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #005fa3; }
+        
+        .back-link { text-align: center; margin-top: 15px; font-size: 14px; }
+        .back-link a { color: #666; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+        
+        .error { 
+            background-color: #ffe6e6; 
+            color: #d93025; 
+            padding: 10px; 
+            border-radius: 6px; 
+            text-align: center; 
+            margin-bottom: 15px; 
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stap 1: Wie ben je?</h1>
+        <p class="subtitle">Stap 1 van 2</p>
+        
+        {% if error %} <div class="error">{{ error }}</div> {% endif %}
+
+        <form method="POST" action="{{ url_for('register_player_step1') }}">
+            <label for="first_name">Voornaam:</label>
+            <input type="text" name="first_name" required placeholder="Bijv. Jan">
+
+            <label for="last_name">Achternaam:</label>
+            <input type="text" name="last_name" required placeholder="Bijv. Peeters">
+
+            <label for="email">E-mailadres:</label>
+            <input type="email" name="email" required placeholder="jan@voorbeeld.be">
+
+            <label for="phone">Telefoonnummer:</label>
+            <input type="text" name="phone" placeholder="04...">
+
+            <button type="submit">Volgende stap &rarr;</button>
+        </form>
+
+        <div class="back-link">
+            <a href="/register">← Terug naar keuze</a>
+        </div>
+    </div>
+</body>
+</html>
