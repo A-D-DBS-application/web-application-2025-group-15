@@ -7,7 +7,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import date
 from config import Config
 from dotenv import load_dotenv
-from supabase_client import supabase
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -187,6 +186,8 @@ def player_dashboard():
     )
 
 
+
+
 # ---------- REGISTER ----------
 @app.route("/register")
 def register():
@@ -242,25 +243,51 @@ def register_player_step2():
 @app.route("/register/coach", methods=["GET", "POST"])
 def register_coach():
     if request.method == "POST":
-        data = {
-            "first_name": request.form.get("first_name"),
-            "last_name": request.form.get("last_name"),
-            "email": request.form.get("email"),
-            "phone": request.form.get("phone")
-        }
+        first_name = request.form.get("first_name")
+        last_name = request.form.get("last_name")
+        email = request.form.get("email")
+        phone = request.form.get("phone")       
+        
+        if not email or not first_name or not last_name :
+            return render_template("register_coach_step1.html", error="Vul zeker je e-mailadres, voornaam en achternaam in.")
         
         try:
-            if supabase.table("coaches").select("coach_id").eq("email", data["email"]).execute().data:
-                return render_template("login.html", error="Coach bestaat al. Log hier in.")
+            if supabase.table("coaches").select("coach_id").eq("email", email).execute().data:
+                return render_template("login.html", error="Dit e-mailadres bestaat al. Log hier in.")
+            if supabase.table("players").select("player_id").eq("email", email).execute().data:
+                return render_template("login.html", error="Dit e-mailadres is al geregistreerd als speler.")
         except: pass
+        
+        session["coach_data"] = {
+            "first_name": first_name, "last_name": last_name, "email": email, "phone": phone
+        }
+        
+        return redirect(url_for("register_coach_step2"))
+    
+    return render_template("register_coach_step1.html")
+
+
+@app.route("/register/coach/step2", methods=["GET", "POST"])
+def register_coach_step2():
+    if "coach_data" not in session: 
+        return redirect(url_for("register_coach_step1"))
+    
+    if request.method == "POST":
+        data = session["coach_data"]
+        data["is_active"] = True
+        data["gender"] = request.form.get("gender")
+        data["ranking"] = request.form.get("ranking")
 
         try:
             supabase.table("coaches").insert(data).execute()
-            return render_template("login.html", error="Coach account aangemaakt!")
+            session.pop("coach_data", None)
+            return render_template("login.html", error="Account aangemaakt! Je kunt nu inloggen.")
         except Exception as e:
-            return render_template("register_coach.html", error=f"Fout: {e}")
+            print(f"Reg error: {e}")
+            return render_template("register_coach_step2.html", error="Er ging iets mis bij het opslaan.")
+    return render_template("register_coach_step2.html")
 
-    return render_template("register_coach.html")
+
 
 
 

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Coach Dashboard | Fit Out Padel Destelbergen</title>
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -21,26 +22,15 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        h1 {
-            color: #0077cc;
-            margin-bottom: 10px;
-        }
+        h1 { color: #0077cc; }
+        h2 { color: #00a884; margin-top: 35px; }
 
-        h2 {
-            color: #00a884;
-            margin-top: 35px;
-        }
-
-        p {
-            margin-top: 5px;
-            margin-bottom: 20px;
-        }
+        p { margin-bottom: 20px; }
 
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
         }
 
         .logout-btn {
@@ -56,38 +46,67 @@
             background-color: #b82e3a;
         }
 
+        /* 🔎 Titel + zoekveld */
+        .players-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            width: 260px;
+        }
+
+        /* ---------- TABEL ---------- */
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
         }
 
         th, td {
             border: 1px solid #ccc;
             padding: 10px;
-            text-align: left;
             font-size: 14px;
+            text-align: left;
         }
 
         th {
             background-color: #0077cc;
             color: white;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
 
         tr:nth-child(even) {
             background-color: #f8f8f8;
         }
 
+        .table-scroll {
+            max-height: 260px; /* ~6 spelers */
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 15px;
+        }
+
+        /* ---------- KNOPPEN ---------- */
+
         .button {
+            margin-top: 15px;
             display: inline-block;
             background-color: #00a884;
             color: white;
             padding: 12px 18px;
-            margin-top: 15px;
             border-radius: 10px;
             font-weight: bold;
             text-decoration: none;
-            transition: 0.2s ease;
         }
 
         .button:hover {
@@ -111,11 +130,25 @@
             margin-top: 40px;
         }
     </style>
+
+    <!-- 🔎 ZOEK SCRIPT -->
+    <script>
+        function filterPlayers() {
+            const query = document.getElementById("playerSearch").value.toLowerCase();
+            const rows = document.querySelectorAll("#playersTable tbody tr");
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? "" : "none";
+            });
+        }
+    </script>
 </head>
 
 <body>
 
 <div class="container">
+
     <div class="topbar">
         <h1>🎾 Coach Dashboard</h1>
         <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
@@ -123,47 +156,63 @@
 
     <p>Welkom coach! Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
 
-    <!-- 📋 Mijn spelers -->
-    <h2>📋 Mijn spelers</h2>
-    <table>
-        <tr>
-            <th>Naam</th>
-            <th>Email</th>
-            <th>Telefoon</th>
-            <th>Actie</th>
-        </tr>
+    <!-- 📋 MIJN SPELERS -->
+    <div class="players-header">
+        <h2>📋 Mijn spelers</h2>
+        <input
+            type="text"
+            id="playerSearch"
+            class="search-input"
+            placeholder="🔍 Zoek speler..."
+            onkeyup="filterPlayers()"
+        >
+    </div>
 
-        {% if spelers and spelers|length > 0 %}
-            {% for speler in spelers %}
-            <tr>
-                <td>
-                    <a href="{{ url_for('coach_player_detail', player_id=speler.player_id) }}"
-                       style="color:#0077cc; font-weight:bold; text-decoration:none;">
-                        {{ speler.first_name }} {{ speler.last_name }}
-                    </a>
-                </td>
-                <td>{{ speler.email }}</td>
-                <td>{{ speler.phone or '' }}</td>
-                <td>
-                    <a href="{{ url_for('remove_player', player_id=speler.player_id) }}"
-                       onclick="return confirm('Weet je zeker dat je deze speler wil verwijderen?');"
-                       class="remove-link">
-                        ❌ Verwijderen
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="4">Nog geen spelers gekoppeld.</td>
-            </tr>
-        {% endif %}
-    </table>
+    <div class="table-scroll">
+        <table id="playersTable">
+            <thead>
+                <tr>
+                    <th>Naam</th>
+                    <th>Email</th>
+                    <th>Telefoon</th>
+                    <th>Actie</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if spelers and spelers|length > 0 %}
+                    {% for speler in spelers %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('coach_player_detail', player_id=speler.player_id) }}"
+                               style="color:#0077cc; font-weight:bold; text-decoration:none;">
+                                {{ speler.first_name }} {{ speler.last_name }}
+                            </a>
+                        </td>
+                        <td>{{ speler.email }}</td>
+                        <td>{{ speler.phone or '' }}</td>
+                        <td>
+                            <a href="{{ url_for('remove_player', player_id=speler.player_id) }}"
+                               onclick="return confirm('Weet je zeker dat je deze speler wil verwijderen?');"
+                               class="remove-link">
+                                ❌ Verwijderen
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4">Nog geen spelers gekoppeld.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 
     <a href="{{ url_for('add_player') }}" class="button">+ Speler toevoegen</a>
 
-    <!-- 📘 Geplande lessen -->
+    <!-- 📘 LESSEN -->
     <h2>📘 Geplande lessen</h2>
+
     <table>
         <tr>
             <th>Datum</th>
