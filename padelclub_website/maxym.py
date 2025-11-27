@@ -96,8 +96,9 @@ def player_dashboard():
     player_id = session.get("user_id")
 
     geplande = []
-    progress = None  # voorlopig geen voortgangstabel meer
+    progress = None
 
+    # --- Geplande lessen ---
     try:
         # 1) alle lesson_ids ophalen voor deze speler
         resp_lp = (
@@ -151,6 +152,33 @@ def player_dashboard():
     except Exception as e:
         print("Fout bij ophalen geplande lessen speler:", e)
         geplande = []
+
+    # --- Voortgang uit players (ranking + hand_preference + strengths + weaknesses) ---
+    try:
+        resp_player = (
+            supabase.table("players")
+            .select("ranking, hand_preference, strengths, weaknesses")
+            .eq("player_id", player_id)
+            .maybe_single()
+            .execute()
+        )
+        pdata = resp_player.data or {}
+
+        if pdata:
+            progress = {
+                "p_score": pdata.get("ranking"),
+                "hand": pdata.get("hand_preference"),
+                "strengths": pdata.get("strengths"),
+                "weaknesses": pdata.get("weaknesses"),
+            }
+        else:
+            progress = None
+
+        print("DEBUG /player progress:", progress)
+
+    except Exception as e:
+        print("Fout bij ophalen voortgang speler:", e)
+        progress = None
 
     return render_template(
         "player_dashboard.html",
@@ -757,50 +785,66 @@ def schedule_individual_lesson():
     # GET: toon formulier met spelerslijst
     return render_template("schedule_individual_lesson.html", spelers=spelers)
 
-# ---------- COACH: Speler detailpagina ----------   #werkt niet omdat er geen progress tabel meer is in supabase (html ook niet in orde denkik)
-@app.route("/coach/player/<int:player_id>")
-def view_player(player_id):
+# ---------- COACH: Speler detail + sterktes/zwaktes bewerken ----------
+@app.route("/coach/player/<int:player_id>", methods=["GET", "POST"])
+def coach_player_detail(player_id):
     if session.get("role") != "coach":
         return redirect(url_for("login"))
 
     coach_id = session.get("user_id")
 
-    # Basisinfo van de speler ophalen uit Supabase
+    # Alleen spelers van deze coach mogen bekeken/bewerkt worden
+    # (optioneel, maar wel netjes)
+    try:
+        resp_check = (
+            supabase.table("players")
+            .select("assigned_coach_id")
+            .eq("player_id", player_id)
+            .maybe_single()
+            .execute()
+        )
+        data_check = resp_check.data or {}
+        if data_check.get("assigned_coach_id") not in (None, coach_id):
+            # speler bestaat niet of hoort niet bij deze coach
+            return redirect(url_for("coach_dashboard"))
+    except Exception as e:
+        print("Fout bij check assigned_coach_id:", e)
+
+    # --- POST: sterktes/zwaktes opslaan ---
+    if request.method == "POST":
+        strengths = request.form.get("strengths") or None
+        weaknesses = request.form.get("weaknesses") or None
+
+        try:
+            supabase.table("players").update({
+                "strengths": strengths,
+                "weaknesses": weaknesses,
+            }).eq("player_id", player_id).execute()
+        except Exception as e:
+            print("Fout bij updaten sterktes/zwaktes:", e)
+
+    # --- Altijd: spelerinfo ophalen voor we de pagina tonen ---
     speler = None
     try:
         resp_speler = (
             supabase.table("players")
-            .select("player_id, first_name, last_name, email, phone, sport")
+            .select(
+                "player_id, first_name, last_name, email, phone, "
+                "gender, ranking, hand_preference, strengths, weaknesses"
+            )
             .eq("player_id", player_id)
             .single()
             .execute()
         )
         speler = resp_speler.data
     except Exception as e:
-        print(f"Fout bij ophalen speler {player_id}: {e}")
+        print(f"Fout bij ophalen speler {player_id}:", e)
         speler = None
 
-    # Alle progressie-updates ophalen uit Supabase
-    progressies = []
-    try:
-        resp_progress = (
-            supabase.table("progress")
-            .select("p_score, hand, strengths, weaknesses, updated_at")
-            .eq("player_id", player_id)
-            .eq("coach_id", coach_id)
-            .order("updated_at", desc=True)
-            .execute()
-        )
-        progressies = resp_progress.data or []
-    except Exception as e:
-        print(f"Fout bij ophalen progress voor speler {player_id}: {e}")
-        progressies = []
+    if not speler:
+        return redirect(url_for("coach_dashboard"))
 
-    return render_template(
-        "player_detail.html",
-        speler=speler,
-        progressies=progressies
-    )
+    return render_template("player_detail.html", speler=speler)
 
 
 

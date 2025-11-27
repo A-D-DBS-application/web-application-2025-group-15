@@ -43,7 +43,7 @@
             margin-bottom: 10px;
         }
 
-        .topbar a.logout-btn {
+        .logout-btn {
             text-decoration: none;
             color: white;
             background-color: #dc3545;
@@ -52,7 +52,7 @@
             font-weight: bold;
         }
 
-        .topbar a.logout-btn:hover {
+        .logout-btn:hover {
             background-color: #b82e3a;
         }
 
@@ -78,7 +78,6 @@
             background-color: #f8f8f8;
         }
 
-        /* Mooie groene actieknop (speler toevoegen) */
         .button {
             display: inline-block;
             background-color: #00a884;
@@ -95,7 +94,6 @@
             background-color: #008f73;
         }
 
-        /* Verwijder-link in de tabel */
         .remove-link {
             color: #dc3545;
             font-weight: bold;
@@ -114,6 +112,7 @@
         }
     </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -137,7 +136,12 @@
         {% if spelers and spelers|length > 0 %}
             {% for speler in spelers %}
             <tr>
-                <td>{{ speler.first_name }} {{ speler.last_name }}</td>
+                <td>
+                    <a href="{{ url_for('coach_player_detail', player_id=speler.player_id) }}"
+                       style="color:#0077cc; font-weight:bold; text-decoration:none;">
+                        {{ speler.first_name }} {{ speler.last_name }}
+                    </a>
+                </td>
                 <td>{{ speler.email }}</td>
                 <td>{{ speler.phone or '' }}</td>
                 <td>
@@ -156,7 +160,6 @@
         {% endif %}
     </table>
 
-    <!-- Knop: speler toevoegen -->
     <a href="{{ url_for('add_player') }}" class="button">+ Speler toevoegen</a>
 
     <!-- 📘 Geplande lessen -->
@@ -172,7 +175,7 @@
             {% for les in lessen %}
             <tr>
                 <td>{{ les.date }}</td>
-                <td>{{ les.start_time }} - {{ les.end_time }}</td>
+                <td>{{ les.start_time }} – {{ les.end_time }}</td>
                 <td>{{ les.players }}</td>
             </tr>
             {% endfor %}
