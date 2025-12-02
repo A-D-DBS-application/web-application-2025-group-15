@@ -1,28 +1,148 @@
+# ============================================================
+#  INITIALISATIE & IMPORTS
+# ============================================================
+
 from dotenv import load_dotenv
 load_dotenv()  # <-- verplicht .env laden vóór supabase_client
 
 from config import Config
 from supabase_client import supabase
 from flask import Flask, render_template, request, redirect, url_for, session
-from datetime import date
+from datetime import date, datetime, time
 from config import Config
 from dotenv import load_dotenv
 
 app = Flask(__name__)
+
+
+# ============================================================
+#  CLEANUP: VERPLAATS AFGELOPEN LESSEN
+# ============================================================
+
+def cleanup_past_lessons():
+    """
+    Verplaats afgelopen lessen uit 'lessons' naar 'completed_lessons'
+    en verwijder ze uit 'lessons' (lesson_players via ON DELETE CASCADE).
+    """
+    try:
+        today = date.today()
+        now_time = datetime.now().time()
+
+        resp = (
+            supabase.table("lessons")
+            .select("lesson_id, date, start_time, end_time, coach_id")
+            .lte("date", today.isoformat())
+            .execute()
+        )
+        lessons = resp.data or []
+        if not lessons:
+            return
+
+        lessons_by_id = {}
+        past_ids = []
+
+        for les in lessons:
+            lid = les.get("lesson_id")
+            if not lid:
+                continue
+
+            raw_date = les.get("date")
+            if not raw_date:
+                continue
+
+            if isinstance(raw_date, str):
+                try:
+                    lesson_date = date.fromisoformat(raw_date)
+                except Exception:
+                    continue
+            else:
+                lesson_date = raw_date
+
+            end_str = (les.get("end_time") or "")[:8]
+
+            is_past = False
+            if lesson_date < today:
+                is_past = True
+            elif lesson_date == today and end_str:
+                try:
+                    h, m, s = map(int, end_str.split(":"))
+                    end_t = time(h, m, s)
+                    if end_t <= now_time:
+                        is_past = True
+                except Exception:
+                    pass
+
+            if not is_past:
+                continue
+
+            lessons_by_id[lid] = {
+                "date": lesson_date.isoformat(),
+                "start_time": (les.get("start_time") or "")[:8],
+                "end_time": end_str,
+                "coach_id": les.get("coach_id"),
+            }
+            past_ids.append(lid)
+
+        if not past_ids:
+            return
+
+        resp_lp = (
+            supabase.table("lesson_players")
+            .select("lesson_id, player_id")
+            .in_("lesson_id", past_ids)
+            .execute()
+        )
+        lp_rows = resp_lp.data or []
+
+        completed_rows = []
+        for row in lp_rows:
+            lid = row.get("lesson_id")
+            pid = row.get("player_id")
+            if not lid or not pid:
+                continue
+
+            info = lessons_by_id.get(lid)
+            if not info:
+                continue
+
+            completed_rows.append({
+                "lesson_id": lid,
+                "player_id": pid,
+                "coach_id": info.get("coach_id"),
+                "date": info.get("date"),
+                "start_time": info.get("start_time"),
+                "end_time": info.get("end_time"),
+            })
+
+        if completed_rows:
+            supabase.table("completed_lessons").insert(completed_rows).execute()
+
+        supabase.table("lessons").delete().in_("lesson_id", past_ids).execute()
+        print("cleanup_past_lessons: verplaatst", len(completed_rows), "rows")
+
+    except Exception as e:
+        print("Fout bij cleanup_past_lessons:", e)
+
+
 app.config.from_object(Config)
 
-# -----------------------------
-# ROUTES
-# -----------------------------
+
+# ============================================================
+#  HOME ROUTE
+# ============================================================
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
- # ---------- LOGIN ZONDER WACHTWOORD ----------
+
+# ============================================================
+#  LOGIN - SYSTEEM ZONDER WACHTWOORD
+# ============================================================
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-
         email_input = request.form.get("email", "").strip()
         print(f"Inlogpoging voor: {email_input}")
 
@@ -30,76 +150,67 @@ def login():
             return render_template("login.html", error="Vul je e-mailadres in.")
 
         try:
-            # 1) PROBEER ALS SPELER
+            # --- probeer als speler ---
             resp_player = (
-                supabase
-                .table("players")
+                supabase.table("players")
                 .select("*")
                 .eq("email", email_input)
                 .execute()
             )
-            print("DEBUG resp_player.data =", resp_player.data)
-
             players = resp_player.data or []
-            if len(players) > 0:
-                player = players[0]   # eerste match
+            if players:
+                player = players[0]
                 session["user_id"] = player["player_id"]
                 session["role"] = "player"
                 session["name"] = player.get("first_name") or ""
                 session["assigned_coach"] = player.get("assigned_coach_id")
-                print("✅ Ingelogd als SPELER:", session)
                 return redirect(url_for("player_dashboard"))
 
-            # 2) ZO NIET: PROBEER ALS COACH
+            # --- probeer als coach ---
             resp_coach = (
-                supabase
-                .table("coaches")
+                supabase.table("coaches")
                 .select("*")
                 .eq("email", email_input)
                 .execute()
             )
-            print("DEBUG resp_coach.data =", resp_coach.data)
-
             coaches = resp_coach.data or []
-            if len(coaches) > 0:
+            if coaches:
                 coach = coaches[0]
                 session["user_id"] = coach["coach_id"]
                 session["role"] = "coach"
                 session["name"] = coach.get("first_name") or ""
-                print("✅ Ingelogd als COACH:", session)
                 return redirect(url_for("coach_dashboard"))
 
-            # 3) GEEN MATCH
-            return render_template(
-                "login.html",
-                error="Geen account gevonden met dit e-mailadres."
-            )
+            return render_template("login.html",
+                                   error="Geen account gevonden met dit e-mailadres.")
 
         except Exception as e:
             print("❌ Login error:", repr(e))
-            return render_template(
-                "login.html",
-                error="Er ging iets mis bij het inloggen. Probeer later opnieuw."
-            )
+            return render_template("login.html",
+                                   error="Er ging iets mis bij het inloggen. Probeer later opnieuw.")
 
-    # GET: toon loginpagina
     return render_template("login.html")
 
 
-# ---------- PLAYER DASHBOARD ----------
+# ============================================================
+#  PLAYER DASHBOARD
+# ============================================================
+
 @app.route("/player")
 def player_dashboard():
     if session.get("role") != "player":
         return redirect(url_for("login"))
 
+    cleanup_past_lessons()
     player_id = session.get("user_id")
 
     geplande = []
     progress = None
 
-    # --- Geplande lessen ---
+    # -----------------------------
+    # Geplande lessen
+    # -----------------------------
     try:
-        # 1) alle lesson_ids ophalen voor deze speler
         resp_lp = (
             supabase.table("lesson_players")
             .select("lesson_id")
@@ -107,11 +218,9 @@ def player_dashboard():
             .execute()
         )
         lp_rows = resp_lp.data or []
-        lesson_ids = [r.get("lesson_id") for r in lp_rows if r.get("lesson_id") is not None]
-        print("DEBUG /player lesson_ids:", lesson_ids)
+        lesson_ids = [r.get("lesson_id") for r in lp_rows if r.get("lesson_id")]
 
         if lesson_ids:
-            # 2) bijhorende lessen ophalen
             resp_lessons = (
                 supabase.table("lessons")
                 .select("lesson_id, date, start_time, end_time, coach_id")
@@ -119,12 +228,12 @@ def player_dashboard():
                 .order("date", desc=False)
                 .execute()
             )
-            lesson_rows = resp_lessons.data or []
-            print("DEBUG /player lessons:", lesson_rows)
 
-            # 3) coach-namen ophalen
-            coach_ids = {l.get("coach_id") for l in lesson_rows if l.get("coach_id") is not None}
+            lesson_rows = resp_lessons.data or []
+
+            coach_ids = {l.get("coach_id") for l in lesson_rows if l.get("coach_id")}
             coach_name_by_id = {}
+
             if coach_ids:
                 resp_coaches = (
                     supabase.table("coaches")
@@ -134,25 +243,25 @@ def player_dashboard():
                 )
                 for c in (resp_coaches.data or []):
                     cid = c.get("coach_id")
-                    naam = f"{c.get('first_name', '')} {c.get('last_name', '')}".strip()
+                    naam = f"{c.get('first_name','')} {c.get('last_name','')}".strip()
                     coach_name_by_id[cid] = naam or "Onbekend"
 
-            # 4) alles samenvoegen voor de template
             for les in lesson_rows:
                 geplande.append({
+                    "lesson_id": les.get("lesson_id"),
                     "date": les.get("date"),
                     "start_time": (les.get("start_time") or "")[:5],
                     "end_time": (les.get("end_time") or "")[:5],
                     "coach_name": coach_name_by_id.get(les.get("coach_id"), "Onbekend"),
                 })
 
-        print("DEBUG /player geplande:", geplande)
-
     except Exception as e:
         print("Fout bij ophalen geplande lessen speler:", e)
         geplande = []
 
-    # --- Voortgang uit players (ranking + hand_preference + strengths + weaknesses) ---
+    # -----------------------------
+    # Voortgang
+    # -----------------------------
     try:
         resp_player = (
             supabase.table("players")
@@ -170,29 +279,71 @@ def player_dashboard():
                 "strengths": pdata.get("strengths"),
                 "weaknesses": pdata.get("weaknesses"),
             }
-        else:
-            progress = None
-
-        print("DEBUG /player progress:", progress)
 
     except Exception as e:
         print("Fout bij ophalen voortgang speler:", e)
         progress = None
 
+    # -----------------------------
+    # Recente evaluaties
+    # -----------------------------
+    evaluations = []
+    try:
+        resp_eval = (
+            supabase.table("completed_lessons")
+            .select("date, start_time, end_time, coach_id, coach_feedback, rating")
+            .eq("player_id", player_id)
+            .order("date", desc=True)
+            .limit(5)
+            .execute()
+        )
+
+        eval_rows = resp_eval.data or []
+        coach_ids_eval = {r.get("coach_id") for r in eval_rows if r.get("coach_id")}
+        coach_name_by_id_eval = {}
+
+        if coach_ids_eval:
+            resp_coaches_eval = (
+                supabase.table("coaches")
+                .select("coach_id, first_name, last_name")
+                .in_("coach_id", list(coach_ids_eval))
+                .execute()
+            )
+            for c in (resp_coaches_eval.data or []):
+                cid = c["coach_id"]
+                naam = f"{c['first_name']} {c['last_name']}".strip()
+                coach_name_by_id_eval[cid] = naam or "Onbekend"
+
+        for r in eval_rows:
+            evaluations.append({
+                "date": r.get("date"),
+                "time": f"{(r.get('start_time') or '')[:5]} – {(r.get('end_time') or '')[:5]}",
+                "coach_name": coach_name_by_id_eval.get(r.get("coach_id"), "Onbekend"),
+                "feedback": r.get("coach_feedback"),
+                "rating": r.get("rating"),
+            })
+
+    except Exception as e:
+        print("Fout bij ophalen evaluaties speler:", e)
+        evaluations = []
+
     return render_template(
         "player_dashboard.html",
         geplande=geplande,
         progress=progress,
+        evaluations=evaluations,
     )
 
 
+# ============================================================
+#  REGISTER ROUTES (SPELER & COACH)
+# ============================================================
 
-
-# ---------- REGISTER ----------
 @app.route("/register")
 def register():
     return render_template("register_choice.html")
 
+# --- speler registratie ---
 @app.route("/register/player", methods=["GET", "POST"])
 def register_player_step1():
     if request.method == "POST":
@@ -202,26 +353,33 @@ def register_player_step1():
         phone = request.form.get("phone")
 
         if not email or not first_name or not last_name:
-            return render_template("register_player_step1.html", error="Vul alle verplichte velden in.")
+            return render_template("register_player_step1.html",
+                                   error="Vul alle verplichte velden in.")
 
-        # Check duplicaten
         try:
             if supabase.table("players").select("player_id").eq("email", email).execute().data:
-                return render_template("login.html", error="Dit e-mailadres bestaat al. Log hier in.")
+                return render_template("login.html",
+                                       error="Dit e-mailadres bestaat al. Log hier in.")
             if supabase.table("coaches").select("coach_id").eq("email", email).execute().data:
-                return render_template("login.html", error="Dit e-mailadres is al geregistreerd als coach.")
-        except: pass
+                return render_template("login.html",
+                                       error="Dit e-mailadres is al geregistreerd als coach.")
+        except:
+            pass
 
         session["player_data"] = {
-            "first_name": first_name, "last_name": last_name, "email": email, "phone": phone
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "phone": phone
         }
         return redirect(url_for("register_player_step2"))
 
     return render_template("register_player_step1.html")
 
+
 @app.route("/register/player/step2", methods=["GET", "POST"])
 def register_player_step2():
-    if "player_data" not in session: 
+    if "player_data" not in session:
         return redirect(url_for("register_player_step1"))
 
     if request.method == "POST":
@@ -233,45 +391,53 @@ def register_player_step2():
         try:
             supabase.table("players").insert(data).execute()
             session.pop("player_data", None)
-            return render_template("login.html", error="Account aangemaakt! Je kunt nu inloggen.")
-        except Exception as e:
-            print(f"Reg error: {e}")
-            return render_template("register_player_step2.html", error="Er ging iets mis bij het opslaan.")
+            return render_template("login.html",
+                                   error="Account aangemaakt! Je kunt nu inloggen.")
+        except Exception:
+            return render_template("register_player_step2.html",
+                                   error="Er ging iets mis bij het opslaan.")
 
     return render_template("register_player_step2.html")
 
+# --- coach registratie ---
 @app.route("/register/coach", methods=["GET", "POST"])
 def register_coach():
     if request.method == "POST":
         first_name = request.form.get("first_name")
         last_name = request.form.get("last_name")
         email = request.form.get("email")
-        phone = request.form.get("phone")       
-        
-        if not email or not first_name or not last_name :
-            return render_template("register_coach_step1.html", error="Vul zeker je e-mailadres, voornaam en achternaam in.")
-        
+        phone = request.form.get("phone")
+
+        if not email or not first_name or not last_name:
+            return render_template("register_coach_step1.html",
+                                   error="Vul zeker e-mail, voornaam en achternaam in.")
+
         try:
             if supabase.table("coaches").select("coach_id").eq("email", email).execute().data:
-                return render_template("login.html", error="Dit e-mailadres bestaat al. Log hier in.")
+                return render_template("login.html",
+                                       error="Dit e-mailadres bestaat al. Log hier in.")
             if supabase.table("players").select("player_id").eq("email", email).execute().data:
-                return render_template("login.html", error="Dit e-mailadres is al geregistreerd als speler.")
-        except: pass
-        
+                return render_template("login.html",
+                                       error="Dit e-mailadres is al geregistreerd als speler.")
+        except:
+            pass
+
         session["coach_data"] = {
-            "first_name": first_name, "last_name": last_name, "email": email, "phone": phone
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "phone": phone
         }
-        
         return redirect(url_for("register_coach_step2"))
-    
+
     return render_template("register_coach_step1.html")
 
 
 @app.route("/register/coach/step2", methods=["GET", "POST"])
 def register_coach_step2():
-    if "coach_data" not in session: 
+    if "coach_data" not in session:
         return redirect(url_for("register_coach_step1"))
-    
+
     if request.method == "POST":
         data = session["coach_data"]
         data["is_active"] = True
@@ -281,29 +447,27 @@ def register_coach_step2():
         try:
             supabase.table("coaches").insert(data).execute()
             session.pop("coach_data", None)
-            return render_template("login.html", error="Account aangemaakt! Je kunt nu inloggen.")
-        except Exception as e:
-            print(f"Reg error: {e}")
-            return render_template("register_coach_step2.html", error="Er ging iets mis bij het opslaan.")
+            return render_template("login.html",
+                                   error="Account aangemaakt! Je kunt nu inloggen.")
+        except Exception:
+            return render_template("register_coach_step2.html",
+                                   error="Er ging iets mis bij het opslaan.")
+
     return render_template("register_coach_step2.html")
 
 
+# ============================================================
+#  LES AANVRAGEN (PLAYER)
+# ============================================================
 
-
-
-
-
-# ---------- LES AANVRAGEN ----------
 @app.route("/player/book_lesson", methods=["GET", "POST"])
 def book_lesson():
-    # Alleen spelers mogen hier binnen
     if session.get("role") != "player":
         return redirect(url_for("home"))
 
     player_id = session.get("user_id")
 
-    # Coaches ophalen (voor dropdown)
-    coaches = []
+    # coaches ophalen
     try:
         resp_coaches = (
             supabase.table("coaches")
@@ -311,9 +475,7 @@ def book_lesson():
             .execute()
         )
         coaches = resp_coaches.data or []
-        print("DEBUG coaches:", coaches)
-    except Exception as e:
-        print("Fout bij ophalen coaches:", repr(e))
+    except Exception:
         coaches = []
 
     available_slots = None
@@ -321,7 +483,6 @@ def book_lesson():
     selected_date = None
     error = None
 
-    # Basis lijst van mogelijke tijdsloten (1 uur)
     ALL_SLOTS = [
         ("09:00", "10:00"),
         ("10:00", "11:00"),
@@ -337,11 +498,13 @@ def book_lesson():
     ]
 
     if request.method == "POST":
-        action = request.form.get("action")  # 'show_slots' of 'book'
-        selected_coach_id = request.form.get("coach_id") or None
-        selected_date = request.form.get("date") or None
+        action = request.form.get("action")
+        selected_coach_id = request.form.get("coach_id")
+        selected_date = request.form.get("date")
 
-        # ---- STAP 1: tijdsloten tonen ----
+        # -----------------------------
+        #  TIJDSLOTEN TONEN
+        # -----------------------------
         if action == "show_slots":
             if not selected_coach_id or not selected_date:
                 error = "Kies eerst een coach en een datum."
@@ -349,7 +512,6 @@ def book_lesson():
                 try:
                     coach_id_int = int(selected_coach_id)
 
-                    # Alle bestaande lessen voor deze coach + datum
                     resp_lessons = (
                         supabase.table("lessons")
                         .select("start_time, end_time")
@@ -358,16 +520,14 @@ def book_lesson():
                         .execute()
                     )
                     existing = resp_lessons.data or []
-                    print("DEBUG bestaande lessen:", existing)
 
                     taken = set()
                     for row in existing:
-                        s = (row.get("start_time") or "")[:5]  # '09:00'
-                        e = (row.get("end_time") or "")[:5]    # '10:00'
+                        s = (row.get("start_time") or "")[:5]
+                        e = (row.get("end_time") or "")[:5]
                         if s and e:
                             taken.add(f"{s}-{e}")
 
-                    # Vrije slots = alle slots die niet in taken zitten
                     available_slots = []
                     for s, e in ALL_SLOTS:
                         slot_id = f"{s}-{e}"
@@ -386,9 +546,11 @@ def book_lesson():
                     print("Fout bij ophalen tijdsloten:", repr(e))
                     error = "Er ging iets mis bij het ophalen van de tijdsloten."
 
-                # ---- STAP 2: geselecteerd slot boeken ----
+        # -----------------------------
+        #  LES BOEKEN
+        # -----------------------------
         elif action == "book":
-            slot_id = request.form.get("slot")  # bv. '09:00-10:00'
+            slot_id = request.form.get("slot")
 
             if not selected_coach_id or not selected_date or not slot_id:
                 error = "Kies een coach, datum én tijdslot."
@@ -396,24 +558,21 @@ def book_lesson():
                 try:
                     coach_id_int = int(selected_coach_id)
                     player_id_int = int(player_id)
-                    start_str, end_str = slot_id.split("-")  # "09:00", "10:00"
+                    start_str, end_str = slot_id.split("-")
 
-                    # 1) les zelf in lessons
                     booking_data = {
                         "coach_id": coach_id_int,
                         "date": selected_date,
-                        "start_time": start_str,  # Supabase maakt hier een time van
+                        "start_time": start_str,
                         "end_time": end_str,
                     }
 
-                    print("DEBUG nieuwe les:", booking_data)
-                    resp_insert = supabase.table("lessons").insert(booking_data).execute()
-                    print("DEBUG insert response:", resp_insert)
+                    resp_insert = (
+                        supabase.table("lessons")
+                        .insert(booking_data)
+                        .execute()
+                    )
 
-                    if getattr(resp_insert, "error", None):
-                        raise Exception(resp_insert.error)
-
-                    # 2) de net aangemaakte lesson_id ophalen
                     inserted_rows = resp_insert.data or []
                     if not inserted_rows:
                         raise Exception("Geen data terug van lessons-insert")
@@ -422,17 +581,8 @@ def book_lesson():
                     if not lesson_id:
                         raise Exception("lesson_id ontbreekt in insert-respons")
 
-                    # 3) koppeling speler ↔ les in lesson_players
-                    lp_data = {
-                        "lesson_id": lesson_id,
-                        "player_id": player_id_int,
-                    }
-                    print("DEBUG lesson_players insert:", lp_data)
+                    lp_data = {"lesson_id": lesson_id, "player_id": player_id_int}
                     resp_lp = supabase.table("lesson_players").insert(lp_data).execute()
-                    print("DEBUG lesson_players response:", resp_lp)
-
-                    if getattr(resp_lp, "error", None):
-                        raise Exception(resp_lp.error)
 
                     return redirect(url_for("player_dashboard"))
 
@@ -440,7 +590,6 @@ def book_lesson():
                     print("Fout bij boeken les:", repr(e))
                     error = "Er ging iets mis bij het boeken. Probeer later opnieuw."
 
-    # GET of POST met fouten → pagina tonen
     return render_template(
         "book_lesson.html",
         coaches=coaches,
@@ -450,20 +599,68 @@ def book_lesson():
         error=error,
     )
 
-# ---------- COACH ----------
-# ---------- COACH DASHBOARD ----------
+
+# ============================================================
+#  LES ANNULEREN (PLAYER)
+# ============================================================
+
+@app.route("/confirm_cancel_lesson/<int:lesson_id>")
+def confirm_cancel_lesson(lesson_id):
+    if session.get("role") != "player":
+        return redirect(url_for("login"))
+    return render_template("confirm_cancel_lesson.html", lesson_id=lesson_id)
+
+
+@app.route("/cancel_lesson/<int:lesson_id>")
+def cancel_lesson(lesson_id):
+    if session.get("role") != "player":
+        return redirect(url_for("login"))
+
+    player_id = session.get("user_id")
+
+    try:
+        check = (
+            supabase.table("lesson_players")
+            .select("*")
+            .eq("lesson_id", lesson_id)
+            .eq("player_id", player_id)
+            .maybe_single()
+            .execute()
+        )
+
+        if not check.data:
+            return render_template("error.html",
+                                   message="Je mag deze les niet annuleren.")
+
+        supabase.table("lessons").delete().eq("lesson_id", lesson_id).execute()
+        return redirect(url_for("cancel_success"))
+
+    except Exception as e:
+        print("Fout bij annuleren:", e)
+        return render_template("error.html",
+                               message="Er ging iets mis bij het annuleren.")
+
+
+@app.route("/cancel_success")
+def cancel_success():
+    return render_template("cancel_success.html")
+
+
+# ============================================================
+#  COACH DASHBOARD
+# ============================================================
+
 @app.route("/coach")
 def coach_dashboard():
-    # Alleen coaches mogen hier binnen
     if session.get("role") != "coach":
         return redirect(url_for("login"))
 
+    cleanup_past_lessons()
     coach_id = session.get("user_id")
 
     # -----------------------------
-    # 1. Spelers van deze coach
+    # Spelers ophalen
     # -----------------------------
-    spelers = []
     try:
         resp_players = (
             supabase.table("players")
@@ -472,18 +669,14 @@ def coach_dashboard():
             .execute()
         )
         spelers = resp_players.data or []
-        print("DEBUG coach spelers:", spelers)
-    except Exception as e:
-        print("Fout bij ophalen spelers:", e)
+    except Exception:
         spelers = []
 
     # -----------------------------
-    # 2. Lessen van deze coach
-    # lessons + lesson_players + players
+    # Aankomende lessen
     # -----------------------------
     lessen = []
     try:
-        # Alle lessen waar deze coach lesgeeft
         resp_lessons = (
             supabase.table("lessons")
             .select("lesson_id, date, start_time, end_time, coach_id")
@@ -492,11 +685,8 @@ def coach_dashboard():
             .execute()
         )
         lesson_rows = resp_lessons.data or []
-        print("DEBUG coach lessons:", lesson_rows)
+        lesson_ids = [l.get("lesson_id") for l in lesson_rows if l.get("lesson_id")]
 
-        lesson_ids = [l.get("lesson_id") for l in lesson_rows if l.get("lesson_id") is not None]
-
-        # Koppeltabel lesson_player: welke spelers zitten in welke les?
         lp_by_lesson = {}
         if lesson_ids:
             resp_lp = (
@@ -505,17 +695,12 @@ def coach_dashboard():
                 .in_("lesson_id", lesson_ids)
                 .execute()
             )
-            lp_rows = resp_lp.data or []
-            print("DEBUG coach lesson_player:", lp_rows)
-
-            for row in lp_rows:
+            for row in (resp_lp.data or []):
                 lid = row.get("lesson_id")
                 pid = row.get("player_id")
-                if lid is None or pid is None:
-                    continue
-                lp_by_lesson.setdefault(lid, []).append(pid)
+                if lid and pid:
+                    lp_by_lesson.setdefault(lid, []).append(pid)
 
-        # Alle player_ids die in één van die lessen zitten
         all_player_ids = sorted({pid for pids in lp_by_lesson.values() for pid in pids})
         name_by_player = {}
 
@@ -526,43 +711,231 @@ def coach_dashboard():
                 .in_("player_id", all_player_ids)
                 .execute()
             )
-            p_rows = resp_pnames.data or []
-            print("DEBUG coach players_for_lessons:", p_rows)
-
-            for r in p_rows:
+            for r in (resp_pnames.data or []):
                 pid = r.get("player_id")
-                if pid is None:
-                    continue
-                naam = f"{r.get('first_name', '')} {r.get('last_name', '')}".strip()
+                naam = f"{r.get('first_name','')} {r.get('last_name','')}".strip()
                 name_by_player[pid] = naam or f"Speler {pid}"
 
-        # Bouw nette lessen-lijst voor de template
         for les in lesson_rows:
-            lid = les.get("lesson_id")
+            lid = les["lesson_id"]
             pids = lp_by_lesson.get(lid, [])
             namen = [name_by_player.get(pid, f"Speler {pid}") for pid in pids]
 
             lessen.append({
-                "date": les.get("date"),
-                "start_time": (les.get("start_time") or "")[:5],  # '09:00:00' -> '09:00'
-                "end_time": (les.get("end_time") or "")[:5],
+                "date": les["date"],
+                "start_time": (les["start_time"] or "")[:5],
+                "end_time": (les["end_time"] or "")[:5],
                 "players": ", ".join(namen) if namen else "Geen spelers gekoppeld",
             })
 
-    except Exception as e:
-        print("Fout bij ophalen lessen coach:", e)
+    except Exception:
         lessen = []
 
     # -----------------------------
-    # 3. Render dashboard
+    # Afgelopen lessen
     # -----------------------------
+    afgelopen_lessen = []
+    try:
+        resp_completed = (
+            supabase.table("completed_lessons")
+            .select("id, lesson_id, player_id, date, start_time, end_time, coach_id, evaluation, coach_feedback, rating")
+            .eq("coach_id", coach_id)
+            .order("date", desc=False)
+            .execute()
+        )
+
+        comp_rows = resp_completed.data or []
+        by_lesson = {}
+        all_completed_ids = set()
+
+        # groepeer per les
+        for r in comp_rows:
+            lid = r["lesson_id"]
+            pid = r["player_id"]
+            all_completed_ids.add(pid)
+
+            if lid not in by_lesson:
+                by_lesson[lid] = {
+                    "lesson_id": lid,
+                    "date": r["date"],
+                    "start_time": (r["start_time"] or "")[:5],
+                    "end_time": (r["end_time"] or "")[:5],
+                    "player_ids": [],
+                    "has_feedback": bool(r["coach_feedback"]),
+                }
+
+            by_lesson[lid]["player_ids"].append(pid)
+
+            if r.get("coach_feedback"):
+                by_lesson[lid]["has_feedback"] = True
+
+        # speler-namen ophalen
+        name_completed = {}
+        if all_completed_ids:
+            resp_names = (
+                supabase.table("players")
+                .select("player_id, first_name, last_name")
+                .in_("player_id", list(all_completed_ids))
+                .execute()
+            )
+            for r in (resp_names.data or []):
+                pid = r["player_id"]
+                naam = f"{r['first_name']} {r['last_name']}".strip()
+                name_completed[pid] = naam
+
+        # evaluatiestatus toevoegen
+        for info in by_lesson.values():
+            has_eval = False
+            for r in comp_rows:
+                if r["lesson_id"] == info["lesson_id"] and r.get("evaluation"):
+                    has_eval = True
+                    break
+
+            pnames = [name_completed.get(pid, f"Speler {pid}") for pid in info["player_ids"]]
+
+            afgelopen_lessen.append({
+                "lesson_id": info["lesson_id"],
+                "date": info["date"],
+                "start_time": info["start_time"],
+                "end_time": info["end_time"],
+                "players": ", ".join(pnames),
+                "has_evaluation": has_eval
+            })
+
+    except Exception as e:
+        print("Fout bij ophalen afgelopen lessen coach:", e)
+        afgelopen_lessen = []
+
     return render_template(
         "coach_dashboard.html",
         spelers=spelers,
         lessen=lessen,
+        afgelopen_lessen=afgelopen_lessen,
     )
 
-# ---------- COACH: Speler toevoegen ----------
+
+# ============================================================
+#  COACH – LES EVALUEREN
+# ============================================================
+
+@app.route("/coach/evaluate_lesson/<int:lesson_id>/step/<int:step>", methods=["GET", "POST"])
+def evaluate_lesson(lesson_id, step):
+
+    if session.get("role") != "coach":
+        return redirect(url_for("login"))
+
+    coach_id = session.get("user_id")
+
+    resp = (
+        supabase.table("completed_lessons")
+        .select("*")
+        .eq("lesson_id", lesson_id)
+        .eq("coach_id", coach_id)
+        .execute()
+    )
+    rows = resp.data or []
+    if not rows:
+        return redirect(url_for("coach_dashboard"))
+
+    base = rows[0]
+    evaluation = base.get("evaluation") or {}
+
+    # -----------------------------
+    # POST
+    # -----------------------------
+    if request.method == "POST":
+
+        if step == 1:
+            evaluation["techniek"] = {
+                "forehand": request.form.get("forehand_score"),
+                "backhand": request.form.get("backhand_score"),
+                "volley": request.form.get("volley_score"),
+                "smash": request.form.get("smash_score"),
+                "opmerking": request.form.get("opmerking")
+            }
+
+        if step == 2:
+            evaluation["tactiek"] = {
+                "positiespel": request.form.get("positiespel_score"),
+                "keuze_slagen": request.form.get("keuze_slagen_score"),
+                "samenwerking": request.form.get("samenwerking_score"),
+                "speelstrategie": request.form.get("speelstrategie_score"),
+                "opmerking": request.form.get("opmerking")
+            }
+
+        if step == 3:
+            evaluation["fysiek"] = {
+                "conditie": request.form.get("conditie_score"),
+                "reactiesnelheid": request.form.get("reactiesnelheid_score"),
+                "explosiviteit": request.form.get("explosiviteit_score"),
+                "opmerking": request.form.get("opmerking")
+            }
+
+        if step == 4:
+            evaluation["mentaal"] = {
+                "focus": request.form.get("focus_score"),
+                "doorzettingsvermogen": request.form.get("doorzet_score"),
+                "opmerking": request.form.get("opmerking")
+            }
+
+        supabase.table("completed_lessons").update({
+            "evaluation": evaluation
+        }).eq("lesson_id", lesson_id).eq("coach_id", coach_id).execute()
+
+        if step < 5:
+            return redirect(url_for("evaluate_lesson", lesson_id=lesson_id, step=step + 1))
+        else:
+            return redirect(url_for("coach_dashboard"))
+
+    # GET
+    if step == 5:
+        return render_template(
+            "evaluate_steps/step5.html",
+            lesson=base,
+            evaluation=evaluation
+        )
+
+    return render_template(
+        f"evaluate_steps/step{step}.html",
+        lesson=base,
+        evaluation=evaluation
+    )
+
+
+# ============================================================
+#  EVALUATIE BEKIJKEN (COACH)
+# ============================================================
+
+@app.route("/coach/evaluation/<int:lesson_id>")
+def view_evaluation(lesson_id):
+
+    if session.get("role") != "coach":
+        return redirect(url_for("login"))
+
+    coach_id = session.get("user_id")
+
+    resp = (
+        supabase.table("completed_lessons")
+        .select("*")
+        .eq("lesson_id", lesson_id)
+        .eq("coach_id", coach_id)
+        .execute()
+    )
+    rows = resp.data or []
+    if not rows:
+        return redirect(url_for("coach_dashboard"))
+
+    lesson = rows[0]
+    evaluation = lesson.get("evaluation") or {}
+
+    return render_template("evaluate_steps/view_evaluation.html",
+                           lesson=lesson, evaluation=evaluation)
+
+
+# ============================================================
+#  COACH – SPELER TOEVOEGEN
+# ============================================================
+
 @app.route("/coach/add_player", methods=["GET", "POST"])
 def add_player():
     if session.get("role") != "coach":
@@ -570,11 +943,8 @@ def add_player():
 
     coach_id = session.get("user_id")
     error = None
-    spelers = []
 
-
-
-    # ---------- POST: speler koppelen ----------
+    # POST
     if request.method == "POST":
         player_id = request.form.get("player_id")
 
@@ -582,7 +952,6 @@ def add_player():
             error = "Geen speler geselecteerd."
         else:
             try:
-                # Check of speler al een coach heeft
                 resp_player = (
                     supabase.table("players")
                     .select("assigned_coach_id")
@@ -590,14 +959,12 @@ def add_player():
                     .maybe_single()
                     .execute()
                 )
-                assigned = None
-                if resp_player.data:
-                    assigned = resp_player.data.get("assigned_coach_id")
+
+                assigned = resp_player.data.get("assigned_coach_id") if resp_player.data else None
 
                 if assigned is not None:
                     error = "Deze speler is al gekoppeld aan een coach."
                 else:
-                    # Koppel speler aan deze coach
                     supabase.table("players").update(
                         {"assigned_coach_id": coach_id}
                     ).eq("player_id", player_id).execute()
@@ -605,20 +972,19 @@ def add_player():
                     return redirect(url_for("coach_dashboard"))
 
             except Exception as e:
-                print(f"Fout bij koppelen speler aan coach: {e}")
+                print("Fout bij koppelen speler:", e)
                 error = "Er ging iets mis bij het koppelen. Probeer later opnieuw."
 
-    # ---------- GET (en ook als er een fout was): lijst met spelers tonen ----------
+    # GET (en fallback)
     q = request.args.get("q", "").strip()
 
     try:
         query = (
             supabase.table("players")
             .select("player_id, first_name, last_name, email, phone")
-            .is_("assigned_coach_id", None)  # alleen spelers zonder coach
+            .is_("assigned_coach_id", None)
         )
 
-        # Heel simpel: filter op voornaam (kan later uitgebreid worden)
         if q:
             query = query.ilike("first_name", f"%{q}%")
 
@@ -626,25 +992,22 @@ def add_player():
         spelers = resp_spelers.data or []
 
     except Exception as e:
-        print(f"Fout bij ophalen/zoeken spelers: {e}")
+        print("Fout bij zoeken spelers:", e)
         spelers = []
         if not error:
             error = "Er ging iets mis bij het ophalen van spelers."
 
-    return render_template(
-        "add_player.html",
-        spelers=spelers,
-        q=q,
-        error=error,
-    )
+    return render_template("add_player.html", spelers=spelers, q=q, error=error)
 
-# ---------- COACH: Speler verwijderen ----------
+
+# ============================================================
+#  COACH – SPELER VERWIJDEREN
+# ============================================================
+
 @app.route("/coach/remove_player/<int:player_id>")
 def remove_player(player_id):
     if session.get("role") != "coach":
         return redirect(url_for("login"))
-
-    coach_id = session.get("user_id")
 
     try:
         supabase.table("players").update(
@@ -652,18 +1015,26 @@ def remove_player(player_id):
         ).eq("player_id", player_id).execute()
 
     except Exception as e:
-        print(f"Fout bij verwijderen speler: {e}")
+        print("Fout bij verwijderen speler:", e)
 
     return redirect(url_for("coach_dashboard"))
 
-# ---------- COACH: Les inplannen (keuzepagina) ---------- #werkt niet
+
+# ============================================================
+#  COACH – LES INPLANNEN (KEUZE)
+# ============================================================
+
 @app.route("/coach/schedule_lesson")
 def schedule_lesson():
     if session.get("role") != "coach":
         return redirect(url_for("login"))
     return render_template("schedule_lesson_choice.html")
 
-# ---------- COACH: Groepsles ----------            #werkt niet
+
+# ============================================================
+#  COACH – GROEPSLES INPLANNEN
+# ============================================================
+
 @app.route("/coach/schedule_group_lesson", methods=["GET", "POST"])
 def schedule_group_lesson():
     if session.get("role") != "coach":
@@ -671,8 +1042,6 @@ def schedule_group_lesson():
 
     coach_id = session.get("user_id")
 
-    # Spelers ophalen die gekoppeld zijn aan deze coach
-    spelers = []
     try:
         resp_spelers = (
             supabase.table("players")
@@ -681,20 +1050,19 @@ def schedule_group_lesson():
             .execute()
         )
         spelers = resp_spelers.data or []
-    except Exception as e:
-        print(f"Fout bij ophalen spelers voor groepsles: {e}")
+    except Exception:
         spelers = []
 
     if request.method == "POST":
         selected_players = request.form.getlist("player_ids")
 
-        # Minstens 2 en max 5 spelers
         if len(selected_players) < 2:
             return render_template(
                 "schedule_group_lesson.html",
                 spelers=spelers,
                 error="❌ Selecteer minstens 2 spelers (max. 5)."
             )
+
         if len(selected_players) > 5:
             return render_template(
                 "schedule_group_lesson.html",
@@ -705,8 +1073,8 @@ def schedule_group_lesson():
         date = request.form.get("date")
         start_time = request.form.get("start_time")
         end_time = request.form.get("end_time")
-        lesson_type = request.form.get("lesson_type")  # momenteel niet opgeslagen
-        notes = request.form.get("notes")              # momenteel niet opgeslagen
+        lesson_type = request.form.get("lesson_type")
+        notes = request.form.get("notes")
 
         if not date or not start_time or not end_time:
             return render_template(
@@ -716,39 +1084,35 @@ def schedule_group_lesson():
             )
 
         try:
-            # Per speler een booking aanmaken in Supabase
             bookings = []
-            for player_id in selected_players:
-                bookings.append(
-                    {
-                        "player_id": player_id,
-                        "coach_id": coach_id,
-                        "date": date,
-                        "start_time": start_time,
-                        "end_time": end_time,
-                        "status": "geboekt",
-                        # Als jullie later kolommen toevoegen zoals 'lesson_type' of 'notes',
-                        # kunnen die hier ook toegevoegd worden.
-                    }
-                )
+            for pid in selected_players:
+                bookings.append({
+                    "player_id": pid,
+                    "coach_id": coach_id,
+                    "date": date,
+                    "start_time": start_time,
+                    "end_time": end_time,
+                    "status": "geboekt",
+                })
 
-            # In één keer meerdere bookings inserten
             supabase.table("bookings").insert(bookings).execute()
-
             return redirect(url_for("coach_dashboard"))
 
         except Exception as e:
-            print(f"Fout bij inplannen groepsles: {e}")
+            print("Fout bij groepsles plannen:", e)
             return render_template(
                 "schedule_group_lesson.html",
                 spelers=spelers,
                 error="Er ging iets mis bij het inplannen. Probeer later opnieuw."
             )
 
-    # GET: toon formulier met spelerslijst
     return render_template("schedule_group_lesson.html", spelers=spelers)
 
-# ---------- COACH: Individuele les ----------   #werkt niet
+
+# ============================================================
+#  COACH – INDIVIDUELE LES INPLANNEN
+# ============================================================
+
 @app.route("/coach/schedule_individual_lesson", methods=["GET", "POST"])
 def schedule_individual_lesson():
     if session.get("role") != "coach":
@@ -756,8 +1120,6 @@ def schedule_individual_lesson():
 
     coach_id = session.get("user_id")
 
-    # Spelers ophalen die gekoppeld zijn aan deze coach
-    spelers = []
     try:
         resp_spelers = (
             supabase.table("players")
@@ -766,8 +1128,7 @@ def schedule_individual_lesson():
             .execute()
         )
         spelers = resp_spelers.data or []
-    except Exception as e:
-        print(f"Fout bij ophalen spelers voor individuele les: {e}")
+    except Exception:
         spelers = []
 
     if request.method == "POST":
@@ -775,8 +1136,8 @@ def schedule_individual_lesson():
         date = request.form.get("date")
         start_time = request.form.get("start_time")
         end_time = request.form.get("end_time")
-        lesson_type = request.form.get("lesson_type")  # nog niet gebruikt
-        notes = request.form.get("notes")              # nog niet gebruikt
+        lesson_type = request.form.get("lesson_type")
+        notes = request.form.get("notes")
 
         if not player_id or not date or not start_time or not end_time:
             return render_template(
@@ -793,26 +1154,26 @@ def schedule_individual_lesson():
                 "start_time": start_time,
                 "end_time": end_time,
                 "status": "geboekt",
-                # Als jullie later kolommen zoals 'lesson_type' of 'notes' toevoegen
-                # aan de bookings-tabel, kunnen die hier ook worden opgeslagen.
             }
 
             supabase.table("bookings").insert(booking_data).execute()
-
             return redirect(url_for("coach_dashboard"))
 
         except Exception as e:
-            print(f"Fout bij inplannen individuele les: {e}")
+            print("Fout bij individuele les:", e)
             return render_template(
                 "schedule_individual_lesson.html",
                 spelers=spelers,
                 error="Er ging iets mis bij het inplannen. Probeer later opnieuw."
             )
 
-    # GET: toon formulier met spelerslijst
     return render_template("schedule_individual_lesson.html", spelers=spelers)
 
-# ---------- COACH: Speler detail + sterktes/zwaktes bewerken ----------
+
+# ============================================================
+#  COACH – SPELER DETAILS / STERKTES / ZWAKTES
+# ============================================================
+
 @app.route("/coach/player/<int:player_id>", methods=["GET", "POST"])
 def coach_player_detail(player_id):
     if session.get("role") != "coach":
@@ -820,8 +1181,6 @@ def coach_player_detail(player_id):
 
     coach_id = session.get("user_id")
 
-    # Alleen spelers van deze coach mogen bekeken/bewerkt worden
-    # (optioneel, maar wel netjes)
     try:
         resp_check = (
             supabase.table("players")
@@ -832,12 +1191,10 @@ def coach_player_detail(player_id):
         )
         data_check = resp_check.data or {}
         if data_check.get("assigned_coach_id") not in (None, coach_id):
-            # speler bestaat niet of hoort niet bij deze coach
             return redirect(url_for("coach_dashboard"))
-    except Exception as e:
-        print("Fout bij check assigned_coach_id:", e)
+    except Exception:
+        pass
 
-    # --- POST: sterktes/zwaktes opslaan ---
     if request.method == "POST":
         strengths = request.form.get("strengths") or None
         weaknesses = request.form.get("weaknesses") or None
@@ -850,22 +1207,19 @@ def coach_player_detail(player_id):
         except Exception as e:
             print("Fout bij updaten sterktes/zwaktes:", e)
 
-    # --- Altijd: spelerinfo ophalen voor we de pagina tonen ---
-    speler = None
     try:
         resp_speler = (
             supabase.table("players")
             .select(
-                "player_id, first_name, last_name, email, phone, "
-                "gender, ranking, hand_preference, strengths, weaknesses"
+                "player_id, first_name, last_name, email, phone, gender, ranking,"
+                "hand_preference, strengths, weaknesses"
             )
             .eq("player_id", player_id)
             .single()
             .execute()
         )
         speler = resp_speler.data
-    except Exception as e:
-        print(f"Fout bij ophalen speler {player_id}:", e)
+    except Exception:
         speler = None
 
     if not speler:
@@ -874,50 +1228,19 @@ def coach_player_detail(player_id):
     return render_template("player_detail.html", speler=speler)
 
 
+# ============================================================
+#  LOGOUT
+# ============================================================
 
-
-# ---------- LOGOUT ----------
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
 
 
-# ---------- MAIN ----------
+# ============================================================
+#  MAIN
+# ============================================================
+
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-

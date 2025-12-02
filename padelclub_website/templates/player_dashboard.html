@@ -3,44 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <title>Speler Dashboard | Fit Out Padel Destelbergen</title>
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #0077cc, #00c6a7);
-            color: #333;
             margin: 0;
             padding: 40px;
-            min-height: 100vh;
-            box-sizing: border-box;
+            color: #333;
         }
 
         .container {
             background: white;
             padding: 30px;
             border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            max-width: 900px;
+            max-width: 1100px;
             margin: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
+
+        h1 { color: #0077cc; }
+        h2 { color: #00a884; margin-top: 35px; }
+
+        p { margin-bottom: 20px; }
 
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 16px;
         }
 
         .logout-btn {
-            background-color:#dc3545;
-            color:white;
-            padding:10px 15px;
-            border-radius:8px;
-            text-decoration:none;
-            font-weight:bold;
+            text-decoration: none;
+            color: white;
+            background-color: #dc3545;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
         }
 
-        h1 { color: #0077cc; }
-        h2 { color: #00a884; margin-top: 25px; }
+        .logout-btn:hover {
+            background-color: #b82e3a;
+        }
+
+        /* ---------- TABEL STIJL ---------- */
 
         table {
             width: 100%;
@@ -50,75 +56,117 @@
 
         th, td {
             border: 1px solid #ccc;
-            padding: 10px;
+            padding: 12px;
+            font-size: 14px;
             text-align: left;
         }
 
-        th { background: #0077cc; color: white; }
-        tr:nth-child(even) { background: #f8f8f8; }
-
-        a.button {
-            display: inline-block;
-            background-color: #00a884;
+        th {
+            background-color: #0077cc;
             color: white;
-            padding: 12px 24px;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f8f8f8;
+        }
+
+        /* Annuleerknop */
+        .cancel-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 14px;
             border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
-            transition: background-color 0.3s;
         }
 
-        a.button:hover { background-color: #008e6e; }
+        .cancel-btn:hover {
+            background-color: #bb2d3b;
+        }
+
+        /* Buttons */
+        .button {
+            margin-top: 15px;
+            display: inline-block;
+            background-color: #00a884;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .button:hover {
+            background-color: #008f73;
+        }
 
         footer {
             text-align: center;
             color: white;
             font-size: 13px;
-            margin-top: 20px;
+            margin-top: 40px;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="topbar">
-            <h1>🎾 Speler Dashboard</h1>
-            <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
-        </div>
 
-        <p>Welkom! Hier zie je jouw lessen en voortgang.</p>
+<div class="container">
 
-        <!-- Geplande lessen -->
-        <h2>Jouw geplande lessen</h2>
-        <table>
+    <div class="topbar">
+        <h1>🎾 Speler Dashboard</h1>
+        <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
+    </div>
+
+    <p>Welkom! Hier zie je jouw lessen en voortgang.</p>
+
+    <!-- 📘 GEPLANDE LESSEN -->
+    <h2>Jouw geplande lessen</h2>
+
+    <table>
+        <thead>
             <tr>
                 <th>Datum</th>
                 <th>Tijd</th>
                 <th>Coach</th>
+                <th>Actie</th>
             </tr>
+        </thead>
+        <tbody>
             {% if geplande and geplande|length > 0 %}
                 {% for les in geplande %}
                 <tr>
                     <td>{{ les.date }}</td>
                     <td>{{ les.start_time }} – {{ les.end_time }}</td>
                     <td>{{ les.coach_name }}</td>
+                    <td>
+                        <a href="{{ url_for('confirm_cancel_lesson', lesson_id=les.lesson_id) }}"
+                           class="cancel-btn">❌ Annuleren</a>
+                    </td>
                 </tr>
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="3">Nog geen lessen gepland.</td>
+                    <td colspan="4">Nog geen lessen gepland.</td>
                 </tr>
             {% endif %}
-        </table>
+        </tbody>
+    </table>
 
-                <!-- Voortgang -->
-        <h2>Voortgang</h2>
-        <table>
+
+    <!-- 📊 VOORTGANG -->
+    <h2>Voortgang</h2>
+
+    <table>
+        <thead>
             <tr>
                 <th>P-score</th>
                 <th>Handvoorkeur</th>
                 <th>Sterktes</th>
                 <th>Zwaktes</th>
             </tr>
+        </thead>
+        <tbody>
             {% if progress %}
                 <tr>
                     <td>{{ progress.p_score or "-" }}</td>
@@ -131,13 +179,49 @@
                     <td colspan="4">Nog geen voortgang geregistreerd.</td>
                 </tr>
             {% endif %}
-        </table>
+        </tbody>
+    </table>
 
-        <div style="text-align:center; margin-top:25px;">
-            <a href="{{ url_for('book_lesson') }}" class="button">📅 Les aanvragen</a>
-        </div>
+    <div style="text-align:center; margin-top:25px;">
+        <a href="{{ url_for('book_lesson') }}" class="button">📅 Les aanvragen</a>
     </div>
 
-    <footer>© 2025 Fit Out Padel Destelbergen</footer>
+
+    <!-- ⭐ RECENTE EVALUATIES (nu ook in container!) -->
+    <h2>Recente evaluaties</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Tijd</th>
+                <th>Coach</th>
+                <th>Evaluatie</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if evaluations and evaluations|length > 0 %}
+                {% for ev in evaluations %}
+                <tr>
+                    <td>{{ ev.date }}</td>
+                    <td>{{ ev.time }}</td>
+                    <td>{{ ev.coach_name }}</td>
+                    <td>{{ ev.feedback or "-" }}</td>
+                    <td>{{ ev.rating or "-" }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5">Nog geen evaluaties beschikbaar.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+</div>
+
+<footer>© 2025 Fit Out Padel Destelbergen</footer>
+
 </body>
 </html>

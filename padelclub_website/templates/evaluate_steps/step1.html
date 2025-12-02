@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Stap 1 – Techniek</title>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f2f8fc;
+            padding: 40px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 700px;
+            margin: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        h2 { 
+            color: #0077cc; 
+            margin-bottom:20px; 
+        }
+        label { 
+            font-weight: bold; 
+            margin-top: 15px; 
+            display: block; 
+        }
+        select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .button-row {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .next-btn {
+            background: #00a884;
+            color: white;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .next-btn:hover { 
+            background: #008f73; 
+        }
+
+        .cancel-btn {
+            color: #0077cc;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .cancel-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+    <h2>Stap 1: Techniek</h2>
+
+    {% set tech = evaluation.get('techniek', {}) %}
+
+    <form method="POST">
+
+        <!-- Forehand -->
+        <label>Forehand</label>
+        <select name="forehand_score">
+            <option value="">Kies een score</option>
+            {% for i in range(1,11) %}
+                <option value="{{ i }}"
+                    {% if tech.get('forehand')|int == i %}selected{% endif %}>
+                    {{ i }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Backhand -->
+        <label>Backhand</label>
+        <select name="backhand_score">
+            <option value="">Kies een score</option>
+            {% for i in range(1,11) %}
+                <option value="{{ i }}"
+                    {% if tech.get('backhand')|int == i %}selected{% endif %}>
+                    {{ i }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Volley -->
+        <label>Volley</label>
+        <select name="volley_score">
+            <option value="">Kies een score</option>
+            {% for i in range(1,11) %}
+                <option value="{{ i }}"
+                    {% if tech.get('volley')|int == i %}selected{% endif %}>
+                    {{ i }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Smash -->
+        <label>Smash</label>
+        <select name="smash_score">
+            <option value="">Kies een score</option>
+            {% for i in range(1,11) %}
+                <option value="{{ i }}"
+                    {% if tech.get('smash')|int == i %}selected{% endif %}>
+                    {{ i }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- Opmerking -->
+        <label>Opmerking techniek</label>
+        <textarea name="opmerking" rows="3">{{ tech.get('opmerking','') }}</textarea>
+
+        <div class="button-row">
+            <button type="submit" class="next-btn">Volgende → Tactiek</button>
+
+            <a href="{{ url_for('coach_dashboard') }}" class="cancel-btn">
+                Annuleren
+            </a>
+        </div>
+
+    </form>
+</div>
+
+</body>
+</html>

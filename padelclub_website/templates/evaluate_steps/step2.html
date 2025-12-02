@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Stap 2 – Tactiek</title>
+
+    <style>
+        body { 
+            font-family:'Poppins',sans-serif; 
+            background:#f2f8fc; 
+            padding:40px; 
+        }
+        .container {
+            background:white; 
+            padding:30px; 
+            border-radius:16px;
+            max-width:700px; 
+            margin:auto; 
+            box-shadow:0 8px 20px rgba(0,0,0,0.12);
+        }
+        h2 { 
+            color:#0077cc; 
+            margin-bottom:20px; 
+        }
+        label { 
+            display:block; 
+            margin-top:15px; 
+            font-weight:bold; 
+        }
+        select,textarea {
+            width:100%; 
+            padding:10px; 
+            margin-top:5px;
+            border-radius:8px; 
+            border:1px solid #ccc;
+        }
+
+        /* --- Knoppen styling (zelfde stijl als jouw site) --- */
+        .btn {
+            display:inline-block;
+            padding:12px 22px;
+            border-radius:10px;
+            font-size:15px;
+            font-weight:600;
+            text-decoration:none;
+            border:none;
+            cursor:pointer;
+        }
+
+        .next-btn {
+            background:#00a884;
+            color:white;
+        }
+        .next-btn:hover { background:#008f73; }
+
+        .prev-btn {
+            background:#0077cc;
+            color:white;
+        }
+        .prev-btn:hover { background:#005fa3; }
+
+        /* Knoppen op één regel, uit elkaar */
+        .button-row {
+            margin-top:25px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Stap 2: Tactiek</h2>
+
+    {% set tac = evaluation.get('tactiek', {}) %}
+
+    <form method="POST">
+
+        {% set items = {
+            "positiespel": "Positiespel",
+            "keuze_slagen": "Keuze van slagen",
+            "samenwerking": "Samenwerking",
+            "speelstrategie": "Speelstrategie"
+        } %}
+
+        {% for key, label in items.items() %}
+            <label>{{ label }}</label>
+            <select name="{{ key }}_score" required>
+                <option value="">Kies een score</option>
+                {% for i in range(1,11) %}
+                    <option value="{{ i }}"
+                        {% if tac.get(key)|int == i %}selected{% endif %}>
+                        {{ i }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% endfor %}
+
+        <label>Opmerking tactiek</label>
+        <textarea name="opmerking" rows="3">{{ tac.get('opmerking','') }}</textarea>
+
+        <!-- Knoppen op één regel -->
+        <div class="button-row">
+            <!-- Vorige -->
+            <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}" 
+               class="btn prev-btn">
+               ← Vorige
+            </a>
+
+            <!-- Volgende -->
+            <button type="submit" class="btn next-btn">
+                Volgende → Fysiek
+            </button>
+        </div>
+
+    </form>
+</div>
+
+</body>
+</html>

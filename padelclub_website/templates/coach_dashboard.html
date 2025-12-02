@@ -17,7 +17,7 @@
             background: white;
             padding: 30px;
             border-radius: 16px;
-            max-width: 1000px;
+            max-width: 1100px;
             margin: auto;
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
@@ -46,7 +46,6 @@
             background-color: #b82e3a;
         }
 
-        /* 🔎 Titel + zoekveld */
         .players-header {
             display: flex;
             justify-content: space-between;
@@ -61,8 +60,6 @@
             font-size: 14px;
             width: 260px;
         }
-
-        /* ---------- TABEL ---------- */
 
         table {
             width: 100%;
@@ -89,14 +86,12 @@
         }
 
         .table-scroll {
-            max-height: 260px; /* ~6 spelers */
+            max-height: 260px;
             overflow-y: auto;
             border-radius: 8px;
             border: 1px solid #ccc;
             margin-top: 15px;
         }
-
-        /* ---------- KNOPPEN ---------- */
 
         .button {
             margin-top: 15px;
@@ -129,9 +124,33 @@
             font-size: 13px;
             margin-top: 40px;
         }
+
+        /* Actieknoppen stijl */
+        .action-btn {
+            background: #00a884;
+            color: white !important;
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            text-decoration: none !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.25s ease;
+        }
+
+        .action-btn img {
+            width: 18px;
+            height: 18px;
+        }
+
+        .action-btn:hover {
+            background: #008f72;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
     </style>
 
-    <!-- 🔎 ZOEK SCRIPT -->
     <script>
         function filterPlayers() {
             const query = document.getElementById("playerSearch").value.toLowerCase();
@@ -156,16 +175,11 @@
 
     <p>Welkom coach! Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
 
-    <!-- 📋 MIJN SPELERS -->
+    <!-- 📋 Mijn spelers -->
     <div class="players-header">
         <h2>📋 Mijn spelers</h2>
-        <input
-            type="text"
-            id="playerSearch"
-            class="search-input"
-            placeholder="🔍 Zoek speler..."
-            onkeyup="filterPlayers()"
-        >
+        <input type="text" id="playerSearch" class="search-input"
+               placeholder="🔍 Zoek speler..." onkeyup="filterPlayers()">
     </div>
 
     <div class="table-scroll">
@@ -193,16 +207,12 @@
                         <td>
                             <a href="{{ url_for('remove_player', player_id=speler.player_id) }}"
                                onclick="return confirm('Weet je zeker dat je deze speler wil verwijderen?');"
-                               class="remove-link">
-                                ❌ Verwijderen
-                            </a>
+                               class="remove-link">❌ Verwijderen</a>
                         </td>
                     </tr>
                     {% endfor %}
                 {% else %}
-                    <tr>
-                        <td colspan="4">Nog geen spelers gekoppeld.</td>
-                    </tr>
+                    <tr><td colspan="4">Nog geen spelers gekoppeld.</td></tr>
                 {% endif %}
             </tbody>
         </table>
@@ -210,7 +220,7 @@
 
     <a href="{{ url_for('add_player') }}" class="button">+ Speler toevoegen</a>
 
-    <!-- 📘 LESSEN -->
+    <!-- 📘 Geplande lessen -->
     <h2>📘 Geplande lessen</h2>
 
     <table>
@@ -229,11 +239,55 @@
             </tr>
             {% endfor %}
         {% else %}
-            <tr>
-                <td colspan="3">Nog geen lessen ingepland.</td>
-            </tr>
+            <tr><td colspan="3">Nog geen lessen ingepland.</td></tr>
         {% endif %}
     </table>
+
+    <!-- 📘 Afgelopen lessen -->
+    <h2>📘 Afgelopen lessen</h2>
+
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Tijd</th>
+                    <th>Speler(s)</th>
+                    <th>Actie</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            {% if afgelopen_lessen and afgelopen_lessen|length > 0 %}
+                {% for les in afgelopen_lessen %}
+                <tr>
+                    <td>{{ les.date }}</td>
+                    <td>{{ les.start_time }} – {{ les.end_time }}</td>
+                    <td>{{ les.players }}</td>
+                    <td>
+                        {% if les.has_evaluation %}
+                            <a href="{{ url_for('view_evaluation', lesson_id=les.lesson_id) }}"
+                               class="action-btn">
+                                <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png">
+                                Evaluatie bekijken
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('evaluate_lesson', lesson_id=les.lesson_id, step=1) }}"
+                               class="action-btn">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828911.png">
+                                Les evalueren
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr><td colspan="4">Nog geen afgelopen lessen.</td></tr>
+            {% endif %}
+
+            </tbody>
+        </table>
+    </div>
 
 </div>
 

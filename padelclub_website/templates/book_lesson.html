@@ -57,6 +57,21 @@
         ul.timeslots li {
             margin:4px 0;
         }
+
+        .cancel-link {
+            color: #0077cc;
+            font-weight: bold;
+            margin-left: 15px;
+            text-decoration: none;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        .cancel-link:hover {
+            color: #005fa3;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -67,7 +82,6 @@
         <p class="error">{{ error }}</p>
     {% endif %}
 
-    <!-- STAP 1: Coach + datum kiezen + tijdsloten tonen -->
     <form method="POST">
         <label for="coach_id">Kies coach:</label>
         <select name="coach_id" id="coach_id" required>
@@ -84,18 +98,19 @@
         <input type="date" id="date" name="date"
                value="{{ selected_date or '' }}" required>
 
-        <!-- Actie = toon tijdsloten -->
         <button type="submit" name="action" value="show_slots" class="button secondary">
             Toon beschikbare tijdsloten
         </button>
+
+        <a href="{{ url_for('player_dashboard') }}" class="cancel-link">
+            Annuleren
+        </a>
     </form>
 
-    <!-- STAP 2: beschikbare tijdsloten tonen + boeken -->
     {% if available_slots %}
         <hr>
         <h2>Beschikbare tijdsloten</h2>
         <form method="POST">
-            <!-- coach + datum opnieuw meesturen -->
             <input type="hidden" name="coach_id" value="{{ selected_coach_id }}">
             <input type="hidden" name="date" value="{{ selected_date }}">
 
@@ -113,6 +128,10 @@
             <button type="submit" name="action" value="book" class="button">
                 Boek deze les
             </button>
+
+            <a href="{{ url_for('player_dashboard') }}" class="cancel-link">
+                Annuleren
+            </a>
         </form>
     {% endif %}
 </div>
