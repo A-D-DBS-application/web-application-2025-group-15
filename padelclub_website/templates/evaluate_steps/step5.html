@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Overzicht Evaluatie</title>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f2f8fc;
+            padding: 40px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 700px;
+            margin: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        h2 { color: #0077cc; }
+        h3 { color: #00a884; margin-top: 25px; }
+        .row { margin-bottom: 10px; }
+        .label { font-weight: bold; }
+
+        /* --- Knoppen --- */
+        .btn {
+            display:inline-block;
+            padding:12px 22px;
+            border-radius:10px;
+            font-size:15px;
+            font-weight:600;
+            text-decoration:none;
+            border:none;
+            cursor:pointer;
+        }
+        .save-btn {
+            background:#00a884;
+            color:white;
+        }
+        .save-btn:hover { background:#008f73; }
+
+        .edit-btn {
+            background:#0077cc;
+            color:white;
+        }
+        .edit-btn:hover { background:#005fa3; }
+
+        /* Knoppen uit elkaar */
+        .button-row {
+            margin-top:30px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h2>Stap 5 – Overzicht van de evaluatie</h2>
+    <p>Controleer hieronder de ingevulde gegevens en klik op <b>Opslaan</b>.</p>
+
+    {% if not evaluation %}
+        <p>⚠️ Geen evaluatiegegevens gevonden.</p>
+    {% else %}
+
+        {% set tech = evaluation.get('techniek', {}) %}
+        {% set tac = evaluation.get('tactiek', {}) %}
+        {% set fys = evaluation.get('fysiek', {}) %}
+        {% set men = evaluation.get('mentaal', {}) %}
+
+        <!-- TECHNIEK -->
+        <h3>Techniek</h3>
+        <div class="row"><span class="label">Forehand:</span> {{ tech.get('forehand', '-') }}</div>
+        <div class="row"><span class="label">Backhand:</span> {{ tech.get('backhand', '-') }}</div>
+        <div class="row"><span class="label">Volley:</span> {{ tech.get('volley', '-') }}</div>
+        <div class="row"><span class="label">Smash:</span> {{ tech.get('smash', '-') }}</div>
+        <div class="row"><span class="label">Opmerking:</span> {{ tech.get('opmerking', '-') }}</div>
+
+        <!-- TACTIEK -->
+        <h3>Tactiek</h3>
+        <div class="row"><span class="label">Positiespel:</span> {{ tac.get('positiespel', '-') }}</div>
+        <div class="row"><span class="label">Keuze slagen:</span> {{ tac.get('keuze_slagen', '-') }}</div>
+        <div class="row"><span class="label">Samenwerking:</span> {{ tac.get('samenwerking', '-') }}</div>
+        <div class="row"><span class="label">Speelstrategie:</span> {{ tac.get('speelstrategie', '-') }}</div>
+        <div class="row"><span class="label">Opmerking:</span> {{ tac.get('opmerking', '-') }}</div>
+
+        <!-- FYSIEK -->
+        <h3>Fysiek</h3>
+        <div class="row"><span class="label">Conditie:</span> {{ fys.get('conditie', '-') }}</div>
+        <div class="row"><span class="label">Reactiesnelheid:</span> {{ fys.get('reactiesnelheid', '-') }}</div>
+        <div class="row"><span class="label">Explosiviteit:</span> {{ fys.get('explosiviteit', '-') }}</div>
+        <div class="row"><span class="label">Opmerking:</span> {{ fys.get('opmerking', '-') }}</div>
+
+        <!-- MENTAAL -->
+        <h3>Mentaal</h3>
+        <div class="row"><span class="label">Focus:</span> {{ men.get('focus', '-') }}</div>
+        <div class="row"><span class="label">Doorzettingsvermogen:</span> {{ men.get('doorzettingsvermogen', '-') }}</div>
+        <div class="row"><span class="label">Opmerking:</span> {{ men.get('opmerking', '-') }}</div>
+
+    {% endif %}
+
+    <!-- BUTTON ROW -->
+    <div class="button-row">
+
+        <!-- Wijzigingen aanbrengen -->
+        <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}"
+           class="btn edit-btn">
+            ← Wijzigingen aanbrengen
+        </a>
+
+        <!-- Opslaan -->
+        <form method="POST">
+            <button type="submit" class="btn save-btn">Opslaan ✔</button>
+        </form>
+
+    </div>
+
+</div>
+</body>
+</html>
