@@ -3,76 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Les aanvragen | Fit Out Padel Destelbergen</title>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0077cc, #00c6a7);
-            margin: 0;
-            padding: 40px;
-            color: #333;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 700px;
-            margin: auto;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-        h1 { color: #0077cc; }
-        label { font-weight: bold; display:block; margin-top:10px; }
-        select, input {
-            width: 100%;
-            padding: 8px;
-            margin-top:5px;
-            border-radius:8px;
-            border:1px solid #ccc;
-        }
-        .button {
-            display:inline-block;
-            margin-top:20px;
-            background:#00a884;
-            color:white;
-            padding:10px 18px;
-            border-radius:8px;
-            text-decoration:none;
-            font-weight:bold;
-            border:none;
-            cursor:pointer;
-        }
-        .button.secondary {
-            background:#0077cc;
-        }
-        .button:hover { opacity:0.9; }
-        .error {
-            margin-top:10px;
-            color:red;
-            font-weight:bold;
-        }
-        ul.timeslots {
-            list-style:none;
-            padding-left:0;
-            margin-top:10px;
-        }
-        ul.timeslots li {
-            margin:4px 0;
-        }
-
-        .cancel-link {
-            color: #0077cc;
-            font-weight: bold;
-            margin-left: 15px;
-            text-decoration: none;
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-        }
-        .cancel-link:hover {
-            color: #005fa3;
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="container">

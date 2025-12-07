@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluatie bekijken</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="evaluation-page">
+
+<div class="evaluation-container">
+
+    <h2>Evaluatie van deze les</h2>
+
+    {% set tech = evaluation.get('techniek', {}) %}
+    {% set tac = evaluation.get('tactiek', {}) %}
+    {% set fys = evaluation.get('fysiek', {}) %}
+    {% set men = evaluation.get('mentaal', {}) %}
+
+    <!-- Techniek -->
+    <h3>Techniek</h3>
+    <div class="evaluation-row"><span class="evaluation-label">Forehand:</span> {{ tech.get('forehand', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Backhand:</span> {{ tech.get('backhand', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Volley:</span> {{ tech.get('volley', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Smash:</span> {{ tech.get('smash', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Opmerking:</span> {{ tech.get('opmerking', '-') }}</div>
+
+    <!-- Tactiek -->
+    <h3>Tactiek</h3>
+    <div class="evaluation-row"><span class="evaluation-label">Positiespel:</span> {{ tac.get('positiespel', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Keuze slagen:</span> {{ tac.get('keuze_slagen', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Samenwerking:</span> {{ tac.get('samenwerking', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Speelstrategie:</span> {{ tac.get('speelstrategie', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Opmerking:</span> {{ tac.get('opmerking', '-') }}</div>
+
+    <!-- Fysiek -->
+    <h3>Fysiek</h3>
+    <div class="evaluation-row"><span class="evaluation-label">Conditie:</span> {{ fys.get('conditie', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Reactiesnelheid:</span> {{ fys.get('reactiesnelheid', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Explosiviteit:</span> {{ fys.get('explosiviteit', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Opmerking:</span> {{ fys.get('opmerking', '-') }}</div>
+
+    <!-- Mentaal -->
+    <h3>Mentaal</h3>
+    <div class="evaluation-row"><span class="evaluation-label">Focus:</span> {{ men.get('focus', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Doorzettingsvermogen:</span> {{ men.get('doorzettingsvermogen', '-') }}</div>
+    <div class="evaluation-row"><span class="evaluation-label">Opmerking:</span> {{ men.get('opmerking', '-') }}</div>
+
+</div>
+
+<!-- Floating terugknop -->
+<a href="{{ url_for('coach_dashboard') }}" class="floating-dashboard-btn">
+    <img src="https://cdn-icons-png.flaticon.com/512/467/467272.png" alt="">
+    Terug naar dashboard
+</a>
+
+</body>
+</html>

@@ -3,112 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Inloggen | Fit Out Padel Destelbergen</title>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0077cc, #00c6a7);
-            color: #333;
-            margin: 0;
-            padding: 40px;
-        }
-
-        .container {
-            background: white;
-            padding: 35px;
-            border-radius: 16px;
-            max-width: 450px;
-            margin: auto;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.15);
-        }
-
-        h1 {
-            text-align: center;
-            color: #0077cc;
-            margin-bottom: 20px;
-        }
-
-        p {
-            text-align: center;
-            color: #555;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
-        }
-
-        input[type="email"] {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            margin-top: 6px;
-            font-size: 15px;
-        }
-
-        .login-btn {
-            width: 100%;
-            margin-top: 20px;
-            padding: 12px;
-            background-color: #00a884;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .login-btn:hover {
-            background-color: #008e6e;
-        }
-
-        .error {
-            margin-top: 15px;
-            padding: 10px;
-            background: #ffdddd;
-            border-left: 4px solid #d9534f;
-            border-radius: 6px;
-            color: #a94442;
-        }
-
-        .register-link {
-            display: block;
-            margin-top: 20px;
-            text-align: center;
-            text-decoration: none;
-            color: #0077cc;
-            font-weight: bold;
-        }
-
-        .register-link:hover {
-            text-decoration: underline;
-        }
-
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
 
-<div class="container">
-    <h1>🎾 Inloggen</h1>
-    <p>Log in met je e-mailadres (geen wachtwoord nodig).</p>
+<body class="login-page">
+
+<div class="login-container">
+
+    <h1 class="login-title">🎾 Inloggen</h1>
+    <p class="login-subtitle">Log in met je e-mailadres (geen wachtwoord nodig).</p>
 
     <form method="POST" action="/login">
 
-        <label for="email">E-mailadres</label>
-        <input type="email" id="email" name="email" required placeholder="jouw@email.com">
+        <label for="email" class="login-label">E-mailadres</label>
+        <input type="email" id="email" name="email" 
+               required placeholder="jouw@email.com"
+               class="login-input">
 
         <button type="submit" class="login-btn">Inloggen</button>
 
         {% if error %}
-        <div class="error">
+        <div class="login-error">
             {{ error }}
         </div>
         {% endif %}
     </form>
 
-    <a class="register-link" href="{{ url_for('register') }}">Nog geen account? Registreer hier</a>
+    <a class="login-register-link" href="{{ url_for('register') }}">
+        Nog geen account? Registreer hier
+    </a>
+
 </div>
 
 </body>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Beschikbaarheid Instellen</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Coach Beschikbaarheid Instellen</h1>
+        
+        {% if error %}
+            <div class="alert alert-error">
+                ❌ Fout: {{ error }}
+            </div>
+        {% endif %}
+        {% if message %}
+            <div class="alert alert-success">
+                ✅ Opgeslagen! {{ message }}
+            </div>
+        {% endif %}
+        
+        <div class="card">
+            <h3>Kies een Dag</h3>
+            <form method="GET" class="form-row">
+                <div class="input-group">
+                    <label for="date_selector">Datum:</label>
+                    <input 
+                        type="date" 
+                        id="date_selector" 
+                        name="date" 
+                        value="{{ date_str or '' }}" 
+                        required
+                    >
+                </div>
+                <button type="submit" class="button button-primary">Toon Slots</button>
+            </form>
+        </div>
+
+        {% if selected_date %}
+            
+            <div class="card slot-selection-card">
+                <h3>Beschikbare Uren op {{ selected_date.strftime('%A %d-%m-%Y') }}</h3>
+
+                <form method="POST">
+                    <input type="hidden" name="date" value="{{ date_str }}"> 
+
+                    <div class="slots-grid">
+                        {% for slot in all_slots %}
+                            {% set is_selected = slot.id in selected_slot_ids %}
+
+                            <label class="slot-container {% if is_selected %}selected{% endif %}">
+                                <input 
+                                    type="checkbox" 
+                                    name="slots"                 
+                                    value="{{ slot.id }}"
+                                    {% if is_selected %}checked{% endif %}
+                                >
+                                {{ slot.label }}
+                            </label>
+                        {% endfor %}
+                    </div>
+
+                    {% if all_slots %}
+                        <button type="submit" class="button button-success save-button">
+                            ✅ Beschikbaarheid Opslaan
+                        </button>
+                    {% else %}
+                        <p class="no-slots-message">Geen slots te tonen voor de gedefinieerde uren ({{ OPENING_HOUR }}:00 - {{ CLOSING_HOUR }}:00).</p>
+                    {% endif %}
+                </form>
+            </div>
+        {% endif %}
+
+        <p class="back-link"><a href="{{ url_for('coach_dashboard') }}">← Terug naar Dashboard</a></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+from extensions import db
+from sqlalchemy.dialects.postgresql import JSONB
+
+# ============================================
+#  ASSOCIATION TABLE (PLAYERS <-> LESSONS)
+# ============================================
+
+lesson_players = db.Table(
+    "lesson_players",
+    db.Column("lesson_id", db.Integer, db.ForeignKey("lessons.lesson_id"), primary_key=True),
+    db.Column("player_id", db.BigInteger, db.ForeignKey("players.player_id"), primary_key=True),
+    db.Column("attendance", db.Boolean),
+    db.Column("feedback", db.Text)
+)
+
+# ============================================
+#  CLUB MODEL
+# ============================================
+
+class Club(db.Model):
+    __tablename__ = "clubs"
+
+    club_id = db.Column(db.Integer, primary_key=True)
+    club_name = db.Column(db.String, nullable=False)
+    location = db.Column(db.String)
+    contact_info = db.Column(JSONB)
+    sports_supported = db.Column(JSONB)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    # Relationships
+    lessons = db.relationship("Lesson", backref="club", lazy=True)
+
+
+# ============================================
+#  COACH MODEL
+# ============================================
+
+class Coach(db.Model):
+    __tablename__ = "coaches"
+
+    coach_id = db.Column(db.BigInteger, primary_key=True)
+    first_name = db.Column(db.Text, nullable=False)
+    last_name = db.Column(db.Text, nullable=False)
+    email = db.Column(db.Text, nullable=False)
+    phone = db.Column(db.Text)
+    bio = db.Column(db.Text)
+    gender = db.Column(db.String)
+    ranking = db.Column(db.String)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    
+
+
+    # Relationships
+    lessons = db.relationship("Lesson", backref="coach", lazy=True)
+    players = db.relationship("Player", back_populates="assigned_coach", lazy=True)
+    availability_slots = db.relationship(
+        "CoachAvailability",
+        backref="coach",
+        cascade="all, delete-orphan",
+        lazy=True
+    )
+
+
+# ============================================
+#  PLAYER MODEL
+# ============================================
+
+class Player(db.Model):
+    __tablename__ = "players"
+
+    player_id = db.Column(db.BigInteger, primary_key=True)
+    first_name = db.Column(db.Text, nullable=False)
+    last_name = db.Column(db.Text, nullable=False)
+    email = db.Column(db.Text, nullable=False)
+    phone = db.Column(db.Text)
+    hand_preference = db.Column(db.Text)
+    ranking = db.Column(db.String)
+    gender = db.Column(db.String)
+    strengths = db.Column(db.Text)
+    weaknesses = db.Column(db.Text)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+ 
+
+
+    # Foreign key
+    assigned_coach_id = db.Column(db.BigInteger, db.ForeignKey("coaches.coach_id"))
+
+    # Relationships
+    assigned_coach = db.relationship("Coach", back_populates="players")
+
+    lessons = db.relationship(
+        "Lesson",
+        secondary=lesson_players,
+        backref=db.backref("players", lazy=True)
+    )
+
+
+# ============================================
+#  LESSON MODEL
+# ============================================
+
+class Lesson(db.Model):
+    __tablename__ = "lessons"
+
+    lesson_id = db.Column(db.Integer, primary_key=True)
+    lesson_type = db.Column(db.String)
+    date = db.Column(db.Date)
+    start_time = db.Column(db.Time)
+    end_time = db.Column(db.Time)
+    notes = db.Column(db.Text)
+    progress_update = db.Column(db.Text)
+    rating = db.Column(db.Integer)
+    swot = db.Column(JSONB)
+
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    # Foreign keys
+    coach_id = db.Column(db.Integer, db.ForeignKey("coaches.coach_id"))
+    club_id = db.Column(db.Integer, db.ForeignKey("clubs.club_id"))
+
+
+# ============================================
+#  COACH AVAILABILITY MODEL
+# ============================================
+
+class CoachAvailability(db.Model):
+    __tablename__ = "coach_availability"
+
+    id = db.Column(db.Integer, primary_key=True)
+    coach_id = db.Column(db.BigInteger, db.ForeignKey("coaches.coach_id"), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+
+
+# ============================================
+#  COMPLETED LESSON MODEL
+# ============================================
+
+class CompletedLesson(db.Model):
+    __tablename__ = "completed_lessons"
+
+    id = db.Column(db.BigInteger, primary_key=True)
+    lesson_id = db.Column(db.BigInteger)
+    player_id = db.Column(db.BigInteger, nullable=False)
+    coach_id = db.Column(db.BigInteger)
+    date = db.Column(db.Date)
+    start_time = db.Column(db.Time)
+    end_time = db.Column(db.Time)
+    rating = db.Column(db.Numeric)
+    coach_feedback = db.Column(db.Text)
+    evaluation = db.Column(JSONB)
+    created_at = db.Column(db.DateTime(timezone=True))
+
+
+# ============================================
+#  RECOMMENDATION MODEL
+# ============================================
+
+class Recommendation(db.Model):
+    __tablename__ = "recommendations"
+
+    recommendation_id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer)
+    coach_id = db.Column(db.Integer)
+    recommended_lesson_type = db.Column(db.String)
+    confidence_score = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())

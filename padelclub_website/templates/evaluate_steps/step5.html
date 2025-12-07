@@ -3,121 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <title>Overzicht Evaluatie</title>
-
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f2f8fc;
-            padding: 40px;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 700px;
-            margin: auto;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        }
-        h2 { color: #0077cc; }
-        h3 { color: #00a884; margin-top: 25px; }
-        .row { margin-bottom: 10px; }
-        .label { font-weight: bold; }
-
-        /* --- Knoppen --- */
-        .btn {
-            display:inline-block;
-            padding:12px 22px;
-            border-radius:10px;
-            font-size:15px;
-            font-weight:600;
-            text-decoration:none;
-            border:none;
-            cursor:pointer;
-        }
-        .save-btn {
-            background:#00a884;
-            color:white;
-        }
-        .save-btn:hover { background:#008f73; }
-
-        .edit-btn {
-            background:#0077cc;
-            color:white;
-        }
-        .edit-btn:hover { background:#005fa3; }
-
-        /* Knoppen uit elkaar */
-        .button-row {
-            margin-top:30px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body>
+<body class="eval-page">
+
 <div class="container">
 
-    <h2>Stap 5 – Overzicht van de evaluatie</h2>
-    <p>Controleer hieronder de ingevulde gegevens en klik op <b>Opslaan</b>.</p>
+    <h2>Stap 5 – Overzicht & Ranking</h2>
+    <hr>
 
-    {% if not evaluation %}
-        <p>⚠️ Geen evaluatiegegevens gevonden.</p>
-    {% else %}
-
+    {% if evaluation %}
         {% set tech = evaluation.get('techniek', {}) %}
         {% set tac = evaluation.get('tactiek', {}) %}
         {% set fys = evaluation.get('fysiek', {}) %}
         {% set men = evaluation.get('mentaal', {}) %}
 
         <!-- TECHNIEK -->
-        <h3>Techniek</h3>
-        <div class="row"><span class="label">Forehand:</span> {{ tech.get('forehand', '-') }}</div>
-        <div class="row"><span class="label">Backhand:</span> {{ tech.get('backhand', '-') }}</div>
-        <div class="row"><span class="label">Volley:</span> {{ tech.get('volley', '-') }}</div>
-        <div class="row"><span class="label">Smash:</span> {{ tech.get('smash', '-') }}</div>
-        <div class="row"><span class="label">Opmerking:</span> {{ tech.get('opmerking', '-') }}</div>
+        <div class="eval-section">
+            <h3 class="eval-title">Techniek</h3>
+            <p><strong>Forehand:</strong> {{ tech.forehand }}</p>
+            <p><strong>Backhand:</strong> {{ tech.backhand }}</p>
+            <p><strong>Volley:</strong> {{ tech.volley }}</p>
+            <p><strong>Smash:</strong> {{ tech.smash }}</p>
+            <p><strong>Opmerking:</strong> {{ tech.opmerking or 'Geen' }}</p>
+        </div>
 
         <!-- TACTIEK -->
-        <h3>Tactiek</h3>
-        <div class="row"><span class="label">Positiespel:</span> {{ tac.get('positiespel', '-') }}</div>
-        <div class="row"><span class="label">Keuze slagen:</span> {{ tac.get('keuze_slagen', '-') }}</div>
-        <div class="row"><span class="label">Samenwerking:</span> {{ tac.get('samenwerking', '-') }}</div>
-        <div class="row"><span class="label">Speelstrategie:</span> {{ tac.get('speelstrategie', '-') }}</div>
-        <div class="row"><span class="label">Opmerking:</span> {{ tac.get('opmerking', '-') }}</div>
+        <div class="eval-section">
+            <h3 class="eval-title">Tactiek</h3>
+            <p><strong>Positiespel:</strong> {{ tac.positiespel }}</p>
+            <p><strong>Keuze slagen:</strong> {{ tac.keuze_slagen }}</p>
+            <p><strong>Samenwerking:</strong> {{ tac.samenwerking }}</p>
+            <p><strong>Speelstrategie:</strong> {{ tac.speelstrategie }}</p>
+            <p><strong>Opmerking:</strong> {{ tac.opmerking or 'Geen' }}</p>
+        </div>
 
         <!-- FYSIEK -->
-        <h3>Fysiek</h3>
-        <div class="row"><span class="label">Conditie:</span> {{ fys.get('conditie', '-') }}</div>
-        <div class="row"><span class="label">Reactiesnelheid:</span> {{ fys.get('reactiesnelheid', '-') }}</div>
-        <div class="row"><span class="label">Explosiviteit:</span> {{ fys.get('explosiviteit', '-') }}</div>
-        <div class="row"><span class="label">Opmerking:</span> {{ fys.get('opmerking', '-') }}</div>
+        <div class="eval-section">
+            <h3 class="eval-title">Fysiek</h3>
+            <p><strong>Conditie:</strong> {{ fys.conditie }}</p>
+            <p><strong>Reactiesnelheid:</strong> {{ fys.reactiesnelheid }}</p>
+            <p><strong>Explosiviteit:</strong> {{ fys.explosiviteit }}</p>
+            <p><strong>Opmerking:</strong> {{ fys.opmerking or 'Geen' }}</p>
+        </div>
 
         <!-- MENTAAL -->
-        <h3>Mentaal</h3>
-        <div class="row"><span class="label">Focus:</span> {{ men.get('focus', '-') }}</div>
-        <div class="row"><span class="label">Doorzettingsvermogen:</span> {{ men.get('doorzettingsvermogen', '-') }}</div>
-        <div class="row"><span class="label">Opmerking:</span> {{ men.get('opmerking', '-') }}</div>
+        <div class="eval-section">
+            <h3 class="eval-title">Mentaal</h3>
+            <p><strong>Focus:</strong> {{ men.focus }}</p>
+            <p><strong>Doorzettingsvermogen:</strong> {{ men.doorzettingsvermogen }}</p>
+            <p><strong>Opmerking:</strong> {{ men.opmerking or 'Geen' }}</p>
+        </div>
 
     {% endif %}
 
-    <!-- BUTTON ROW -->
-    <div class="button-row">
+    <!-- RANKING UPDATE -->
+    <form method="POST">
+        <div class="ranking-card">
+            <div class="ranking-header">
+                <span class="trophy">🏆</span>
+                <h3>Ranking Update</h3>
+            </div>
 
-        <!-- Wijzigingen aanbrengen -->
-        <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}"
-           class="btn edit-btn">
-            ← Wijzigingen aanbrengen
-        </a>
+            <p class="current-rank">Huidige ranking: <strong>{{ player.ranking }}</strong></p>
 
-        <!-- Opslaan -->
-        <form method="POST">
-            <button type="submit" class="btn save-btn">Opslaan ✔</button>
-        </form>
+            <label for="new_ranking">Nieuwe Ranking:</label>
+            <select name="new_ranking" id="new_ranking" class="ranking-select" required>
+                <option value="{{ player.ranking }}">Behoud huidige ({{ player.ranking }})</option>
+                <option value="Geen">Geen ranking</option>
+                <option value="P50">P50</option>
+                <option value="P100">P100</option>
+                <option value="P200">P200</option>
+                <option value="P300">P300</option>
+                <option value="P400">P400</option>
+                <option value="P500">P500</option>
+                <option value="P700">P700</option>
+                <option value="P1000">P1000</option>
+            </select>
+        </div>
 
-    </div>
+        <div class="button-row">
+            <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=4) }}" class="button back-btn">
+                ← Terug
+            </a>
+
+            <button type="submit" class="button">
+                Evaluatie Afronden ✔
+            </button>
+        </div>
+    </form>
 
 </div>
+
 </body>
 </html>

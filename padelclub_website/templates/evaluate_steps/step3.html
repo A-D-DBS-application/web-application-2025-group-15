@@ -3,74 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Stap 3 – Fysiek</title>
-
-    <style>
-        body { 
-            font-family:'Poppins', sans-serif; 
-            background:#f2f8fc; 
-            padding:40px; 
-        }
-        .container {
-            background:white; 
-            padding:30px; 
-            border-radius:16px;
-            max-width:700px; 
-            margin:auto; 
-            box-shadow:0 8px 20px rgba(0,0,0,0.12);
-        }
-        h2 { 
-            color:#0077cc; 
-            margin-bottom:20px; 
-        }
-        label { 
-            display:block; 
-            margin-top:15px; 
-            font-weight:bold; 
-        }
-        select,textarea {
-            width:100%; 
-            padding:10px; 
-            margin-top:5px;
-            border-radius:8px; 
-            border:1px solid #ccc;
-        }
-
-        /* --- Knoppen styling --- */
-        .btn {
-            display:inline-block;
-            padding:12px 22px;
-            border-radius:10px;
-            font-size:15px;
-            font-weight:600;
-            text-decoration:none;
-            border:none;
-            cursor:pointer;
-        }
-
-        .next-btn {
-            background:#00a884;
-            color:white;
-        }
-        .next-btn:hover { background:#008f73; }
-
-        .prev-btn {
-            background:#0077cc;
-            color:white;
-        }
-        .prev-btn:hover { background:#005fa3; }
-
-        /* Knoppen op één regel */
-        .button-row {
-            margin-top:25px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
 
-<div class="container">
+<body class="eval-page">
+
+<div class="eval-container">
     <h2>Stap 3: Fysiek</h2>
 
     {% set fys = evaluation.get('fysiek', {}) %}
@@ -78,14 +16,14 @@
     <form method="POST">
 
         {% set items = {
-            "conditie":"Conditie",
-            "reactiesnelheid":"Reactiesnelheid",
-            "explosiviteit":"Explosiviteit"
+            "conditie": "Conditie",
+            "reactiesnelheid": "Reactiesnelheid",
+            "explosiviteit": "Explosiviteit"
         } %}
 
-        {% for key,label in items.items() %}
-            <label>{{label}}</label>
-            <select name="{{key}}_score" required>
+        {% for key, label in items.items() %}
+            <label>{{ label }}</label>
+            <select name="{{ key }}_score" required>
                 <option value="">Kies een score</option>
                 {% for i in range(1,11) %}
                     <option value="{{ i }}"
@@ -99,17 +37,16 @@
         <label>Opmerking fysiek</label>
         <textarea name="opmerking" rows="3">{{ fys.get('opmerking','') }}</textarea>
 
-        <!-- Vorige / Volgende knoppen -->
-        <div class="button-row">
+        <div class="eval-button-row">
 
-            <!-- Vorige knop (terug naar stap 2) -->
+            <!-- Vorige -->
             <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=2) }}"
-               class="btn prev-btn">
+               class="eval-btn eval-prev-btn">
                ← Vorige
             </a>
 
-            <!-- Volgende knop -->
-            <button type="submit" class="btn next-btn">
+            <!-- Volgende -->
+            <button type="submit" class="eval-btn eval-next-btn">
                 Volgende → Mentaal
             </button>
 

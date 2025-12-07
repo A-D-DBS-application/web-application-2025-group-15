@@ -2,99 +2,25 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Registreren Stap 2/2</title>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0077cc, #00c6a7);
-            color: #333;
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            width: 400px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            animation: fadeIn 0.6s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        h1 { text-align: center; color: #0077cc; margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
-
-        label { font-weight: bold; display: block; margin-top: 10px; }
-        
-        /* Hier zorgen we dat SELECT en INPUT er hetzelfde uitzien */
-        input, select { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 6px; 
-            border: 1px solid #ccc; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            background-color: white;
-            font-family: inherit;
-            font-size: 14px;
-            /* Zorgt dat pijl-icoontje bij select netjes staat */
-            appearance: none; 
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%230077cc%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px top 50%;
-            background-size: 12px auto;
-        }
-
-        button { 
-            width: 100%; 
-            padding: 12px; 
-            background-color: #0077cc; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            margin-top: 20px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 15px; 
-            transition: background 0.3s;
-        }
-        button:hover { background-color: #005fa3; }
-        
-        .back-link { text-align: center; margin-top: 15px; font-size: 14px; }
-        .back-link a { color: #666; text-decoration: none; }
-        .back-link a:hover { text-decoration: underline; }
-
-        .error { 
-            background-color: #ffe6e6; 
-            color: #d93025; 
-            padding: 10px; 
-            border-radius: 6px; 
-            text-align: center; 
-            margin-bottom: 15px; 
-            font-size: 14px;
-        }
-    </style>
+    <title>Speler Registratie Stap 2/2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Stap 2: Padel Profiel</h1>
-        <p class="subtitle">Nog even wat details...</p>
+    <div class="container form-container">
         
-        {% if error %} <div class="error">{{ error }}</div> {% endif %}
+        <h1>Stap 2: Speler Profiel</h1>
+        <p class="subtitle">Nog even wat details...</p>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
 
         <form method="POST" action="{{ url_for('register_player_step2') }}">
-            
-            <label for="ranking">P-Ranking:</label>
+
+            <label for="ranking">Je P-Ranking:</label>
             <select name="ranking" id="ranking" required>
                 <option value="" disabled selected>Kies je ranking...</option>
-                <option value="Geen">Geen ranking</option>
+                <option value="Geen">Geen ranking (Beginner)</option>
                 <option value="P50">P50</option>
                 <option value="P100">P100</option>
                 <option value="P200">P200</option>
@@ -107,14 +33,13 @@
 
             <label for="hand_preference">Speelhand:</label>
             <select name="hand_preference" id="hand_preference" required>
-                <option value="" disabled selected>Kies je speelhand...</option>
-                <option value="Rechts">Rechts</option>
-                <option value="Links">Links</option>
-                <option value="Beide">Beide</option>
+                <option value="" disabled selected>Maak een keuze</option>
+                <option value="rechts">Rechts</option>
+                <option value="links">Links</option>
+                <option value="beide">Beide</option>
             </select>
 
             <label for="gender">Geslacht:</label>
-            <!-- VALUES MATCHEN NU MET JE DATABASE ENUM ('man', 'vrouw', 'anders') -->
             <select name="gender" id="gender" required>
                 <option value="" disabled selected>Kies je geslacht...</option>
                 <option value="man">Man</option>
@@ -122,12 +47,15 @@
                 <option value="anders">Anders</option>
             </select>
 
-            <button type="submit">Registratie Afronden ✅</button>
+            <button type="submit" class="form-btn">
+                Speler Registratie Afronden ✅
+            </button>
         </form>
 
         <div class="back-link">
             <a href="{{ url_for('register_player_step1') }}">← Terug naar stap 1</a>
         </div>
+
     </div>
 </body>
 </html>

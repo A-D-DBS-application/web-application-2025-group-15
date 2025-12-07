@@ -3,74 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Stap 4 – Mentaal</title>
-
-    <style>
-        body { 
-            font-family:'Poppins', sans-serif; 
-            background:#f2f8fc; 
-            padding:40px; 
-        }
-        .container {
-            background:white; 
-            padding:30px; 
-            border-radius:16px; 
-            max-width:700px; 
-            margin:auto;
-            box-shadow:0 8px 20px rgba(0,0,0,0.12);
-        }
-        h2 { 
-            color:#0077cc; 
-            margin-bottom:20px;
-        }
-        label { 
-            display:block; 
-            font-weight:bold; 
-            margin-top:20px; 
-        }
-        select, textarea {
-            width:100%; 
-            padding:10px; 
-            border-radius:8px; 
-            border:1px solid #ccc; 
-            margin-top:5px;
-        }
-
-        /* --- Knoppen styling --- */
-        .btn {
-            display:inline-block;
-            padding:12px 22px;
-            border-radius:10px;
-            font-size:15px;
-            font-weight:600;
-            text-decoration:none;
-            border:none;
-            cursor:pointer;
-        }
-
-        .next-btn {
-            background:#00a884;
-            color:white;
-        }
-        .next-btn:hover { background:#008f73; }
-
-        .prev-btn {
-            background:#0077cc;
-            color:white;
-        }
-        .prev-btn:hover { background:#005fa3; }
-
-        /* Buttons in één rij */
-        .button-row {
-            margin-top:25px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body>
-<div class="container">
+<body class="eval-page">
+
+<div class="eval-container">
 
     <h2>Stap 4: Mentaal</h2>
 
@@ -103,17 +41,16 @@
         <label>Opmerking mentaal</label>
         <textarea name="opmerking" rows="3">{{ men.get('opmerking','') }}</textarea>
 
-        <!-- Vorige + Overzicht knoppen -->
-        <div class="button-row">
+        <div class="eval-button-row">
 
             <!-- Vorige (naar stap 3) -->
             <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=3) }}"
-               class="btn prev-btn">
+               class="eval-btn eval-prev-btn">
                ← Vorige
             </a>
 
-            <!-- Volgende (naar stap 5 overzicht) -->
-            <button type="submit" class="btn next-btn">
+            <!-- Volgende (overzicht) -->
+            <button type="submit" class="eval-btn eval-next-btn">
                 Ga naar overzicht → Stap 5
             </button>
 
@@ -122,5 +59,6 @@
     </form>
 
 </div>
+
 </body>
 </html>

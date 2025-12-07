@@ -3,103 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Speler koppelen | Fit Out Padel Destelbergen</title>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0077cc, #00c6a7);
-            margin: 0;
-            padding: 40px;
-            color: #333;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 900px;
-            margin: auto;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-        h1 {
-            color: #0077cc;
-            margin-bottom: 10px;
-        }
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-        }
-        .back-btn {
-            background-color: #0077cc;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .back-btn:hover {
-            background-color: #005fa3;
-        }
-        .error {
-            color: #dc3545;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        form.search-form {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-        form.search-form input[type="text"] {
-            flex: 1;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-        form.search-form button {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: none;
-            background-color: #00a884;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        form.search-form button:hover {
-            background-color: #008e6e;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 5px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #0077cc;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f8f8f8;
-        }
-        .link-btn {
-            background-color: #00a884;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .link-btn:hover {
-            background-color: #008e6e;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="container">
@@ -140,10 +44,10 @@
                 <td>{{ speler.phone or '' }}</td>
                 <td>
                     <!-- POST-formulier om deze speler te koppelen -->
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="player_id" value="{{ speler.player_id }}">
-                        <button type="submit" class="link-btn">Koppelen</button>
+                    <form method="POST" action="{{ url_for('assign_coach', player_id=speler.player_id) }}" style="display:inline;">
+                    <button type="submit" class="link-btn">Koppelen</button>
                     </form>
+
                 </td>
             </tr>
             {% endfor %}

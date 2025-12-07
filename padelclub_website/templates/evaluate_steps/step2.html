@@ -3,74 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Stap 2 – Tactiek</title>
-
-    <style>
-        body { 
-            font-family:'Poppins',sans-serif; 
-            background:#f2f8fc; 
-            padding:40px; 
-        }
-        .container {
-            background:white; 
-            padding:30px; 
-            border-radius:16px;
-            max-width:700px; 
-            margin:auto; 
-            box-shadow:0 8px 20px rgba(0,0,0,0.12);
-        }
-        h2 { 
-            color:#0077cc; 
-            margin-bottom:20px; 
-        }
-        label { 
-            display:block; 
-            margin-top:15px; 
-            font-weight:bold; 
-        }
-        select,textarea {
-            width:100%; 
-            padding:10px; 
-            margin-top:5px;
-            border-radius:8px; 
-            border:1px solid #ccc;
-        }
-
-        /* --- Knoppen styling (zelfde stijl als jouw site) --- */
-        .btn {
-            display:inline-block;
-            padding:12px 22px;
-            border-radius:10px;
-            font-size:15px;
-            font-weight:600;
-            text-decoration:none;
-            border:none;
-            cursor:pointer;
-        }
-
-        .next-btn {
-            background:#00a884;
-            color:white;
-        }
-        .next-btn:hover { background:#008f73; }
-
-        .prev-btn {
-            background:#0077cc;
-            color:white;
-        }
-        .prev-btn:hover { background:#005fa3; }
-
-        /* Knoppen op één regel, uit elkaar */
-        .button-row {
-            margin-top:25px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
 
-<div class="container">
+<body class="eval-page">
+
+<div class="eval-container">
     <h2>Stap 2: Tactiek</h2>
 
     {% set tac = evaluation.get('tactiek', {}) %}
@@ -100,18 +38,19 @@
         <label>Opmerking tactiek</label>
         <textarea name="opmerking" rows="3">{{ tac.get('opmerking','') }}</textarea>
 
-        <!-- Knoppen op één regel -->
-        <div class="button-row">
+        <div class="eval-button-row">
+
             <!-- Vorige -->
             <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}" 
-               class="btn prev-btn">
+               class="eval-btn eval-prev-btn">
                ← Vorige
             </a>
 
             <!-- Volgende -->
-            <button type="submit" class="btn next-btn">
+            <button type="submit" class="eval-btn eval-next-btn">
                 Volgende → Fysiek
             </button>
+
         </div>
 
     </form>

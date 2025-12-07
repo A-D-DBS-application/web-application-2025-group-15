@@ -1,0 +1,1175 @@
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0077cc, #00c6a7);
+    margin: 0;
+    padding: 40px;
+    color: #333;
+}
+
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 1100px; 
+    margin: auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+
+h1 {
+    color: #0077cc;
+    margin-bottom: 10px;
+}
+
+h2 {
+    color: #00a884;
+    margin-top: 35px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+p {
+    margin-bottom: 20px;
+}
+
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.button, .link-btn {
+    display: inline-block;
+    background-color: #00a884;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+.button:hover, .link-btn:hover {
+    background-color: #008f73;
+}
+
+
+.back-btn {
+    background-color: #0077cc;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+.back-btn:hover { background-color: #005fa3; }
+
+.logout-btn {
+    text-decoration: none;
+    color: white;
+    background-color: #dc3545;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+.logout-btn:hover { background-color: #b82e3a; }
+
+.cancel-btn {
+    background-color: #dc3545; 
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+.cancel-btn:hover { background-color: #bb2d3b; }
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    border: 1px solid #eee;
+    padding: 12px; 
+    text-align: left;
+    font-size: 14px;
+}
+
+th {
+    background-color: #0077cc;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f8f8f8;
+}
+
+
+footer {
+    text-align: center;
+    color: white;
+    font-size: 13px;
+    margin-top: 40px;
+    opacity: 0.8;
+}
+
+
+.error {
+    color: #dc3545;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+form.search-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+form.search-form input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+form.search-form button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background-color: #00a884;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.form-container {
+    max-width: 450px !important; 
+    margin-top: 60px;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+label {
+    font-weight: bold;
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+    background-color: white;
+}
+
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%230077cc%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px top 50%;
+    background-size: 12px auto;
+}
+
+.form-btn {
+    width: 100%;
+    margin-top: 25px;
+    background-color: #0077cc; 
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.form-btn:hover {
+    background-color: #005fa3;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 25px;
+    margin-top: -5px;
+}
+
+.back-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+.back-link a { color: #666; text-decoration: none; }
+.back-link a:hover { text-decoration: underline; }
+
+/* =========================================
+   COACH DASHBOARD SPECIFICS
+   ========================================= */
+
+.players-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.search-input {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    width: 260px;
+}
+
+
+.table-scroll {
+    max-height: 260px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 15px;
+}
+
+.table-scroll th {
+    position: sticky;
+    top: 0;
+    z-index: 1; 
+}
+
+
+.action-btn {
+    background: #00a884;
+    color: white !important;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    transition: 0.25s ease;
+}
+
+.action-btn img {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1); 
+}
+
+.action-btn:hover {
+    background: #008f72;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.remove-link {
+    color: #dc3545;
+    font-weight: bold;
+    text-decoration: none;
+}
+.remove-link:hover { text-decoration: underline; }
+
+/* Evaluatie secties */
+.eval-section {
+    background: #f7f9fc;
+    border-left: 5px solid #00a884;
+    padding: 18px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+}
+
+.eval-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #00a884;
+    margin-bottom: 10px;
+}
+
+/* Ranking kaart */
+.ranking-card {
+    background: #e8f3ff;
+    border: 2px solid #0077cc;
+    padding: 22px;
+    border-radius: 14px;
+    margin-top: 35px;
+}
+
+.ranking-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.ranking-header h3 {
+    margin: 0;
+    color: #0077cc;
+    font-size: 22px;
+}
+
+.trophy {
+    font-size: 26px;
+}
+
+.current-rank {
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.ranking-select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    background: white;
+    font-size: 15px;
+}
+
+/* ============================
+   ANNULEREN LES MODAL
+   ============================ */
+
+.cancel-page {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0077cc, #00c6a7);
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.modal {
+    background: white;
+    color: #333;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    text-align: center;
+    max-width: 450px;
+}
+
+.btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    color: white;
+}
+
+.btn.cancel {
+    background-color: #0077cc;
+    margin-right: 10px;
+}
+
+.btn.cancel:hover {
+    background-color: #005fa3;
+}
+
+.btn.confirm {
+    background-color: #dc3545;
+}
+
+.btn.confirm:hover {
+    background-color: #bb2d3b;
+}
+
+/* ============================================
+   SHARED CONFIRM / SUCCESS PAGE STYLE
+   ============================================ */
+
+.fullscreen-gradient {
+    background: linear-gradient(135deg, #0276d7, #00bfa6);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.center-card {
+    background: white;
+    max-width: 900px;
+    width: 90%;
+    padding: 50px;
+    text-align: center;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.center-card h1 {
+    font-size: 38px;
+    font-weight: 700;
+    color: #0276d7;
+    margin-bottom: 15px;
+}
+
+.center-card p {
+    font-size: 18px;
+    color: #444;
+    margin-bottom: 35px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+}
+
+.confirm-actions a {
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.confirm-cancel {
+    background-color: #dc3545;
+}
+
+.confirm-cancel:hover {
+    background-color: #bb2d3b;
+}
+
+.confirm-back {
+    background-color: #0276d7;
+}
+
+.confirm-back:hover {
+    background-color: #005fa3;
+}
+
+/* ============================
+    INDEX PAGE STYLE
+   ============================ */
+
+.index-page {
+    background: linear-gradient(135deg, #00b4db, #0083b0);
+    font-family: "Poppins", sans-serif;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    text-align: center;
+}
+
+.index-title {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    font-weight: 700;
+    color: white !important;
+}
+
+
+.index-links {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.index-btn {
+    text-decoration: none;
+    background-color: white;
+    color: #0083b0;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.index-btn:hover {
+    background-color: #0083b0;
+    color: white;
+    box-shadow: 0 0 10px rgba(255,255,255,0.6);
+}
+
+.index-footer {
+    position: absolute;
+    bottom: 15px;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* ============================
+   LOGIN PAGE
+   ============================ */
+
+.login-page {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0077cc, #00c6a7);
+    color: #333;
+    margin: 0;
+    padding: 40px;
+    min-height: 100vh;
+}
+
+.login-container {
+    background: white;
+    padding: 35px;
+    border-radius: 16px;
+    max-width: 450px;
+    margin: auto;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+}
+
+.login-title {
+    text-align: center;
+    color: #0077cc;
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+.login-subtitle {
+    text-align: center;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.login-label {
+    font-weight: bold;
+    display: block;
+    margin-top: 15px;
+}
+
+.login-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 6px;
+    font-size: 15px;
+}
+
+.login-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #00a884;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-btn:hover {
+    background-color: #008e6e;
+}
+
+.login-error {
+    margin-top: 15px;
+    padding: 10px;
+    background: #ffdddd;
+    border-left: 4px solid #d9534f;
+    border-radius: 6px;
+    color: #a94442;
+}
+
+.login-register-link {
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    text-decoration: none;
+    color: #0077cc;
+    font-weight: bold;
+}
+
+.login-register-link:hover {
+    text-decoration: underline;
+}
+
+
+/* ============================
+   PLAYER DASHBOARD PAGE
+   ============================ */
+
+/* Topbar (titel + knoppen) */
+.dashboard-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.dashboard-top-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+/* Info card onder de titel */
+.info-box {
+    background: #f0f8ff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 5px solid #0077cc;
+    color: #333;
+}
+
+.info-box span.no-coach {
+    color: #c00;
+}
+
+/* Waarschuwing als geen coach */
+.dashboard-warning {
+    padding: 15px;
+    border-radius: 8px;
+    background: #ffecec;
+    border-left: 5px solid #cc0000;
+    margin-bottom: 25px;
+    color: #700;
+}
+
+/* iCal knop override (indigo kleur) */
+.ical-btn {
+    background-color: #0077cc !important;
+}
+
+/* Feedback tekst */
+.feedback-missing {
+    color: #999;
+    font-style: italic;
+}
+
+/* Actieknoppen in tabel */
+.action-group {
+    display: flex;
+    gap: 10px;
+}
+
+
+/* ============================
+   ROLE SELECTION PAGE
+   ============================ */
+
+.role-page {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0077cc, #00c6a7);
+    color: #333;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.role-container {
+    background: white;
+    padding: 50px;
+    border-radius: 16px;
+    width: 500px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.role-title {
+    color: #0077cc;
+    margin-bottom: 10px;
+}
+
+.role-subtitle {
+    color: #555;
+    font-weight: normal;
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+.choice-card {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    gap: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.choice-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.player-btn {
+    background: linear-gradient(to right, #0077cc, #005fa3);
+}
+
+.coach-btn {
+    background: linear-gradient(to right, #00c6a7, #009e86);
+}
+
+.icon {
+    font-size: 30px;
+}
+
+.login-link {
+    margin-top: 30px;
+    font-size: 14px;
+}
+
+.login-link a {
+    color: #0077cc;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* ============================
+   EVALUATIE – TECHNIEK (STAP 1)
+   ============================ */
+
+.eval-page {
+    font-family: 'Poppins', sans-serif;
+    background: #f2f8fc;
+    padding: 40px;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.eval-container {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 700px;
+    margin: auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.eval-container h2 {
+    color: #0077cc;
+    margin-bottom: 20px;
+}
+
+.eval-container label {
+    font-weight: bold;
+    margin-top: 15px;
+    display: block;
+}
+
+.eval-container select,
+.eval-container textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.eval-button-row {
+    margin-top: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.eval-next-btn {
+    background: #00a884;
+    color: white;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.eval-next-btn:hover {
+    background: #008f73;
+}
+
+.eval-cancel-btn {
+    color: #0077cc;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.eval-cancel-btn:hover {
+    text-decoration: underline;
+}
+
+/* ============================
+   EVALUATIE – TACTIEK (STAP 2)
+   ============================ */
+
+.eval-page {
+    font-family: 'Poppins', sans-serif;
+    background: #f2f8fc;
+    padding: 40px;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.eval-container {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 700px;
+    margin: auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.eval-container h2 {
+    color: #0077cc;
+    margin-bottom: 20px;
+}
+
+.eval-container label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.eval-container select,
+.eval-container textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Knoppen */
+.eval-btn {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Vorige knop */
+.eval-prev-btn {
+    background: #0077cc;
+    color: white;
+}
+
+.eval-prev-btn:hover {
+    background: #005fa3;
+}
+
+/* Volgende knop */
+.eval-next-btn {
+    background: #00a884;
+    color: white;
+}
+
+.eval-next-btn:hover {
+    background: #008f73;
+}
+
+/* Knoppen horizontaal */
+.eval-button-row {
+    margin-top: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ============================
+   EVALUATIE – FYSIEK (STAP 3)
+   ============================ */
+
+.eval-page {
+    font-family: 'Poppins', sans-serif;
+    background: #f2f8fc;
+    padding: 40px;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.eval-container {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 700px;
+    margin: auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.eval-container h2 {
+    color: #0077cc;
+    margin-bottom: 20px;
+}
+
+.eval-container label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.eval-container select,
+.eval-container textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* Algemene evaluatie-knoppen */
+.eval-btn {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Vorige knop */
+.eval-prev-btn {
+    background: #0077cc;
+    color: white;
+}
+
+.eval-prev-btn:hover {
+    background: #005fa3;
+}
+
+/* Volgende knop */
+.eval-next-btn {
+    background: #00a884;
+    color: white;
+}
+
+.eval-next-btn:hover {
+    background: #008f73;
+}
+
+/* Buttons op één lijn */
+.eval-button-row {
+    margin-top: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ============================
+   EVALUATIE – MENTAAL (STAP 4)
+   ============================ */
+
+.eval-page {
+    font-family: 'Poppins', sans-serif;
+    background: #f2f8fc;
+    padding: 40px;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.eval-container {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 700px;
+    margin: auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.eval-container h2 {
+    color: #0077cc;
+    margin-bottom: 20px;
+}
+
+.eval-container label {
+    display: block;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.eval-container select,
+.eval-container textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* Algemene knop-stijlen */
+.eval-btn {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Vorige knop */
+.eval-prev-btn {
+    background: #0077cc;
+    color: white;
+}
+
+.eval-prev-btn:hover {
+    background: #005fa3;
+}
+
+/* Volgende knop */
+.eval-next-btn {
+    background: #00a884;
+    color: white;
+}
+
+.eval-next-btn:hover {
+    background: #008f73;
+}
+
+/* Knoppen op één rij */
+.eval-button-row {
+    margin-top: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ============================
+   EVALUATIE – OVERZICHT (STAP 5)
+   ============================ */
+
+.eval-page {
+    background: #f2f8fc;
+    padding: 40px;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+}
+
+
+/* ============================
+   EVALUATIE BEKIJKEN PAGE
+   ============================ */
+
+.evaluation-page {
+    font-family: 'Poppins', sans-serif;
+    background: #f2f8fc;
+    padding: 40px;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.evaluation-container {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 700px;
+    margin: auto;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.evaluation-container h2 {
+    color: #0077cc;
+}
+
+.evaluation-container h3 {
+    color: #00a884;
+    margin-top: 25px;
+}
+
+.evaluation-row {
+    margin-bottom: 10px;
+}
+
+.evaluation-label {
+    font-weight: bold;
+}
+
+/* FLOATING BUTTON (zelfde stijl als evaluatie-pagina’s) */
+.floating-dashboard-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #00a884;
+    color: white !important;
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 16px;
+    text-decoration: none !important;
+    transition: all 0.25s ease;
+    z-index: 2000;
+}
+
+.floating-dashboard-btn:hover {
+    background: #008f72;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.floating-dashboard-btn img {
+    width: 22px;
+    height: 22px;
+}
+
