@@ -13,7 +13,21 @@
     <h2>Profiel bewerken</h2>
     <hr>
 
-    <form method="POST">
+    <!-- FORM MOET enctype HEBBEN VOOR BESTANDSUPLOAD -->
+    <form method="POST" enctype="multipart/form-data">
+
+        <!-- Profielfoto preview -->
+        <div style="text-align:center; margin-bottom:20px;">
+            {% if profile.profile_image %}
+                <img src="{{ profile.profile_image }}" class="profile-pic-large">
+            {% else %}
+                <img src="/static/default_profile.png" class="profile-pic-large">
+            {% endif %}
+        </div>
+
+        <!-- Foto upload veld -->
+        <label>Nieuwe profielfoto uploaden:</label>
+        <input type="file" name="image" accept="image/*" class="file-input">
 
         <!-- Naam -->
         <label>Voornaam</label>
@@ -29,7 +43,7 @@
         <label>Telefoonnummer</label>
         <input type="text" name="phone" value="{{ profile.phone }}">
 
-        <!-- Enkel spelers hebben een geboortedatum -->
+        <!-- Enkel spelers hebben DOB -->
         {% if profile.date_of_birth is not none %}
             <label>Geboortedatum</label>
             <input type="date" name="dob" value="{{ profile.date_of_birth }}">
@@ -57,7 +71,6 @@
 
         <div class="eval-button-row" style="margin-top: 30px;">
 
-            <!-- Terug naar juiste dashboard -->
             {% if session['role'] == 'coach' %}
                 <a href="{{ url_for('coach_dashboard') }}" class="button back-btn">Annuleren</a>
             {% else %}

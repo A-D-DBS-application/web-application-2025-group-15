@@ -6,11 +6,8 @@ from datetime import datetime, date, timedelta
 from icalendar import Calendar, Event
 import json
 from supabase import create_client, Client
-
-SUPABASE_URL = "https://xilmcifkjefxwdtgzgkw.supabase.co"
-SUPABASE_KEY = "iets_lekker_randoms_hier"
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+import os
+supabase: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
 
 from models import (
     Player, 
@@ -226,42 +223,86 @@ def register_player_step2():
     if request.method == "POST":
         data = session["player_data"]
 
-        # Ophalen uit formulier
         ranking = request.form.get("ranking")
-        gender = request.form.get("gender")
         hand_preference = request.form.get("hand_preference")
+        gender = request.form.get("gender")
         dob_str = request.form.get("dob")
 
-        # Omzetten naar een Python date-object
         dob = None
         if dob_str:
-            dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+            try:
+                dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+            except ValueError:
+                return render_template(
+                    "register_player_step2.html",
+                    error="Ongeldige geboortedatum."
+                )
 
-        # Player object aanmaken
+        # -------------------------
+        # PROFIELFOTO UPLOAD (SPELER)
+        # -------------------------
+        file = request.files.get("image")
+        profile_url = None
+
+        if file and file.filename:
+            # veilige unieke bestandsnaam
+            ext = os.path.splitext(file.filename)[1].lower()  # .jpg / .png ...
+            safe_email = data["email"].replace("@", "_").replace(".", "_")
+            filename = f"players/{safe_email}_{int(datetime.now().timestamp())}{ext}"
+
+            file_bytes = file.read()
+
+            try:
+                # upload naar Supabase bucket "profile_pictures"
+                supabase.storage.from_("profile_pictures").upload(
+                    filename,
+                    file_bytes
+                )
+
+                # publieke URL opbouwen
+                profile_url = (
+                    f"{Config.SUPABASE_URL}"
+                    f"/storage/v1/object/public/profile_pictures/{filename}"
+                )
+            except Exception as e:
+                print("Fout bij uploaden profielfoto speler:", repr(e))
+                # eventueel: toch doorgaan zonder foto
+                profile_url = None
+
+        # -------------------------
+        # NIEUWE SPELER MAKEN
+        # -------------------------
         new_player = Player(
             first_name=data["first_name"],
             last_name=data["last_name"],
             email=data["email"],
             phone=data["phone"],
             ranking=ranking,
-            gender=gender,
             hand_preference=hand_preference,
+            gender=gender,
             date_of_birth=dob,
+            profile_image=profile_url,   # <--- URL opgeslagen in DB
         )
 
         try:
             db.session.add(new_player)
             db.session.commit()
             session.pop("player_data", None)
-            return render_template("login.html", error="Account aangemaakt! Je kunt nu inloggen.")
-
+            return render_template(
+                "login.html",
+                error="Account aangemaakt! Je kunt nu inloggen."
+            )
         except Exception as e:
             db.session.rollback()
             print("Fout bij opslaan nieuwe speler:", repr(e))
-            return render_template("register_player_step2.html",
-                                   error="Er ging iets mis bij het opslaan. Probeer opnieuw.")
+            return render_template(
+                "register_player_step2.html",
+                error="Er ging iets mis bij het opslaan. Probeer opnieuw."
+            )
 
     return render_template("register_player_step2.html")
+
+
 
 
 # Registratie van de coach
@@ -306,18 +347,51 @@ def register_coach_step2():
     if request.method == "POST":
         data = session["coach_data"]
 
-        # Ophalen uit formulier
         ranking = request.form.get("ranking")
-        gender = request.form.get("gender")
         hand_preference = request.form.get("hand_preference")
+        gender = request.form.get("gender")
         dob_str = request.form.get("dob")
 
-        # Omzetten naar Python date
         dob = None
         if dob_str:
-            dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+            try:
+                dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+            except ValueError:
+                return render_template(
+                    "register_coach_step2.html",
+                    error="Ongeldige geboortedatum."
+                )
 
-        # Nieuwe coach aanmaken
+        # -------------------------
+        # PROFIELFOTO UPLOAD (COACH)
+        # -------------------------
+        file = request.files.get("image")
+        profile_url = None
+
+        if file and file.filename:
+            ext = os.path.splitext(file.filename)[1].lower()
+            safe_email = data["email"].replace("@", "_").replace(".", "_")
+            filename = f"coaches/{safe_email}_{int(datetime.now().timestamp())}{ext}"
+
+            file_bytes = file.read()
+
+            try:
+                supabase.storage.from_("profile_pictures").upload(
+                    filename,
+                    file_bytes
+                )
+
+                profile_url = (
+                    f"{Config.SUPABASE_URL}"
+                    f"/storage/v1/object/public/profile_pictures/{filename}"
+                )
+            except Exception as e:
+                print("Fout bij uploaden profielfoto coach:", repr(e))
+                profile_url = None
+
+        # -------------------------
+        # NIEUWE COACH MAKEN
+        # -------------------------
         new_coach = Coach(
             first_name=data["first_name"],
             last_name=data["last_name"],
@@ -327,18 +401,17 @@ def register_coach_step2():
             ranking=ranking,
             hand_preference=hand_preference,
             date_of_birth=dob,
+            profile_image=profile_url,
         )
 
         try:
             db.session.add(new_coach)
             db.session.commit()
-
             session.pop("coach_data", None)
             return render_template(
                 "login.html",
                 error="Account aangemaakt! Je kunt nu inloggen."
             )
-
         except Exception as e:
             db.session.rollback()
             print("Fout bij opslaan nieuwe coach:", repr(e))
@@ -348,6 +421,8 @@ def register_coach_step2():
             )
 
     return render_template("register_coach_step2.html")
+
+
 
 
 # ============================================================
@@ -580,33 +655,29 @@ def cancel_success():
 
 @app.route("/coach")
 def coach_dashboard():
-    
+
     if session.get("role") != "coach":
         return redirect(url_for("login"))
 
     cleanup_past_lessons()
 
     coach_id = session.get("user_id")
-    
-    
     coach = Coach.query.get(coach_id)
+
     if not coach:
         return redirect(url_for("logout"))
 
     students = coach.players 
 
-   
+    # UPCOMING LESSONS
     upcoming_lessons = []
-    
     if coach.lessons:
         today = date.today()
         now = datetime.now().time()
         
         for lesson in coach.lessons:
-            
             if lesson.date > today or (lesson.date == today and lesson.start_time >= now):
-                
-                
+
                 player_names = [f"{p.first_name} {p.last_name}" for p in lesson.players]
                 players_str = ", ".join(player_names) if player_names else "No players assigned"
 
@@ -615,21 +686,21 @@ def coach_dashboard():
                     "date": lesson.date,
                     "start_time": lesson.start_time,
                     "end_time": lesson.end_time,
-                    "players": players_str, 
+                    "players": players_str,
                     "lesson_type": lesson.lesson_type
                 })
-        
-    
+
         upcoming_lessons.sort(key=lambda x: (x["date"], x["start_time"]))
 
-    
+    # PAST LESSONS
     past_lessons = []
-    
-    completed_rows = (CompletedLesson.query
-                      .filter_by(coach_id=coach_id)
-                      .order_by(CompletedLesson.date.desc())
-                      .limit(15)
-                      .all())
+    completed_rows = (
+        CompletedLesson.query
+        .filter_by(coach_id=coach_id)
+        .order_by(CompletedLesson.date.desc())
+        .limit(15)
+        .all()
+    )
 
     for row in completed_rows:
         player_name = "Unknown"
@@ -637,13 +708,12 @@ def coach_dashboard():
             player_obj = Player.query.get(row.player_id)
             if player_obj:
                 player_name = f"{player_obj.first_name} {player_obj.last_name}"
-        
-        
-        has_evaluation = True if row.coach_feedback else False
+
+        has_evaluation = bool(row.coach_feedback)
 
         past_lessons.append({
-            "lesson_id": row.lesson_id, 
-            "id": row.id,              
+            "lesson_id": row.lesson_id,
+            "id": row.id,
             "date": row.date,
             "start_time": row.start_time,
             "end_time": row.end_time,
@@ -653,11 +723,14 @@ def coach_dashboard():
 
     return render_template(
         "coach_dashboard.html",
+        user=coach,                     # <-- BELANGRIJK!
         coach=coach,
-        students=students,             
-        upcoming_lessons=upcoming_lessons, 
-        past_lessons=past_lessons      
+        students=students,
+        upcoming_lessons=upcoming_lessons,
+        past_lessons=past_lessons
     )
+     
+    
 
 
 # ============================================================
@@ -1184,25 +1257,56 @@ def edit_profile():
     if not user_id:
         return redirect(url_for("login"))
 
-    profile = Player.query.get(user_id) if role == "player" else Coach.query.get(user_id)
+    # Juiste model ophalen
+    profile = Coach.query.get(user_id) if role == "coach" else Player.query.get(user_id)
 
     if request.method == "POST":
-        profile.first_name = request.form["first_name"]
-        profile.last_name = request.form["last_name"]
-        profile.email = request.form["email"]
+
+        # -----------------------
+        # 1. NORMALE VELDEN
+        # -----------------------
+        profile.first_name = request.form.get("first_name")
+        profile.last_name = request.form.get("last_name")
+        profile.email = request.form.get("email")
         profile.phone = request.form.get("phone")
-
-        if role == "player":
-            profile.date_of_birth = request.form.get("dob")
-
         profile.gender = request.form.get("gender")
         profile.ranking = request.form.get("ranking")
 
+        if role == "player":
+            dob = request.form.get("dob")
+            if dob:
+                profile.date_of_birth = dob
+
+        # -----------------------
+        # 2. FOTO UPLOAD BLOK
+        # -----------------------
+        file = request.files.get("image")
+
+        if file and file.filename != "":
+            ext = file.filename.split(".")[-1]
+            filename = f"profile_{user_id}_{int(datetime.now().timestamp())}.{ext}"
+
+            file_bytes = file.read()  # <-- Supabase verwacht BYTES
+
+            # Upload naar Supabase Storage
+            supabase.storage.from_("profile_pictures").upload(filename, file_bytes)
+
+            # Publieke URL ophalen
+            public_url = supabase.storage.from_("profile_pictures").get_public_url(filename)
+
+            # Opslaan in database
+            profile.profile_image = public_url
+
+        # -----------------------
+        # 3. OPSLAAN
+        # -----------------------
         db.session.commit()
 
-        return redirect(url_for("player_dashboard" if role=="player" else "coach_dashboard"))
+        return redirect(url_for("coach_dashboard" if role == "coach" else "player_dashboard"))
 
     return render_template("edit_profile.html", profile=profile)
+
+
 
 
 

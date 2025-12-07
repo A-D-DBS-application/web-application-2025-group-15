@@ -4,35 +4,34 @@
     <meta charset="UTF-8">
     <title>Coach Dashboard | Fit Out Padel Destelbergen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-    <script>
-        function filterPlayers() {
-            const query = document.getElementById("playerSearch").value.toLowerCase();
-            const rows = document.querySelectorAll("#playersTable tbody tr");
-
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(query) ? "" : "none";
-            });
-        }
-    </script>
 </head>
 
 <body class="dashboard-bg">
 
 <div class="container">
 
-    <!-- TOPBAR -->
-    <div class="topbar">
-        <h1>🎾 Coach Dashboard</h1>
+ <!-- TOPBAR -->
+<div class="dashboard-topbar">
 
-        <div class="dashboard-top-buttons">
-            <a href="{{ url_for('edit_profile') }}" class="button">⚙️ Profiel</a>
-            <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
-        </div>
+    <!-- Profielfoto links -->
+    <div class="profile-header">
+        <img src="{{ coach.profile_image or '/static/default_profile.png' }}" class="profile-pic-large">
     </div>
 
-    <p>Welkom coach! Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
+    <!-- Titel + welkomtekst -->
+    <div class="welcome-block">
+        <h1>Welkom coach, {{ coach.first_name }}! 👋</h1>
+        <p class="subtitle">Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
+    </div>
+
+    <!-- Rechterkant: knoppen -->
+    <div class="dashboard-top-buttons">
+        <a href="{{ url_for('edit_profile') }}" class="button">⚙️ Profiel</a>
+        <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
+    </div>
+
+</div>
+
 
 
     <!-- SPELERSLIJST -->
@@ -108,8 +107,7 @@
                     <td>{{ lesson.players }}</td>
                     <td>
                         <a href="{{ url_for('export_lesson', lesson_id=lesson.lesson_id) }}" 
-                           class="action-btn"
-                           style="background-color: #0077cc;">
+                           class="action-btn" style="background-color: #0077cc;">
                            📅 iCal
                         </a>
                     </td>
@@ -157,7 +155,7 @@
                             {% else %}
                                 <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}"
                                    class="action-btn">
-                                   📝 Les evalueren
+                                   🖊️ Les evalueren
                                 </a>
                             {% endif %}
                         </td>

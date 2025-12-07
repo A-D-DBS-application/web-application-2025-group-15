@@ -15,7 +15,8 @@
             <div class="error">{{ error }}</div>
         {% endif %}
 
-        <form method="POST" action="{{ url_for('register_player_step2') }}">
+        <!-- BELANGRIJK: enctype toevoegen -->
+        <form method="POST" action="{{ url_for('register_player_step2') }}" enctype="multipart/form-data">
 
             <label for="ranking">Je P-Ranking:</label>
             <select name="ranking" id="ranking" required>
@@ -46,9 +47,13 @@
                 <option value="vrouw">Vrouw</option>
                 <option value="anders">Anders</option>
             </select>
+
             <label>Geboortedatum:</label>
             <input type="date" name="dob" required>
 
+            <!-- FOTO UPLOAD TOEGEVOEGD -->
+            <label>Profielfoto:</label>
+            <input type="file" name="image" accept="image/*" required>
 
             <button type="submit" class="form-btn">
                 Speler Registratie Afronden ✅

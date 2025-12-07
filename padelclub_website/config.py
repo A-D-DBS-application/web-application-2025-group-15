@@ -13,13 +13,6 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-SQLALCHEMY_ENGINE_OPTIONS = {
-    "pool_pre_ping": True,      # controleer of DB-verbinding nog leeft
-    "pool_recycle": 280,        # verbreek oude verbindingen voor Supabase dat doet
-    "pool_size": 5,             # houd een kleine pool open
-    "max_overflow": 10
-}
-
-    
-
-   
+    # SUPABASE
+    SUPABASE_URL = os.getenv("SUPABASE_URL")
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY")

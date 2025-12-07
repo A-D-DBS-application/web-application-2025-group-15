@@ -48,6 +48,7 @@ class Coach(db.Model):
     hand_preference = db.Column(db.Text)
     gender = db.Column(db.String)
     date_of_birth = db.Column(db.Date, nullable=True)
+    profile_image = db.Column(db.String, nullable=True)
     ranking = db.Column(db.String)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     
@@ -80,6 +81,7 @@ class Player(db.Model):
     ranking = db.Column(db.String)
     gender = db.Column(db.String)
     date_of_birth = db.Column(db.Date, nullable=True)
+    profile_image = db.Column(db.String, nullable=True)
     strengths = db.Column(db.Text)
     weaknesses = db.Column(db.Text)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
