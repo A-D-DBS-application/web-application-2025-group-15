@@ -18,17 +18,24 @@
     </script>
 </head>
 
-<body>
+<body class="dashboard-bg">
 
 <div class="container">
 
+    <!-- TOPBAR -->
     <div class="topbar">
         <h1>🎾 Coach Dashboard</h1>
-        <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
+
+        <div class="dashboard-top-buttons">
+            <a href="{{ url_for('edit_profile') }}" class="button">⚙️ Profiel</a>
+            <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
+        </div>
     </div>
 
     <p>Welkom coach! Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
 
+
+    <!-- SPELERSLIJST -->
     <div class="players-header">
         <h2>📋 Mijn spelers</h2>
         <input type="text" id="playerSearch" class="search-input"
@@ -46,22 +53,22 @@
                 </tr>
             </thead>
             <tbody>
-                {% if students and students|length > 0 %}
+                {% if students %}
                     {% for student in students %}
                     <tr>
                         <td>
                             <a href="{{ url_for('coach_player_detail', player_id=student.player_id) }}"
-                               style="color:#0077cc; font-weight:bold; text-decoration:none;">
+                               class="player-link">
                                 {{ student.first_name }} {{ student.last_name }}
                             </a>
                         </td>
                         <td>{{ student.email }}</td>
                         <td>{{ student.phone or '' }}</td>
                         <td>
-                            <form action="{{ url_for('unlink_player', player_id=student.player_id) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je {{ student.first_name }} uit je team wilt halen? Het account van de speler blijft wel bestaan.');" style="display:inline;">
-                                <button type="submit" style="background: none; border: none; padding: 0; color: #dc3545; cursor: pointer; font-weight: bold; font-size: 14px;">
-                                    ❌ Loskoppelen
-                                </button>
+                            <form action="{{ url_for('unlink_player', player_id=student.player_id) }}" 
+                                  method="POST"
+                                  onsubmit="return confirm('Weet je zeker dat je {{ student.first_name }} wilt loskoppelen?');">
+                                <button type="submit" class="remove-link">❌ Loskoppelen</button>
                             </form>
                         </td>
                     </tr>
@@ -73,10 +80,14 @@
         </table>
     </div>
 
-    <a href="{{ url_for('add_player') }}" class="button">+ Speler toevoegen</a> <a href="{{ url_for('coach_availability') }}" class="button">📆 Beschikbaarheid instellen</a>
+    <!-- EXTRA ACTIEKNOPPEN -->
+    <div class="button-row">
+        <a href="{{ url_for('add_player') }}" class="button">+ Speler toevoegen</a>
+        <a href="{{ url_for('coach_availability') }}" class="button">📆 Beschikbaarheid instellen</a>
+    </div>
 
 
-
+    <!-- GEPLANDE LESSEN -->
     <h2>📘 Geplande lessen</h2>
 
     <table>
@@ -85,10 +96,11 @@
                 <th>Datum</th>
                 <th>Tijd</th>
                 <th>Speler(s)</th>
-                <th>Actie</th> </tr>
+                <th>Actie</th>
+            </tr>
         </thead>
         <tbody>
-            {% if upcoming_lessons and upcoming_lessons|length > 0 %}
+            {% if upcoming_lessons %}
                 {% for lesson in upcoming_lessons %}
                 <tr>
                     <td>{{ lesson.date }}</td>
@@ -96,7 +108,8 @@
                     <td>{{ lesson.players }}</td>
                     <td>
                         <a href="{{ url_for('export_lesson', lesson_id=lesson.lesson_id) }}" 
-                           class="action-btn" style="background-color: #0077cc;" title="Download voor Outlook/Agenda">
+                           class="action-btn"
+                           style="background-color: #0077cc;">
                            📅 iCal
                         </a>
                     </td>
@@ -108,11 +121,14 @@
         </tbody>
     </table>
 
-    <div style="text-align:center; margin-top:20px;">
-        <a href="{{ url_for('schedule_individual_lesson') }}" class="button">📅 Nieuwe les inplannen</a>
+    <div class="center-actions">
+        <a href="{{ url_for('schedule_individual_lesson') }}" class="button">
+            📅 Nieuwe les inplannen
+        </a>
     </div>
 
 
+    <!-- AFGELOPEN LESSEN -->
     <h2>📘 Afgelopen lessen</h2>
 
     <div class="table-scroll">
@@ -126,32 +142,30 @@
                 </tr>
             </thead>
             <tbody>
-            {% if past_lessons and past_lessons|length > 0 %}
-                {% for lesson in past_lessons %}
-                <tr>
-                    <td>{{ lesson.date }}</td>
-                    <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
-                    <td>{{ lesson.player_name }}</td>
-                    <td>
-                        {% if lesson.has_evaluation %}
-                            <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}"
-                               class="action-btn">
-                                <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" style="width:16px; vertical-align:middle;">
-                                Evaluatie bekijken
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}" class="action-btn">
-                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828911.png" style="width:16px; vertical-align:middle;">
-                                Les evalueren
-                            </a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr><td colspan="4">Nog geen afgelopen lessen.</td></tr>
-            {% endif %}
-
+                {% if past_lessons %}
+                    {% for lesson in past_lessons %}
+                    <tr>
+                        <td>{{ lesson.date }}</td>
+                        <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
+                        <td>{{ lesson.player_name }}</td>
+                        <td>
+                            {% if lesson.has_evaluation %}
+                                <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}"
+                                   class="action-btn">
+                                   📝 Evaluatie bekijken
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}"
+                                   class="action-btn">
+                                   📝 Les evalueren
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="4">Nog geen afgelopen lessen.</td></tr>
+                {% endif %}
             </tbody>
         </table>
     </div>

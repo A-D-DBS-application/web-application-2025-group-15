@@ -216,6 +216,8 @@ def register_player_step1():
         return redirect(url_for("register_player_step2"))
     return render_template("register_player_step1.html")
 
+from datetime import datetime
+
 @app.route("/register/player/step2", methods=["GET", "POST"])
 def register_player_step2():
     if "player_data" not in session:
@@ -223,15 +225,28 @@ def register_player_step2():
 
     if request.method == "POST":
         data = session["player_data"]
-        
+
+        # Ophalen uit formulier
+        ranking = request.form.get("ranking")
+        gender = request.form.get("gender")
+        hand_preference = request.form.get("hand_preference")
+        dob_str = request.form.get("dob")
+
+        # Omzetten naar een Python date-object
+        dob = None
+        if dob_str:
+            dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+
+        # Player object aanmaken
         new_player = Player(
             first_name=data["first_name"],
             last_name=data["last_name"],
             email=data["email"],
             phone=data["phone"],
-            ranking=request.form.get("ranking"),
-            hand_preference=request.form.get("hand_preference"),
-            gender=request.form.get("gender")
+            ranking=ranking,
+            gender=gender,
+            hand_preference=hand_preference,
+            date_of_birth=dob,
         )
 
         try:
@@ -239,11 +254,15 @@ def register_player_step2():
             db.session.commit()
             session.pop("player_data", None)
             return render_template("login.html", error="Account aangemaakt! Je kunt nu inloggen.")
+
         except Exception as e:
             db.session.rollback()
             print("Fout bij opslaan nieuwe speler:", repr(e))
-            return render_template("register_player_step2.html", error="Er ging iets mis bij het opslaan. Probeer opnieuw in te vullen")
+            return render_template("register_player_step2.html",
+                                   error="Er ging iets mis bij het opslaan. Probeer opnieuw.")
+
     return render_template("register_player_step2.html")
+
 
 # Registratie van de coach
 @app.route("/register/coach", methods=["GET", "POST"])
@@ -277,6 +296,8 @@ def register_coach():
 
     return render_template("register_coach_step1.html")
 
+from datetime import datetime
+
 @app.route("/register/coach/step2", methods=["GET", "POST"])
 def register_coach_step2():
     if "coach_data" not in session:
@@ -285,27 +306,49 @@ def register_coach_step2():
     if request.method == "POST":
         data = session["coach_data"]
 
+        # Ophalen uit formulier
+        ranking = request.form.get("ranking")
+        gender = request.form.get("gender")
+        hand_preference = request.form.get("hand_preference")
+        dob_str = request.form.get("dob")
+
+        # Omzetten naar Python date
+        dob = None
+        if dob_str:
+            dob = datetime.strptime(dob_str, "%Y-%m-%d").date()
+
+        # Nieuwe coach aanmaken
         new_coach = Coach(
             first_name=data["first_name"],
             last_name=data["last_name"],
             email=data["email"],
             phone=data["phone"],
-            gender=request.form.get("gender"),
-            ranking=request.form.get("ranking"),
+            gender=gender,
+            ranking=ranking,
+            hand_preference=hand_preference,
+            date_of_birth=dob,
         )
 
         try:
             db.session.add(new_coach)
             db.session.commit()
+
             session.pop("coach_data", None)
-            return render_template("login.html", error="Account aangemaakt! Je kunt nu inloggen.")
-            
+            return render_template(
+                "login.html",
+                error="Account aangemaakt! Je kunt nu inloggen."
+            )
+
         except Exception as e:
             db.session.rollback()
             print("Fout bij opslaan nieuwe coach:", repr(e))
-            return render_template("register_coach_step2.html", error="Er ging iets mis bij het opslaan.")
+            return render_template(
+                "register_coach_step2.html",
+                error="Er ging iets mis bij het opslaan."
+            )
 
     return render_template("register_coach_step2.html")
+
 
 # ============================================================
 #  LES AANVRAGEN (PLAYER)
@@ -1132,6 +1175,37 @@ def unlink_player(player_id):
         print("FOUT: Speler ID niet gevonden.")
     
     return redirect(url_for('coach_dashboard'))
+
+@app.route("/edit_profile", methods=["GET", "POST"])
+def edit_profile():
+    user_id = session.get("user_id")
+    role = session.get("role")
+
+    if not user_id:
+        return redirect(url_for("login"))
+
+    profile = Player.query.get(user_id) if role == "player" else Coach.query.get(user_id)
+
+    if request.method == "POST":
+        profile.first_name = request.form["first_name"]
+        profile.last_name = request.form["last_name"]
+        profile.email = request.form["email"]
+        profile.phone = request.form.get("phone")
+
+        if role == "player":
+            profile.date_of_birth = request.form.get("dob")
+
+        profile.gender = request.form.get("gender")
+        profile.ranking = request.form.get("ranking")
+
+        db.session.commit()
+
+        return redirect(url_for("player_dashboard" if role=="player" else "coach_dashboard"))
+
+    return render_template("edit_profile.html", profile=profile)
+
+
+
 
 # ============================================================
 #  MAIN

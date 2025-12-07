@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Profiel bewerken</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-bg">
+
+<div class="container">
+
+    <h2>Profiel bewerken</h2>
+    <hr>
+
+    <form method="POST">
+
+        <!-- Naam -->
+        <label>Voornaam</label>
+        <input type="text" name="first_name" value="{{ profile.first_name }}" required>
+
+        <label>Achternaam</label>
+        <input type="text" name="last_name" value="{{ profile.last_name }}" required>
+
+        <!-- Contact -->
+        <label>E-mail</label>
+        <input type="email" name="email" value="{{ profile.email }}" required>
+
+        <label>Telefoonnummer</label>
+        <input type="text" name="phone" value="{{ profile.phone }}">
+
+        <!-- Enkel spelers hebben een geboortedatum -->
+        {% if profile.date_of_birth is not none %}
+            <label>Geboortedatum</label>
+            <input type="date" name="dob" value="{{ profile.date_of_birth }}">
+        {% endif %}
+
+        <!-- Gender -->
+        <label>Gender</label>
+        <select name="gender" class="ranking-select">
+            <option value="">Niet gespecificeerd</option>
+            <option value="man"   {% if profile.gender == 'man' %}selected{% endif %}>Man</option>
+            <option value="vrouw" {% if profile.gender == 'vrouw' %}selected{% endif %}>Vrouw</option>
+            <option value="x"     {% if profile.gender == 'x' %}selected{% endif %}>X</option>
+        </select>
+
+        <!-- Ranking -->
+        <label>Ranking</label>
+        <select name="ranking" class="ranking-select">
+            <option value="">Geen ranking</option>
+            {% for r in ["P50","P100","P200","P300","P400","P500","P700","P1000"] %}
+                <option value="{{ r }}" {% if profile.ranking == r %}selected{% endif %}>
+                    {{ r }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <div class="eval-button-row" style="margin-top: 30px;">
+
+            <!-- Terug naar juiste dashboard -->
+            {% if session['role'] == 'coach' %}
+                <a href="{{ url_for('coach_dashboard') }}" class="button back-btn">Annuleren</a>
+            {% else %}
+                <a href="{{ url_for('player_dashboard') }}" class="button back-btn">Annuleren</a>
+            {% endif %}
+
+            <button type="submit" class="button">Opslaan ✔</button>
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>
