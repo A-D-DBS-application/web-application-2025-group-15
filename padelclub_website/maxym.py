@@ -5,18 +5,22 @@ from sqlalchemy import or_, and_
 from datetime import datetime, date, timedelta
 from icalendar import Calendar, Event
 from supabase import create_client, Client
+from models import GroupLessonRequest, Lesson
 import json
 import os
+import datetime
 supabase: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
 
 from models import (
-    Player, 
-    Coach, 
-    Club, 
-    Lesson, 
-    CompletedLesson, 
-    CoachAvailability
+    Player,
+    Coach,
+    Club,
+    Lesson,
+    CompletedLesson,
+    CoachAvailability,
+    GroupLessonRequest   
 )
+
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -104,7 +108,6 @@ def login():
 # ============================================================
 #  PLAYER DASHBOARD 
 # ============================================================
-
 @app.route("/player")
 def player_dashboard():
     if session.get("role") != "player":
@@ -113,35 +116,49 @@ def player_dashboard():
     cleanup_past_lessons()
 
     player_id = session.get("user_id")
-
     user = Player.query.get(player_id)
     if not user:
         return redirect(url_for("logout"))
 
     upcoming_lessons = []
-    
-    if user.lessons:
-        today = date.today()
-        now = datetime.now().time()
 
-        for lesson in user.lessons:
-            if lesson.date > today or (lesson.date == today and lesson.start_time >= now):
-                
-                coach_name = f"{lesson.coach.first_name} {lesson.coach.last_name}" if lesson.coach else "Onbekend"
+    today = date.today()
+    now = datetime.now().time()
 
-                upcoming_lessons.append({
-                    "lesson_id": lesson.lesson_id,
-                    "date": lesson.date,
-                    "start_time": lesson.start_time,
-                    "end_time": lesson.end_time,
-                    "coach_name": coach_name,
-                    "lesson_type": lesson.lesson_type
-                })
-        
-        upcoming_lessons.sort(key=lambda x: (x["date"], x["start_time"]))
+    # ------------------------------
+    # UPCOMING LESSONS
+    # ------------------------------
+    for lesson in user.lessons:
 
+        # Alleen toekomstige lessen
+        if lesson.date > today or (lesson.date == today and lesson.start_time >= now):
+
+            # Coachnaam ophalen
+            if lesson.coach:
+                coach_name = f"{lesson.coach.first_name} {lesson.coach.last_name}"
+            else:
+                coach_name = "Onbekend"
+
+            # Type bepalen
+            if len(lesson.players) > 1:
+                lesson_type = "Groepsles"
+            else:
+                lesson_type = "Individueel"
+
+            # Alles opslaan
+            upcoming_lessons.append({
+                "lesson_id": lesson.lesson_id,
+                "date": lesson.date,
+                "start_time": lesson.start_time,
+                "end_time": lesson.end_time,
+                "coach_name": coach_name,
+                "lesson_type": lesson_type,
+            })
+
+    # ------------------------------
+    # PAST LESSONS
+    # ------------------------------
     past_lessons = []
-    
     completed_rows = (CompletedLesson.query
                       .filter_by(player_id=player_id)
                       .order_by(CompletedLesson.date.desc())
@@ -150,7 +167,7 @@ def player_dashboard():
 
     for row in completed_rows:
         has_evaluation = True if row.coach_feedback else False
-        
+
         coach_name = "Onbekend"
         if row.coach_id:
             c_obj = Coach.query.get(row.coach_id)
@@ -158,8 +175,8 @@ def player_dashboard():
                 coach_name = f"{c_obj.first_name} {c_obj.last_name}"
 
         past_lessons.append({
-            "lesson_id": row.lesson_id, 
-            "id": row.id,              
+            "lesson_id": row.lesson_id,
+            "id": row.id,
             "date": row.date,
             "start_time": row.start_time,
             "end_time": row.end_time,
@@ -169,10 +186,11 @@ def player_dashboard():
 
     return render_template(
         "player_dashboard.html",
-        user=user, 
+        user=user,
         upcoming_lessons=upcoming_lessons,
         past_lessons=past_lessons
     )
+
 # ============================================================
 #  REGISTER ROUTES (SPELER & COACH)
 # ============================================================
@@ -433,10 +451,319 @@ def register_coach_step2():
 # ============================================================
 #  LES AANVRAGEN (PLAYER)
 # ============================================================
+@app.route("/request_lesson_type")
+def request_lesson_type():
+    if session.get("role") != "player":
+        return redirect(url_for("login"))
+
+    return render_template("request_lesson_type.html")
+
+@app.route("/request_group_lesson", methods=["GET", "POST"])
+def request_group_lesson():
+    if session.get("role") != "player":
+        return redirect(url_for("login"))
+
+    coaches = Coach.query.all()
+    available_slots = None
+    selected_coach_id = None
+    selected_date = None
+    error = None
+
+    ALL_SLOTS = []
+    OPENING = 9
+    CLOSING = 22
+    DURATION = 60
+
+    t = datetime.strptime(f"{OPENING}:00", "%H:%M")
+    end_limit = datetime.strptime(f"{CLOSING}:00", "%H:%M")
+
+    while t + timedelta(minutes=DURATION) <= end_limit:
+        start_str = t.strftime("%H:%M")
+        end_str = (t + timedelta(minutes=DURATION)).strftime("%H:%M")
+        ALL_SLOTS.append((start_str, end_str))
+        t += timedelta(minutes=DURATION)
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        selected_coach_id = request.form.get("coach_id")
+        selected_date = request.form.get("date")
+
+        # -----------------------
+        #   TIJDSLOTEN OPHALEN
+        # -----------------------
+        if action == "show_slots":
+            if not selected_coach_id or not selected_date:
+                error = "Kies een coach en datum."
+            else:
+                existing = Lesson.query.filter_by(
+                    coach_id=selected_coach_id,
+                    date=selected_date
+                ).all()
+
+                taken = {
+                    f"{l.start_time.strftime('%H:%M')}-{l.end_time.strftime('%H:%M')}"
+                    for l in existing
+                }
+
+                avail = CoachAvailability.query.filter_by(
+                    coach_id=selected_coach_id,
+                    date=datetime.strptime(selected_date, "%Y-%m-%d").date()
+                ).all()
+
+                defined = {
+                    f"{a.start_time.strftime('%H:%M')}-{a.end_time.strftime('%H:%M')}"
+                    for a in avail
+                }
+
+                available_slots = []
+                for s, e in ALL_SLOTS:
+                    slot_id = f"{s}-{e}"
+                    if slot_id in defined and slot_id not in taken:
+                        available_slots.append({
+                            "id": slot_id,
+                            "label": f"{s} – {e}",
+                            "start": s,
+                            "end": e
+                        })
+
+                if not available_slots:
+                    error = "Geen tijdsloten beschikbaar."
+
+        # -----------------------
+        #   REVIEWPAGINA
+        # -----------------------
+        if action == "review":
+            slot = request.form.get("slot")
+            focus = request.form.get("focus")
+
+            if not (selected_coach_id and selected_date and slot and focus):
+                error = "Selecteer coach, datum, tijdslot en onderwerp."
+            else:
+                start, end = slot.split("-")
+                coach_obj = Coach.query.get(selected_coach_id)
+
+                return render_template(
+                    "confirm_group_lesson.html",
+                    coach=coach_obj,
+                    coach_id=selected_coach_id,
+                    date=selected_date,
+                    time=start,
+                    start=start,
+                    end=end,
+                    focus=focus
+                )
+
+    return render_template(
+        "request_group_lesson.html",
+        coaches=coaches,
+        available_slots=available_slots,
+        selected_coach_id=selected_coach_id,
+        selected_date=selected_date,
+        error=error
+    )
+
+
+
+
+
+
+@app.route("/review_group_lesson_request")
+def review_group_lesson_request():
+    date = request.args.get("date")
+    time = request.args.get("time")
+    skill = request.args.get("skill")
+
+    return render_template(
+        "review_group_lesson_request.html",
+        date=date, time=time, skill=skill
+    )
+
+@app.route("/finalize_group_lesson_request")
+def finalize_group_lesson_request():
+    # speler moet ingelogd zijn
+    player_id = session.get("user_id")
+    if not player_id:
+        return redirect(url_for("login"))
+
+    # data ophalen uit URL-parameters
+    coach_id = request.args.get("coach_id")
+    date_str = request.args.get("date")
+    start_str = request.args.get("start")
+    focus = request.args.get("focus")
+
+    # controleren of iets ontbreekt
+    if not (coach_id and date_str and start_str and focus):
+        return "Missing data", 400
+
+    try:
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+        start_obj = datetime.strptime(start_str, "%H:%M").time()
+        end_obj = (datetime.combine(date_obj, start_obj) + timedelta(hours=1)).time()
+    except ValueError:
+        return "Invalid date or time format", 400
+
+    # groepsles-aanvraag opslaan
+    new_request = GroupLessonRequest(
+        player_id=player_id,
+        coach_id=int(coach_id),
+        date=date_obj,
+        time=start_obj,
+        lesson_focus=focus
+    )
+
+    db.session.add(new_request)
+    db.session.commit()
+
+    # doorsturen naar matcher
+    return redirect(url_for(
+        "check_group_match",
+        coach_id=coach_id,
+        date=date_str,
+        time=start_str,
+        focus=focus
+    ))
+
+
+
+
+
+
+
+from datetime import datetime, timedelta
+
+def parse_rank(value):
+    if not value:
+        return None
+    s = str(value)
+    digits = "".join(ch for ch in s if ch.isdigit())
+    if not digits:
+        return None
+    try:
+        return int(digits)
+    except ValueError:
+        return None
+
+
+@app.route("/check_group_match")
+def check_group_match():
+    date_str  = request.args.get("date")
+    time_str  = request.args.get("time")
+    coach_id  = request.args.get("coach_id", type=int)
+
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+    time_obj = datetime.strptime(time_str, "%H:%M").time()
+
+    # Alleen aanvragen voor deze coach + datum + tijd
+    all_requests = GroupLessonRequest.query.filter_by(
+        date=date_obj,
+        time=time_obj,
+        coach_id=coach_id
+    ).all()
+
+    if not all_requests:
+        return "Geen groepsles-aanvragen gevonden."
+
+    MIN_GROUP = 3
+    MAX_GROUP = 4
+    MAX_P_DIFF = 200
+
+    # Referentiespeler
+    ref_req      = all_requests[0]
+    ref_player   = ref_req.player
+    ref_focus    = ref_req.lesson_focus
+    ref_intensity = ref_player.playing_intensity
+    ref_score    = parse_rank(ref_player.ranking)
+
+    if ref_score is None:
+        remaining = MIN_GROUP
+        return render_template(
+            "group_lesson_wait.html",
+            date=date_str,
+            time=time_str,
+            remaining=remaining,
+            focus=ref_focus
+        )
+
+    # 1) Zelfde onderwerp
+    focus_matches = [r for r in all_requests if r.lesson_focus == ref_focus]
+    if len(focus_matches) < MIN_GROUP:
+        remaining = MIN_GROUP - len(focus_matches)
+        return render_template("group_lesson_wait.html",
+                               date=date_str, time=time_str,
+                               remaining=remaining, focus=ref_focus)
+
+    # 2) Zelfde intensiteit
+    intensity_matches = [
+        r for r in focus_matches
+        if r.player.playing_intensity == ref_intensity
+    ]
+    if len(intensity_matches) < MIN_GROUP:
+        remaining = MIN_GROUP - len(intensity_matches)
+        return render_template("group_lesson_wait.html",
+                               date=date_str, time=time_str,
+                               remaining=remaining, focus=ref_focus)
+
+    # 3) P-score max ±200
+    pscore_matches = []
+    for r in intensity_matches:
+        score = parse_rank(r.player.ranking)
+        if score is None:
+            continue
+        if abs(score - ref_score) <= MAX_P_DIFF:
+            pscore_matches.append(r)
+
+    if len(pscore_matches) < MIN_GROUP:
+        remaining = MIN_GROUP - len(pscore_matches)
+        return render_template("group_lesson_wait.html",
+                               date=date_str, time=time_str,
+                               remaining=remaining, focus=ref_focus)
+
+    chosen_group = pscore_matches[:MAX_GROUP]
+
+    # --- LES AANMAKEN ---
+    end_time_obj = (datetime.combine(date_obj, time_obj) + timedelta(hours=1)).time()
+
+    lesson = Lesson(
+        coach_id=coach_id,
+        date=date_obj,
+        start_time=time_obj,
+        end_time=end_time_obj,
+        lesson_type="Groepsles",
+        lesson_focus=ref_focus
+    )
+    db.session.add(lesson)
+    db.session.commit()
+
+    # --- FIX: TIME SLOT UIT COACH AVAILABILITY VERWIJDEREN ---
+    slot = CoachAvailability.query.filter(
+        CoachAvailability.coach_id == coach_id,
+        CoachAvailability.date == date_obj,
+        CoachAvailability.start_time <= time_obj,
+        CoachAvailability.end_time >= end_time_obj
+    ).first()
+
+    if slot:
+        db.session.delete(slot)
+        db.session.commit()
+
+    # --- SPELERS TOEVOEGEN + REQUESTS VERWIJDEREN ---
+    for req in chosen_group:
+        if req.player not in lesson.players:
+            lesson.players.append(req.player)
+        db.session.delete(req)
+
+    db.session.commit()
+
+    return render_template("group_lesson_confirmed.html", lesson=lesson)
+
+
+
+
+
 @app.route("/player/book_lesson", methods=["GET", "POST"])
 def book_lesson():
     if session.get("role") != "player":
-        return redirect(url_for("home"))
+        return redirect(url_for("login"))
 
     player_id = session.get("user_id")
 
@@ -474,6 +801,10 @@ def book_lesson():
         selected_coach_id = request.form.get("coach_id")
         selected_date = request.form.get("date")
 
+        # Zorg dat coach_id een integer wordt
+        if selected_coach_id:
+            selected_coach_id = int(selected_coach_id)
+
         # -----------------------------
         #  TIJDSLOTEN TONEN
         # -----------------------------
@@ -482,10 +813,12 @@ def book_lesson():
                 error = "Kies eerst een coach en een datum."
             else:
                 try:
+                    selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+
                     # 1) Bestaande lessen ophalen → ingenomen slots
                     existing_lessons = Lesson.query.filter(
                         Lesson.coach_id == selected_coach_id,
-                        Lesson.date == selected_date
+                        Lesson.date == selected_date_obj
                     ).all()
 
                     taken = {
@@ -496,7 +829,7 @@ def book_lesson():
                     # 2) Beschikbaarheid van coach ophalen
                     availability = CoachAvailability.query.filter_by(
                         coach_id=selected_coach_id,
-                        date=selected_date
+                        date=selected_date_obj
                     ).all()
 
                     available_defined = {
@@ -504,16 +837,13 @@ def book_lesson():
                         for av in availability
                     }
 
-                    # Geen beschikbaarheid ingesteld → foutmelding
                     if not available_defined:
                         error = "Deze coach heeft nog geen beschikbaarheid ingesteld voor deze datum."
                         available_slots = []
                     else:
-                        # 3) Snijpunt nemen → enkel (vrijgegeven − bezet)
                         available_slots = []
                         for s, e in ALL_SLOTS:
                             slot_id = f"{s}-{e}"
-
                             if slot_id in available_defined and slot_id not in taken:
                                 available_slots.append({
                                     "id": slot_id,
@@ -532,7 +862,6 @@ def book_lesson():
         # -----------------------------
         #  LES BOEKEN
         # -----------------------------
-        
         if action == "book":
             slot_id = request.form.get("slot")
 
@@ -543,15 +872,13 @@ def book_lesson():
                     selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
 
                     start_str, end_str = slot_id.split("-")
-
                     start_time_obj = datetime.strptime(start_str, "%H:%M").time()
                     end_time_obj = datetime.strptime(end_str, "%H:%M").time()
-                    
 
                     # Nieuwe les aanmaken
                     new_lesson = Lesson(
                         coach_id=selected_coach_id,
-                        date=selected_date,
+                        date=selected_date_obj,
                         start_time=start_time_obj,
                         end_time=end_time_obj,
                         lesson_type="Individueel"
@@ -561,6 +888,7 @@ def book_lesson():
                     new_lesson.players.append(player)
                     db.session.add(new_lesson)
 
+                    # Beschikbaar tijdslot verwijderen
                     slot_to_remove = CoachAvailability.query.filter_by(
                         coach_id=selected_coach_id,
                         date=selected_date_obj,
@@ -570,10 +898,8 @@ def book_lesson():
 
                     if slot_to_remove:
                         db.session.delete(slot_to_remove)
-                    
-                    db.session.commit()
-                
 
+                    db.session.commit()
                     return redirect(url_for("player_dashboard"))
 
                 except Exception as e:
@@ -590,6 +916,7 @@ def book_lesson():
         selected_date=selected_date,
         error=error,
     )
+
 
 # ============================================================
 #LES ANNULEREN (PLAYER):

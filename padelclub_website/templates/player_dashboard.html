@@ -10,7 +10,7 @@
 
 <div class="container dashboard-card">
 
-    <!-- BOVENSTE BLOK MET FOTO + NAAM -->
+    <!-- PROFIELBLOK -->
     <div class="dashboard-header">
 
         <div class="profile-photo-wrapper">
@@ -39,7 +39,7 @@
 
                 <strong>Speelstijl:</strong>
                 {% if user.playing_intensity == "recreational" %}
-                     Recreatief / ontspanning
+                    Recreatief / ontspanning
                 {% elif user.playing_intensity == "competitive" %}
                     Serieus / competitief
                 {% else %}
@@ -56,25 +56,34 @@
             </p>
         </div>
 
+        <!-- DASHBOARD KNOPPEN -->
         <div class="dashboard-buttons">
-            <a href="{{ url_for('edit_profile') }}" class="button profile-btn">⚙️ Profiel</a>
+            <a href="{{ url_for('edit_profile') }}" class="button profile-btn">
+                ⚙️ Profiel
+            </a>
 
             {% if user.assigned_coach %}
-                <a href="{{ url_for('book_lesson') }}" class="action-btn green-btn">➕ Les aanvragen</a>
+                <!-- ✔ FIX: dit stuurt opnieuw naar de LES-TYPE KEUZE -->
+                <a href="{{ url_for('request_lesson_type') }}" class="button green-btn">
+                    Les aanvragen
+                </a>
             {% endif %}
 
-            <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                ⎋ Uitloggen
+            </a>
         </div>
+
     </div>
 
-    <!-- STERKTES & WERKPUNTEN (NIEUW BLOK) -->
+    <!-- STERKTES & WERKPUNTEN -->
     <div class="player-strengths-card">
         <h3 class="strengths-title">Sterktes & werkpunten</h3>
         
         <div class="strengths-grid">
             <div class="strength-box">
                 <h4>💪 Sterktes</h4>
-                <p>{{ user.strengths or "Je coach heeft nog geen sterktes ingevuld." }}
+                <p>{{ user.strengths or "Je coach heeft nog geen sterktes ingevuld." }}</p>
             </div>
             
             <div class="strength-box">
@@ -113,8 +122,12 @@
                     <td>{{ lesson.lesson_type }}</td>
                     <td>
                         <div class="action-group">
-                            <a href="{{ url_for('export_lesson', lesson_id=lesson.lesson_id) }}" class="action-btn ical-btn">📅 iCal</a>
-                            <a href="{{ url_for('confirm_cancel_lesson', lesson_id=lesson.lesson_id) }}" class="cancel-btn">❌ Annuleren</a>
+                            <a href="{{ url_for('export_lesson', lesson_id=lesson.lesson_id) }}" class="action-btn ical-btn">
+                                📅 iCal
+                            </a>
+                            <a href="{{ url_for('confirm_cancel_lesson', lesson_id=lesson.lesson_id) }}" class="cancel-btn">
+                                ❌ Annuleren
+                            </a>
                         </div>
                     </td>
                 </tr>
@@ -125,7 +138,7 @@
         </tbody>
     </table>
 
-    <!-- GESCHIEDENIS (ZONDER EVALUATIE-DETAILS) -->
+    <!-- GESCHIEDENIS -->
     <h2 class="dashboard-section-title">🏆 Mijn Geschiedenis</h2>
 
     <div class="table-scroll">

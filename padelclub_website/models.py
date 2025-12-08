@@ -1,6 +1,7 @@
 from extensions import db
 from sqlalchemy.dialects.postgresql import JSONB
 
+
 # ============================================
 #  ASSOCIATION TABLE (PLAYERS <-> LESSONS)
 # ============================================
@@ -28,8 +29,7 @@ class Club(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    # Relationships
-    lessons = db.relationship("Lesson", backref="club", lazy=True)
+    
 
 
 # ============================================
@@ -87,20 +87,15 @@ class Player(db.Model):
     lesson_type_preference = db.Column(db.String(50))
     playing_intensity = db.Column(db.String(50))
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
- 
 
-
-    # Foreign key
     assigned_coach_id = db.Column(db.BigInteger, db.ForeignKey("coaches.coach_id"))
-
-    # Relationships
     assigned_coach = db.relationship("Coach", back_populates="players")
 
     lessons = db.relationship(
         "Lesson",
-        secondary=lesson_players,
-        backref=db.backref("players", lazy=True)
+        secondary=lesson_players
     )
+
 
 
 # ============================================
@@ -111,21 +106,19 @@ class Lesson(db.Model):
     __tablename__ = "lessons"
 
     lesson_id = db.Column(db.Integer, primary_key=True)
-    lesson_type = db.Column(db.String)
-    date = db.Column(db.Date)
-    start_time = db.Column(db.Time)
-    end_time = db.Column(db.Time)
-    notes = db.Column(db.Text)
-    progress_update = db.Column(db.Text)
-    rating = db.Column(db.Integer)
-    swot = db.Column(JSONB)
-
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, server_default=db.func.now())
-
-    # Foreign keys
     coach_id = db.Column(db.Integer, db.ForeignKey("coaches.coach_id"))
-    club_id = db.Column(db.Integer, db.ForeignKey("clubs.club_id"))
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+
+    lesson_type = db.Column(db.String, nullable=True)
+    lesson_focus = db.Column(db.String, nullable=True)
+
+    
+    players = db.relationship("Player", secondary="lesson_players")
+
+
+
 
 
 # ============================================
@@ -175,3 +168,27 @@ class Recommendation(db.Model):
     recommended_lesson_type = db.Column(db.String)
     confidence_score = db.Column(db.Float)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+# ============================================
+#  GROUP LESSON REQUEST MODEL
+# ============================================
+
+from datetime import datetime, timezone
+class GroupLessonRequest(db.Model):
+    __tablename__ = "group_lesson_requests"
+
+    request_id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey("players.player_id"), nullable=False)
+    coach_id = db.Column(db.Integer, db.ForeignKey("coaches.coach_id"), nullable=False)
+
+    date = db.Column(db.Date, nullable=False)
+    time = db.Column(db.Time, nullable=False)
+
+    lesson_focus = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    player = db.relationship("Player", backref="group_requests")
+    coach = db.relationship("Coach", backref="group_requests")
+
+
+

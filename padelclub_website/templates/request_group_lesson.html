@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Groepsles Aanvragen | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-bg">
+
+<div class="container form-container">
+
+    <h2>Groepsles Aanvragen</h2>
+    <p class="subtitle">Kies coach, datum en onderwerp voor jouw groepsles.</p>
+
+    <form method="POST">
+
+        <!-- COACH -->
+        <label for="coach">Coach</label>
+        <select name="coach_id" required>
+            <option value="">Kies een coach</option>
+            {% for coach in coaches %}
+                <option value="{{ coach.coach_id }}"
+                    {% if selected_coach_id|int == coach.coach_id %}selected{% endif %}>
+                    {{ coach.first_name }} {{ coach.last_name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- DATUM -->
+        <label>Datum</label>
+        <input type="date" name="date" value="{{ selected_date }}" required>
+
+        <button type="submit" name="action" value="show_slots" class="form-btn">
+            Toon beschikbare tijdsloten
+        </button>
+
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
+
+        {% if available_slots %}
+            <h3 style="margin-top:20px;">Beschikbare tijdsloten</h3>
+
+            {% for slot in available_slots %}
+                <label class="slot-option">
+                    <input type="radio" name="slot" value="{{ slot.id }}" required>
+                    {{ slot.label }}
+                </label>
+            {% endfor %}
+
+            <!-- ONDERWERP -->
+            <label>Onderwerp groepsles</label>
+            <select name="focus" required>
+                <option value="">Maak een keuze</option>
+                <option value="volleys">Netspel & Volleys</option>
+                <option value="bandeja_vibora">Bandeja / Vibora</option>
+                <option value="tactics">Positionering & Tactiek</option>
+            </select>
+
+            <button type="submit" name="action" value="review" class="form-btn green-btn">
+                Doorgaan
+            </button>
+        {% endif %}
+    </form>
+
+    <div class="back-link">
+        <a href="{{ url_for('player_dashboard') }}">← Terug</a>
+    </div>
+
+</div>
+
+</body>
+</html>

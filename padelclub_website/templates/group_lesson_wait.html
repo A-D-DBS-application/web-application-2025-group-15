@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Wachtlijst Groepsles | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-bg">
+
+<div class="container lesson-choice-container">
+
+    <h2>Je groepsles-aanvraag is ontvangen!</h2>
+
+    <p class="subtitle">
+        Er zijn nog <strong>{{ remaining }}</strong> spelers nodig voordat de groepsles kan starten.
+    </p>
+
+    <div class="review-box">
+        <p><strong>Datum:</strong> {{ date }}</p>
+        <p><strong>Tijd:</strong> {{ time }}</p>
+
+        <p><strong>Onderwerp:</strong>
+            {% if focus == 'volleys' %} Netspel & Volleys
+            {% elif focus == 'bandeja_vibora' %} Bandeja / Vibora
+            {% elif focus == 'tactics' %} Positionering & Tactiek
+            {% endif %}
+        </p>
+    </div>
+
+    <p style="margin-top:20px;">
+        Zodra genoeg spelers zijn gevonden, word je automatisch ingepland.
+    </p>
+
+    <div class="back-link">
+        <a href="{{ url_for('player_dashboard') }}">← Terug naar dashboard</a>
+    </div>
+
+</div>
+
+</body>
+</html>

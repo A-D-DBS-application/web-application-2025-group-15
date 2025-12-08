@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Groepsles bevestigd | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-bg">
+
+<div class="container lesson-choice-container">
+
+    <h2>Groepsles bevestigd! 🎉</h2>
+    <p class="subtitle">Er zijn genoeg spelers gevonden — je groepsles is ingepland.</p>
+
+    <div class="review-box">
+        <p><strong>Datum:</strong> {{ lesson.date }}</p>
+        <p><strong>Tijd:</strong> {{ lesson.start_time }} – {{ lesson.end_time }}</p>
+
+        <p><strong>Onderwerp:</strong>
+            {% if lesson.lesson_focus == 'volleys' %} Netspel & Volleys
+            {% elif lesson.lesson_focus == 'bandeja_vibora' %} Bandeja / Vibora
+            {% elif lesson.lesson_focus == 'tactics' %} Positionering & Tactiek
+            {% endif %}
+        </p>
+
+        <p><strong>Coach:</strong>
+            {{ lesson.coach.first_name }} {{ lesson.coach.last_name }}
+        </p>
+    </div>
+
+    <div class="review-actions">
+        <a href="{{ url_for('player_dashboard') }}" class="button green-btn">
+            Terug naar dashboard
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

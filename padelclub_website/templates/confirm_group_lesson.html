@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Bevestig Groepsles | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-bg">
+
+<div class="container review-container">
+
+    <h2>Bevestig je groepsles-aanvraag</h2>
+    <p class="subtitle">Controleer je keuzes vóór je verdergaat.</p>
+
+    <div class="review-box">
+        <p><strong>Coach:</strong> {{ coach.first_name }} {{ coach.last_name }}</p>
+        <p><strong>Datum:</strong> {{ date }}</p>
+        <p><strong>Starttijd:</strong> {{ start }}</p>
+        <p><strong>Eindtijd:</strong> {{ end }}</p>
+
+        <p><strong>Onderwerp:</strong>
+            {% if focus == 'volleys' %}
+                Netspel & Volleys
+            {% elif focus == 'bandeja_vibora' %}
+                Bandeja / Vibora
+            {% elif focus == 'tactics' %}
+                Positionering & Tactiek
+            {% else %}
+                Onbekend
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="review-actions">
+        <a href="{{ url_for('request_group_lesson') }}" class="button profile-btn">Terug</a>
+
+        <!-- ALLE VERPLICHTE PARAMETERS WORDEN DOORGESTUURD -->
+        <a href="{{ url_for(
+            'finalize_group_lesson_request',
+            coach_id=coach.coach_id,
+            date=date,
+            start=start,
+            focus=focus
+        ) }}" class="button green-btn">
+            Bevestigen
+        </a>
+    </div>
+
+    <div class="back-link">
+        <a href="{{ url_for('player_dashboard') }}">← Annuleren</a>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Les type kiezen | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="dashboard-bg">
+
+<div class="container lesson-choice-container fancy-card">
+
+    <h2 class="title">Welke les wil je boeken? 🎾</h2>
+    <p class="subtitle">Kies het type les dat het beste bij jou past.</p>
+
+    <div class="lesson-buttons">
+
+        <!-- INDIVIDUELE LES -->
+        <a href="{{ url_for('book_lesson') }}" class="button lesson-btn individual">
+            <span>👤 Individuele les</span>
+            <small>Persoonlijke coaching</small>
+        </a>
+
+        <!-- GROEPSLES -->
+        <a href="{{ url_for('request_group_lesson') }}" class="button lesson-btn group">
+            <span>👥 Groepsles</span>
+            <small>Train samen met anderen</small>
+        </a>
+
+    </div>
+
+    <div class="back-link">
+        <a href="{{ url_for('player_dashboard') }}">← Terug naar dashboard</a>
+    </div>
+
+</div>
+
+</body>
+</html>
