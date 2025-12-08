@@ -52,6 +52,30 @@
                 <td>{{ student.hand_preference or "-" }}</td>
             </tr>
             <tr>
+                <th>Lesvoorkeur</th>
+                <td>
+                    {% if student.lesson_type_preference == "group" %}
+                        Groepslessen
+                    {% elif student.lesson_type_preference == "individual" %}
+                        Individuele lessen
+                    {% else %}
+                          -
+                    {% endif %}
+                 </td>
+            </tr>
+            <tr>
+                <th>Speelstijl</th>
+                <td>
+                    {% if student.playing_intensity == "recreational" %}
+                        Recreatief / ontspanning
+                    {% elif student.playing_intensity == "competitive" %}
+                        Serieus / competitief
+                    {% else %}
+                           -
+                    {% endif %}
+                 </td>
+            </tr>
+            <tr>
                 <th>Sterktes</th>
                 <td>
                     <textarea name="strengths" placeholder="Wat zijn de sterke punten?">{{ student.strengths or "" }}</textarea>
@@ -71,13 +95,13 @@
     </form>
 
 
-    <h2 class="section-title">📜 Lesgeschiedenis</h2>
+    <h2 class="section-title"> Lesgeschiedenis</h2>
     <table>
         <thead>
             <tr>
                 <th>Datum</th>
-                <th>Evaluatie & Ranking</th>
-                <th>Actie</th>
+                <th>status</th>
+                <th>evaluatie</th>
             </tr>
         </thead>
         <tbody>
@@ -87,7 +111,7 @@
                     <td>{{ item.date }}</td>
                     <td>
                         {% if item.has_evaluation %}
-                            <span style="color:green;">✔ Geëvalueerd (Ranking: {{ item.ranking_after }})</span>
+                            <span style="color:green;">✔ Geëvalueerd</span>
                         {% else %}
                             <span style="color:orange;">⏳ Nog geen feedback</span>
                         {% endif %}

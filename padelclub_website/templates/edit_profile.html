@@ -68,6 +68,34 @@
                 </option>
             {% endfor %}
         </select>
+        
+        <!-- Lesvoorkeur -->
+        <label>Lesvoorkeur</label>
+        <select name="lesson_type_preference" class="ranking-select">
+            <option value="">Geen voorkeur opgegeven</option>
+            <option value="group"
+                {% if profile.lesson_type_preference == "group" %}selected{% endif %}>
+                Groepslessen
+            </option>
+            <option value="individual"
+                {% if profile.lesson_type_preference == "individual" %}selected{% endif %}>
+                Individuele lessen
+            </option>
+        </select>
+
+        <!-- Speelstijl -->
+        <label>Speelstijl</label>
+        <select name="playing_intensity" class="ranking-select">
+            <option value="">Geen speelstijl opgegeven</option>
+            <option value="recreational"
+                {% if profile.playing_intensity == "recreational" %}selected{% endif %}>
+                Recreatief / ontspanning
+            </option>
+            <option value="competitive"
+                {% if profile.playing_intensity == "competitive" %}selected{% endif %}>
+                Serieus / competitief
+            </option>
+        </select>
 
         <div class="eval-button-row" style="margin-top: 30px;">
 

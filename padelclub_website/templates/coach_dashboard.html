@@ -8,169 +8,188 @@
 
 <body class="dashboard-bg">
 
-<div class="container">
+<div class="container coach-dashboard">
 
- <!-- TOPBAR -->
-<div class="dashboard-topbar">
+    <!-- TOPBAR -->
+    <div class="dashboard-topbar">
 
-    <!-- Profielfoto links -->
-    <div class="profile-header">
-        <img src="{{ coach.profile_image or '/static/default_profile.png' }}" class="profile-pic-large">
+        <!-- Profielfoto links -->
+        <div class="profile-header">
+            <img src="{{ coach.profile_image or '/static/default_profile.png' }}" class="profile-pic-large">
+        </div>
+
+        <!-- Titel + welkomtekst -->
+        <div class="welcome-block">
+            <h1>Welkom coach, {{ coach.first_name }}! 👋</h1>
+            <p class="subtitle">Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
+        </div>
+
+        <!-- Rechterkant: knoppen -->
+        <div class="dashboard-top-buttons">
+            <a href="{{ url_for('edit_profile') }}" class="button top-btn">⚙️ Profiel</a>
+            <a href="{{ url_for('logout') }}" class="button top-btn logout-btn">⎋ Uitloggen</a>
+        </div>
+
     </div>
-
-    <!-- Titel + welkomtekst -->
-    <div class="welcome-block">
-        <h1>Welkom coach, {{ coach.first_name }}! 👋</h1>
-        <p class="subtitle">Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
-    </div>
-
-    <!-- Rechterkant: knoppen -->
-    <div class="dashboard-top-buttons">
-        <a href="{{ url_for('edit_profile') }}" class="button">⚙️ Profiel</a>
-        <a href="{{ url_for('logout') }}" class="logout-btn">⎋ Uitloggen</a>
-    </div>
-
-</div>
-
-
 
     <!-- SPELERSLIJST -->
-    <div class="players-header">
-        <h2>📋 Mijn spelers</h2>
-        <input type="text" id="playerSearch" class="search-input"
-               placeholder="🔍 Zoek speler..." onkeyup="filterPlayers()">
-    </div>
+    <section class="coach-section">
+        <div class="section-header">
+            <h2 class="section-title">📋 Mijn spelers</h2>
+            <input type="text" id="playerSearch" class="search-input"
+                   placeholder="🔍 Zoek speler..." onkeyup="filterPlayers()">
+        </div>
 
-    <div class="table-scroll">
-        <table id="playersTable">
-            <thead>
-                <tr>
-                    <th>Naam</th>
-                    <th>Email</th>
-                    <th>Telefoon</th>
-                    <th>Actie</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if students %}
-                    {% for student in students %}
+        <div class="table-scroll">
+            <table id="playersTable" class="coach-table">
+                <thead>
                     <tr>
-                        <td>
-                            <a href="{{ url_for('coach_player_detail', player_id=student.player_id) }}"
-                               class="player-link">
-                                {{ student.first_name }} {{ student.last_name }}
-                            </a>
-                        </td>
-                        <td>{{ student.email }}</td>
-                        <td>{{ student.phone or '' }}</td>
-                        <td>
-                            <form action="{{ url_for('unlink_player', player_id=student.player_id) }}" 
-                                  method="POST"
-                                  onsubmit="return confirm('Weet je zeker dat je {{ student.first_name }} wilt loskoppelen?');">
-                                <button type="submit" class="remove-link">❌ Loskoppelen</button>
-                            </form>
-                        </td>
+                        <th>Naam</th>
+                        <th>Email</th>
+                        <th>Telefoon</th>
+                        <th>Actie</th>
                     </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td colspan="4">Nog geen spelers gekoppeld.</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    {% if students %}
+                        {% for student in students %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('coach_player_detail', player_id=student.player_id) }}"
+                                   class="player-link">
+                                    {{ student.first_name }} {{ student.last_name }}
+                                </a>
+                            </td>
+                            <td>{{ student.email }}</td>
+                            <td>{{ student.phone or '' }}</td>
+                            <td>
+                                <form action="{{ url_for('unlink_player', player_id=student.player_id) }}" 
+                                      method="POST"
+                                      onsubmit="return confirm('Weet je zeker dat je {{ student.first_name }} wilt loskoppelen?');">
+                                    <button type="submit" class="button table-btn danger-btn">
+                                        ❌ Loskoppelen
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="4">Nog geen spelers gekoppeld.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
 
-    <!-- EXTRA ACTIEKNOPPEN -->
-    <div class="button-row">
-        <a href="{{ url_for('add_player') }}" class="button">+ Speler toevoegen</a>
-        <a href="{{ url_for('coach_availability') }}" class="button">📆 Beschikbaarheid instellen</a>
-    </div>
-
+        <!-- EXTRA ACTIEKNOPPEN -->
+        <div class="coach-action-bar coach-action-bar--center">
+            <a href="{{ url_for('add_player') }}" class="button cta-btn">
+                + Speler toevoegen
+            </a>
+            <a href="{{ url_for('coach_availability') }}" class="button cta-btn">
+                📅 Beschikbaarheid instellen
+            </a>
+        </div>
+    </section>
 
     <!-- GEPLANDE LESSEN -->
-    <h2>📘 Geplande lessen</h2>
+    <section class="coach-section">
+        <h2 class="section-title">📘 Geplande lessen</h2>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Datum</th>
-                <th>Tijd</th>
-                <th>Speler(s)</th>
-                <th>Actie</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if upcoming_lessons %}
-                {% for lesson in upcoming_lessons %}
-                <tr>
-                    <td>{{ lesson.date }}</td>
-                    <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
-                    <td>{{ lesson.players }}</td>
-                    <td>
-                        <a href="{{ url_for('export_lesson', lesson_id=lesson.lesson_id) }}" 
-                           class="action-btn" style="background-color: #0077cc;">
-                           📅 iCal
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr><td colspan="4">Nog geen lessen ingepland.</td></tr>
-            {% endif %}
-        </tbody>
-    </table>
-
-    <div class="center-actions">
-        <a href="{{ url_for('schedule_individual_lesson') }}" class="button">
-            📅 Nieuwe les inplannen
-        </a>
-    </div>
-
+        <div class="table-scroll">
+            <table class="coach-table">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Tijd</th>
+                        <th>Speler(s)</th>
+                        <th>Actie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if upcoming_lessons %}
+                        {% for lesson in upcoming_lessons %}
+                        <tr>
+                            <td>{{ lesson.date }}</td>
+                            <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
+                            <td>{{ lesson.players }}</td>
+                            <td>
+                                <a href="{{ url_for('export_lesson', lesson_id=lesson.lesson_id) }}" 
+                                   class="button table-btn ical-btn">
+                                   📅 iCal
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="4">Nog geen lessen ingepland.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>   
+    </section>
 
     <!-- AFGELOPEN LESSEN -->
-    <h2>📘 Afgelopen lessen</h2>
+    <section class="coach-section">
+        <h2 class="section-title">📘 Afgelopen lessen</h2>
 
-    <div class="table-scroll">
-        <table>
-            <thead>
-                <tr>
-                    <th>Datum</th>
-                    <th>Tijd</th>
-                    <th>Speler(s)</th>
-                    <th>Actie</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if past_lessons %}
-                    {% for lesson in past_lessons %}
+        <div class="table-scroll">
+            <table class="coach-table">
+                <thead>
                     <tr>
-                        <td>{{ lesson.date }}</td>
-                        <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
-                        <td>{{ lesson.player_name }}</td>
-                        <td>
-                            {% if lesson.has_evaluation %}
-                                <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}"
-                                   class="action-btn">
-                                   📝 Evaluatie bekijken
-                                </a>
-                            {% else %}
-                                <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}"
-                                   class="action-btn">
-                                   🖊️ Les evalueren
-                                </a>
-                            {% endif %}
-                        </td>
+                        <th>Datum</th>
+                        <th>Tijd</th>
+                        <th>Speler(s)</th>
+                        <th>Actie</th>
                     </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td colspan="4">Nog geen afgelopen lessen.</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    {% if past_lessons %}
+                        {% for lesson in past_lessons %}
+                        <tr>
+                            <td>{{ lesson.date }}</td>
+                            <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
+                            <td>{{ lesson.player_name }}</td>
+                            <td>
+                                {% if lesson.has_evaluation %}
+                                    <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}"
+                                       class="button table-btn success-btn">
+                                       📝 Evaluatie bekijken
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}"
+                                       class="button table-btn warning-btn">
+                                       🖊️ Les evalueren
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="4">Nog geen afgelopen lessen.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 
 </div>
 
 <footer>© 2025 Fit Out Padel Destelbergen</footer>
+
+<script>
+    function filterPlayers() {
+        const input = document.getElementById("playerSearch");
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll("#playersTable tbody tr");
+
+        rows.forEach(row => {
+            const nameCell = row.querySelector("td");
+            if (!nameCell) return;
+            const text = nameCell.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    }
+</script>
 
 </body>
 </html>

@@ -237,6 +237,9 @@ def register_player_step2():
                     "register_player_step2.html",
                     error="Ongeldige geboortedatum."
                 )
+                
+        lesson_type_preference = request.form.get("lesson_type_preference")
+        playing_intensity = request.form.get("playing_intensity")
 
         # -------------------------
         # PROFIELFOTO UPLOAD (SPELER)
@@ -282,6 +285,8 @@ def register_player_step2():
             gender=gender,
             date_of_birth=dob,
             profile_image=profile_url,   # <--- URL opgeslagen in DB
+            lesson_type_preference=lesson_type_preference,
+            playing_intensity=playing_intensity,
         )
 
         try:
@@ -1271,6 +1276,9 @@ def edit_profile():
         profile.phone = request.form.get("phone")
         profile.gender = request.form.get("gender")
         profile.ranking = request.form.get("ranking")
+        profile.lesson_type_preference = request.form.get("lesson_type_preference")
+        profile.playing_intensity = request.form.get("playing_intensity")
+
 
         if role == "player":
             dob = request.form.get("dob")

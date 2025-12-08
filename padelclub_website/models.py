@@ -84,6 +84,8 @@ class Player(db.Model):
     profile_image = db.Column(db.String, nullable=True)
     strengths = db.Column(db.Text)
     weaknesses = db.Column(db.Text)
+    lesson_type_preference = db.Column(db.String(50))
+    playing_intensity = db.Column(db.String(50))
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
  
 
