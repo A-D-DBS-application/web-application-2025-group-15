@@ -4,8 +4,8 @@ from extensions import db
 from sqlalchemy import or_, and_
 from datetime import datetime, date, timedelta
 from icalendar import Calendar, Event
-import json
 from supabase import create_client, Client
+import json
 import os
 supabase: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
 
