@@ -5,17 +5,19 @@
     <title>Les aanvragen | Fit Out Padel Destelbergen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
-<div class="container">
+<div class="container card">
     <h1>📅 Les aanvragen</h1>
 
     {% if error %}
-        <p class="error">{{ error }}</p>
+        <div class="alert alert-error">❌ {{ error }}</div>
     {% endif %}
 
-    <form method="POST">
-        <label for="coach_id">Kies coach:</label>
-        <select name="coach_id" id="coach_id" required>
+    <!-- FORM 1 -->
+    <form method="POST" class="card section">
+        <label class="form-label">Kies coach:</label>
+        <select name="coach_id" class="form-input" required>
             <option value="">-- Selecteer coach --</option>
             {% for c in coaches %}
                 <option value="{{ c.coach_id }}"
@@ -25,44 +27,40 @@
             {% endfor %}
         </select>
 
-        <label for="date">Kies datum:</label>
-        <input type="date" id="date" name="date"
-               value="{{ selected_date or '' }}" required>
+        <label class="form-label">Kies datum:</label>
+        <input type="date" name="date" class="form-input" value="{{ selected_date or '' }}" required>
 
-        <button type="submit" name="action" value="show_slots" class="button secondary">
-            Toon beschikbare tijdsloten
-        </button>
-
-        <a href="{{ url_for('player_dashboard') }}" class="cancel-link">
-            Annuleren
-        </a>
+        <div class="form-actions">
+            <button type="submit" name="action" value="show_slots" class="button button-primary">
+                Toon beschikbare tijdsloten
+            </button>
+            <a href="{{ url_for('player_dashboard') }}" class="cancel-link">Annuleren</a>
+        </div>
     </form>
 
     {% if available_slots %}
         <hr>
-        <h2>Beschikbare tijdsloten</h2>
+
+        <h2 class="section-title">Beschikbare tijdsloten</h2>
+
+        <!-- FORM 2 -->
         <form method="POST">
             <input type="hidden" name="coach_id" value="{{ selected_coach_id }}">
             <input type="hidden" name="date" value="{{ selected_date }}">
 
-            <ul class="timeslots">
-                {% for slot in available_slots %}
-                    <li>
-                        <label>
-                            <input type="radio" name="slot" value="{{ slot.id }}" required>
-                            {{ slot.label }}
-                        </label>
-                    </li>
-                {% endfor %}
-            </ul>
+            {% for slot in available_slots %}
+                <label class="availability-item">
+                    <span class="availability-time">{{ slot.label }}</span>
+                    <input type="radio" name="slot" value="{{ slot.id }}" required>
+                </label>
+            {% endfor %}
 
-            <button type="submit" name="action" value="book" class="button">
-                Boek deze les
-            </button>
-
-            <a href="{{ url_for('player_dashboard') }}" class="cancel-link">
-                Annuleren
-            </a>
+            <div class="form-actions">
+                <button type="submit" name="action" value="book" class="button button-success">
+                    Boek deze les
+                </button>
+                
+            </div>
         </form>
     {% endif %}
 </div>
