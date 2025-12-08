@@ -17,7 +17,7 @@
         {% endif %}
         {% if message %}
             <div class="alert alert-success">
-                ✅ Opgeslagen! {{ message }}
+                ✅ Beschikbaarheid succesvol opgeslagen!
             </div>
         {% endif %}
         
@@ -39,26 +39,39 @@
         </div>
 
         {% if selected_date %}
-            
             <div class="card slot-selection-card">
-                <h3>Beschikbare Uren op {{ selected_date.strftime('%A %d-%m-%Y') }}</h3>
+                <h3>
+                    Duid jouw beschikbaarheden aan op 
+                    {{ selected_date.strftime('%A') | replace('Monday','maandag') 
+                                   | replace('Tuesday','dinsdag')
+                                   | replace('Wednesday','woensdag')
+                                   | replace('Thursday','donderdag')
+                                   | replace('Friday','vrijdag')
+                                   | replace('Saturday','zaterdag')
+                                   | replace('Sunday','zondag') 
+                    }} 
+                    {{ selected_date.strftime('%d-%m-%Y') }}
+                </h3>
+
 
                 <form method="POST">
-                    <input type="hidden" name="date" value="{{ date_str }}"> 
+                    <input type="hidden" name="date" value="{{ date_str }}">
 
                     <div class="slots-grid">
                         {% for slot in all_slots %}
                             {% set is_selected = slot.id in selected_slot_ids %}
+                            
+                            <div class="slot-row {% if is_selected %}selected{% endif %}">
+                                <span class="slot-label">{{ slot.label }}</span>
 
-                            <label class="slot-container {% if is_selected %}selected{% endif %}">
                                 <input 
                                     type="checkbox" 
-                                    name="slots"                 
+                                    name="slots" 
                                     value="{{ slot.id }}"
+                                    class="slot-checkbox"
                                     {% if is_selected %}checked{% endif %}
                                 >
-                                {{ slot.label }}
-                            </label>
+                            </div>
                         {% endfor %}
                     </div>
 
