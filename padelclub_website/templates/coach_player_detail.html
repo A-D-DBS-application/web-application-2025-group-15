@@ -71,13 +71,13 @@
     </form>
 
 
-    <h2 class="section-title">📜 Lesgeschiedenis</h2>
+    <h2 class="section-title"> Lesgeschiedenis</h2>
     <table>
         <thead>
             <tr>
                 <th>Datum</th>
-                <th>Evaluatie & Ranking</th>
-                <th>Actie</th>
+                <th>status</th>
+                <th>evaluatie</th>
             </tr>
         </thead>
         <tbody>
@@ -87,7 +87,7 @@
                     <td>{{ item.date }}</td>
                     <td>
                         {% if item.has_evaluation %}
-                            <span style="color:green;">✔ Geëvalueerd (Ranking: {{ item.ranking_after }})</span>
+                            <span style="color:green;">✔ Geëvalueerd</span>
                         {% else %}
                             <span style="color:orange;">⏳ Nog geen feedback</span>
                         {% endif %}

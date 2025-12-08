@@ -13,7 +13,6 @@
     <!-- BOVENSTE BLOK MET FOTO + NAAM -->
     <div class="dashboard-header">
 
-        <!-- Profielfoto links -->
         <div class="profile-photo-wrapper">
             {% if user.profile_image %}
                 <img src="{{ user.profile_image }}" class="profile-pic-dashboard">
@@ -22,7 +21,6 @@
             {% endif %}
         </div>
 
-        <!-- Naam + info rechts -->
         <div class="profile-info">
             <h1>Welkom, {{ user.first_name }}! 👋</h1>
 
@@ -37,7 +35,6 @@
             </p>
         </div>
 
-        <!-- Knoppen -->
         <div class="dashboard-buttons">
             <a href="{{ url_for('edit_profile') }}" class="button profile-btn">⚙️ Profiel</a>
 
@@ -49,7 +46,23 @@
         </div>
     </div>
 
-    <!-- INFOBOX -->
+    <!-- STERKTES & WERKPUNTEN (NIEUW BLOK) -->
+    <div class="player-strengths-card">
+        <h3 class="strengths-title">Sterktes & werkpunten</h3>
+        
+        <div class="strengths-grid">
+            <div class="strength-box">
+                <h4>💪 Sterktes</h4>
+                <p>{{ user.strengths or "Je coach heeft nog geen sterktes ingevuld." }}
+            </div>
+            
+            <div class="strength-box">
+                <h4>🎯 Werkpunten</h4>
+                <p>{{ user.weaknesses or "Je coach heeft nog geen werkpunten ingevuld." }}</p>
+            </div>
+        </div>
+    </div>
+
     {% if not user.assigned_coach %}
     <div class="dashboard-warning">
         Je hebt nog geen coach. Je kan pas lessen boeken nadat je gekoppeld bent aan een coach.
@@ -91,8 +104,8 @@
         </tbody>
     </table>
 
-    <!-- GESCHIEDENIS -->
-    <h2 class="dashboard-section-title">🏆 Mijn Geschiedenis & Evaluaties</h2>
+    <!-- GESCHIEDENIS (ZONDER EVALUATIE-DETAILS) -->
+    <h2 class="dashboard-section-title">🏆 Mijn Geschiedenis</h2>
 
     <div class="table-scroll">
         <table class="dashboard-table">
@@ -101,7 +114,6 @@
                     <th>Datum</th>
                     <th>Tijd</th>
                     <th>Coach</th>
-                    <th>Evaluatie</th>
                 </tr>
             </thead>
             <tbody>
@@ -111,17 +123,10 @@
                         <td>{{ lesson.date }}</td>
                         <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
                         <td>{{ lesson.coach_name }}</td>
-                        <td>
-                            {% if lesson.has_evaluation %}
-                                <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}" class="action-btn">📝 Feedback bekijken</a>
-                            {% else %}
-                                <span class="feedback-missing">Nog geen feedback</span>
-                            {% endif %}
-                        </td>
                     </tr>
                     {% endfor %}
                 {% else %}
-                    <tr><td colspan="4">Nog geen geschiedenis beschikbaar.</td></tr>
+                    <tr><td colspan="3">Nog geen geschiedenis beschikbaar.</td></tr>
                 {% endif %}
             </tbody>
         </table>

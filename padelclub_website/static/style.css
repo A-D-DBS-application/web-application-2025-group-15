@@ -43,7 +43,9 @@ p {
 }
 
 .button, .link-btn {
-    display: inline-block;
+    display: inline-flex;              /* i.p.v. inline-block */
+    align-items: center;               /* verticaal centreren */
+    justify-content: center;           /* horizontaal centreren */
     background-color: #00a884;
     color: white;
     padding: 12px 18px;
@@ -677,6 +679,52 @@ select {
     display: flex;
     gap: 10px;
 }
+/* PLAYER DASHBOARD – STERKTES & WERKPUNTEN */
+.player-strengths-card {
+    background: #f7f9fc;
+    padding: 20px 25px;
+    border-radius: 12px;
+    border-left: 5px solid #00a884;
+    margin-top: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.strengths-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0077cc;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e6e6e6;
+    padding-bottom: 6px;
+}
+
+.strengths-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+}
+
+.strength-box {
+    flex: 1 1 280px;
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.strength-box h4 {
+    margin: 0 0 8px;
+    font-size: 17px;
+    color: #00a884;
+    font-weight: 600;
+}
+
+.strength-box p {
+    margin: 0;
+    color: #333;
+    line-height: 1.45;
+}
 
 
 /* ============================
@@ -1287,8 +1335,8 @@ select {
     opacity: 0.9;
 }
 
-/* Algemene container */
-.container {
+/* Algemene container voor bepaalde formulieren (geen dashboard) */
+.form-page-container {
     max-width: 750px;
     margin: auto;
     padding: 20px;
@@ -1449,4 +1497,163 @@ select {
 .cancel-link:hover {
     background: #e2e6ec;
     color: #2a2d32;
+}
+
+/* ============================
+   COACH DASHBOARD LAYOUT
+   ============================ */
+
+/* Extra wrapper rond de coach-pagina */
+.coach-dashboard {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Secties (spelers / geplande lessen / afgelopen lessen) */
+.coach-section {
+    margin-top: 30px;
+}
+
+/* Titel + zoekveld boven spelers */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2574a9;
+    margin: 0 0 5px;
+}
+
+/* Tabellen specifiek voor coach-dashboard */
+.coach-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.coach-table thead {
+    background-color: #0077cc;
+    color: #ffffff;
+}
+
+.coach-table th,
+.coach-table td {
+    padding: 10px 12px;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.coach-table tbody tr:nth-child(even) {
+    background-color: #f8f8f8;
+}
+
+.coach-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0 22px;
+}
+
+.coach-action-bar--center {
+    justify-content: center;
+}
+
+/* Beide coach-actieknoppen even breed,
+   maar verder gewoon de standaard .button-stijl gebruiken */
+.cta-btn {
+    flex: 0 0 230px;   /* zelfde breedte */
+}
+
+.outline-btn:hover {
+    background-color: #f5fff8;
+}
+
+/* Tabel-knoppen (Loskoppelen / Evaluatie / iCal) */
+.table-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 999px;
+}
+
+/* Kleurenvarianten */
+.danger-btn {
+    background-color: #dc3545;
+    color: #ffffff;
+}
+
+.danger-btn:hover {
+    background-color: #bb2d3b;
+}
+
+.success-btn {
+    background-color: #2ecc71;
+    color: #ffffff;
+}
+
+.success-btn:hover {
+    background-color: #27ae60;
+}
+
+.warning-btn {
+    background-color: #f1c40f;
+    color: #333;
+}
+
+.warning-btn:hover {
+    background-color: #d4ac0d;
+}
+
+.ical-btn {
+    background-color: #0077cc !important;
+    color: #ffffff !important;
+}
+
+.ical-btn:hover {
+    background-color: #005fa3 !important;
+}
+
+/* Responsiveness coach-dashboard */
+@media (max-width: 900px) {
+    .coach-dashboard {
+        padding: 15px;
+    }
+
+    .dashboard-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashboard-top-buttons {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .coach-dashboard {
+        padding: 10px;
+    }
+
+    .welcome-block h1 {
+        font-size: 1.4rem;
+    }
+
+    .coach-table th,
+    .coach-table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .cta-btn,
+    .outline-btn {
+        flex: 1 1 100%;  /* onder elkaar op gsm */
+    }
 }
