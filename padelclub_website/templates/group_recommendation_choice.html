@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Coach aanbeveling (Groepsles) | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="fullscreen-gradient">
+<div class="center-card">
+
+    <h1>We hebben een coach-aanbeveling voor jouw groepsles</h1>
+
+    <p>
+        Je koos oorspronkelijk voor
+        <strong>{{ chosen_coach.first_name }} {{ chosen_coach.last_name }}</strong>,<br>
+        maar op basis van jouw profiel en dit tijdslot raden we aan om te trainen met:
+        <br><br>
+        <strong>⭐ {{ recommended_coach.first_name }} {{ recommended_coach.last_name }}</strong>
+    </p>
+
+    <h3>Waarom deze aanbeveling?</h3>
+    <ul style="text-align:left; max-width:600px; margin: 0 auto 20px auto;">
+        {% for r in reasons %}
+        <li>{{ r }}</li>
+        {% endfor %}
+    </ul>
+
+    <p>
+        <strong>Datum:</strong> {{ date_str }}<br>
+        <strong>Tijd:</strong> {{ start_str }} – {{ (start_str ~ '-dummy')[:5] | default('') }}
+        <!-- simpele weergave, je kan dit zelf nog stylen -->
+    </p>
+
+    <p>
+        <strong>Onderwerp:</strong>
+        {% if focus == 'volleys' %}
+            Netspel & Volleys
+        {% elif focus == 'bandeja_vibora' %}
+            Bandeja / Vibora
+        {% elif focus == 'tactics' %}
+            Positionering & Tactiek
+        {% else %}
+            {{ focus }}
+        {% endif %}
+    </p>
+
+    <div class="confirm-actions">
+        <!-- Kies aanbevolen coach -->
+        <form action="{{ url_for('player_confirm_group_choice') }}" method="POST">
+            <input type="hidden" name="decision" value="recommended">
+            <input type="hidden" name="chosen_coach_id" value="{{ chosen_coach.coach_id }}">
+            <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
+            <input type="hidden" name="date" value="{{ date_str }}">
+            <input type="hidden" name="start" value="{{ start_str }}">
+            <input type="hidden" name="focus" value="{{ focus }}">
+            <button type="submit" class="confirm-back">
+                ✅ Kies aanbevolen coach
+            </button>
+        </form>
+
+        <!-- Blijf bij eigen keuze -->
+        <form action="{{ url_for('player_confirm_group_choice') }}" method="POST">
+            <input type="hidden" name="decision" value="chosen">
+            <input type="hidden" name="chosen_coach_id" value="{{ chosen_coach.coach_id }}">
+            <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
+            <input type="hidden" name="date" value="{{ date_str }}">
+            <input type="hidden" name="start" value="{{ start_str }}">
+            <input type="hidden" name="focus" value="{{ focus }}">
+            <button type="submit" class="confirm-cancel">
+                🙋‍♂️ Behoud mijn gekozen coach
+            </button>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

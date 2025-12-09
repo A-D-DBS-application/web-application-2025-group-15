@@ -9,6 +9,7 @@ from models import GroupLessonRequest, Lesson
 import json
 import os
 import datetime
+from services import recommend_coaches_for_lesson
 supabase: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
 
 from models import (
@@ -585,27 +586,75 @@ def finalize_group_lesson_request():
     if not player_id:
         return redirect(url_for("login"))
 
-    # data ophalen uit URL-parameters
-    coach_id = request.args.get("coach_id")
+    player = Player.query.get(player_id)
+
+    # data ophalen uit URL-parameters (vanuit confirm_group_lesson.html)
+    chosen_coach_id = request.args.get("coach_id", type=int)
     date_str = request.args.get("date")
     start_str = request.args.get("start")
     focus = request.args.get("focus")
 
-    # controleren of iets ontbreekt
-    if not (coach_id and date_str and start_str and focus):
-        return "Missing data", 400
+    if not (chosen_coach_id and date_str and start_str and focus):
+        return render_template("error.html", message="Onvolledige groepsles-data.")
 
     try:
         date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         start_obj = datetime.strptime(start_str, "%H:%M").time()
         end_obj = (datetime.combine(date_obj, start_obj) + timedelta(hours=1)).time()
     except ValueError:
-        return "Invalid date or time format", 400
+        return render_template("error.html", message="Ongeldige datum of tijd.")
 
-    # groepsles-aanvraag opslaan
+    # -----------------------------
+    # 1) Aanbevelingsalgoritme voor groepsles
+    # -----------------------------
+    intensity = getattr(player, "playing_intensity", None)
+
+    recs = recommend_coaches_for_lesson(
+        players=[player],
+        subject=focus,
+        intensity=intensity,
+        lesson_date=date_obj,
+        start_time=start_obj,
+        end_time=end_obj,
+        return_details=True,
+    )
+
+    print("🔍 Group recommendations:", recs)
+
+    best_rec = None
+    chosen_score = None
+
+    if recs:
+        best_rec = recs[0]
+
+        # score van de coach die speler koos
+        for rec in recs:
+            if rec["coach"].coach_id == chosen_coach_id:
+                chosen_score = rec["score"]
+                break
+
+    # -----------------------------
+    # 2) Popup tonen als andere coach duidelijk beter is
+    # -----------------------------
+    if best_rec and best_rec["coach"].coach_id != chosen_coach_id:
+        if chosen_score is None or best_rec["score"] >= (chosen_score + 5):
+            # Toon keuzescherm (exact zoals individueel, maar voor groepsles)
+            return render_template(
+                "group_recommendation_choice.html",
+                chosen_coach=Coach.query.get(chosen_coach_id),
+                recommended_coach=best_rec["coach"],
+                reasons=best_rec["reasons"],
+                date_str=date_str,
+                start_str=start_str,
+                focus=focus,
+            )
+
+    # -----------------------------
+    # 3) Geen popup → gewoon request voor gekozen coach opslaan
+    # -----------------------------
     new_request = GroupLessonRequest(
         player_id=player_id,
-        coach_id=int(coach_id),
+        coach_id=chosen_coach_id,
         date=date_obj,
         time=start_obj,
         lesson_focus=focus
@@ -614,10 +663,61 @@ def finalize_group_lesson_request():
     db.session.add(new_request)
     db.session.commit()
 
-    # doorsturen naar matcher
+    # Matcher starten voor deze coach+slot
     return redirect(url_for(
         "check_group_match",
-        coach_id=coach_id,
+        coach_id=chosen_coach_id,
+        date=date_str,
+        time=start_str,
+        focus=focus
+    ))
+
+@app.route("/player/confirm_group_choice", methods=["POST"])
+def player_confirm_group_choice():
+    if session.get("role") != "player":
+        return redirect(url_for("login"))
+
+    player_id = session.get("user_id")
+    player = Player.query.get(player_id)
+
+    decision = request.form.get("decision")  # "recommended" of "chosen"
+    chosen_coach_id = int(request.form.get("chosen_coach_id"))
+    recommended_coach_id = int(request.form.get("recommended_coach_id"))
+    date_str = request.form.get("date")
+    start_str = request.form.get("start")
+    focus = request.form.get("focus")
+
+    try:
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+        start_obj = datetime.strptime(start_str, "%H:%M").time()
+    except Exception:
+        return render_template("error.html", message="Ongeldige groepsles-data.")
+
+    # uiteindelijke coach
+    final_coach_id = recommended_coach_id if decision == "recommended" else chosen_coach_id
+
+    # Groepsles-aanvraag opslaan (net zoals vroeger)
+    new_request = GroupLessonRequest(
+        player_id=player_id,
+        coach_id=final_coach_id,
+        date=date_obj,
+        time=start_obj,
+        lesson_focus=focus
+    )
+
+    try:
+        db.session.add(new_request)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print("Fout bij opslaan groepsles-aanvraag:", e)
+        return render_template("error.html", message="Er ging iets mis bij het aanvragen van de groepsles.")
+
+    # Daarna werkt het systeem EXACT zoals ervoor:
+    # check_group_match kijkt of er ≥3 requests zijn voor deze coach + datum + tijd + focus
+    return redirect(url_for(
+        "check_group_match",
+        coach_id=final_coach_id,
         date=date_str,
         time=start_str,
         focus=focus
@@ -766,8 +866,9 @@ def book_lesson():
         return redirect(url_for("login"))
 
     player_id = session.get("user_id")
+    player = Player.query.get(player_id)
 
-    # Coaches ophalen
+    # Alle coaches tonen in dropdown
     try:
         coaches = Coach.query.all()
     except Exception:
@@ -801,13 +902,12 @@ def book_lesson():
         selected_coach_id = request.form.get("coach_id")
         selected_date = request.form.get("date")
 
-        # Zorg dat coach_id een integer wordt
         if selected_coach_id:
             selected_coach_id = int(selected_coach_id)
 
-        # -----------------------------
-        #  TIJDSLOTEN TONEN
-        # -----------------------------
+        # =============================
+        # 1) TIJDSLOTEN TONEN
+        # =============================
         if action == "show_slots":
             if not selected_coach_id or not selected_date:
                 error = "Kies eerst een coach en een datum."
@@ -815,7 +915,7 @@ def book_lesson():
                 try:
                     selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
 
-                    # 1) Bestaande lessen ophalen → ingenomen slots
+                    # Bestaande lessen → ingenomen slots
                     existing_lessons = Lesson.query.filter(
                         Lesson.coach_id == selected_coach_id,
                         Lesson.date == selected_date_obj
@@ -826,7 +926,7 @@ def book_lesson():
                         for les in existing_lessons
                     }
 
-                    # 2) Beschikbaarheid van coach ophalen
+                    # Beschikbaarheid coach
                     availability = CoachAvailability.query.filter_by(
                         coach_id=selected_coach_id,
                         date=selected_date_obj
@@ -859,39 +959,92 @@ def book_lesson():
                     print("Fout bij ophalen tijdsloten:", e)
                     error = "Er ging iets mis bij het ophalen van de tijdsloten."
 
-        # -----------------------------
-        #  LES BOEKEN
-        # -----------------------------
+        # =============================
+        # 2) LES BOEKEN (MET RECOMMENDER)
+        # =============================
         if action == "book":
             slot_id = request.form.get("slot")
+            # optioneel: les-focus (bv. uit extra veld in je formulier)
+            focus = request.form.get("focus") or None
+            intensity = getattr(player, "playing_intensity", None)
 
             if not selected_coach_id or not selected_date or not slot_id:
                 error = "Kies een coach, datum én tijdslot."
             else:
                 try:
-                    selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
-
+                    lesson_date = datetime.strptime(selected_date, "%Y-%m-%d").date()
                     start_str, end_str = slot_id.split("-")
                     start_time_obj = datetime.strptime(start_str, "%H:%M").time()
                     end_time_obj = datetime.strptime(end_str, "%H:%M").time()
 
-                    # Nieuwe les aanmaken
+                    # ---------------------------
+                    # A) RECOMMENDATION ALGORTIME
+                    # ---------------------------
+                    recs = recommend_coaches_for_lesson(
+                        players=[player],
+                        subject=focus,
+                        intensity=intensity,
+                        lesson_date=lesson_date,
+                        start_time=start_time_obj,
+                        end_time=end_time_obj,
+                        return_details=True,
+                    )
+
+                    print("🔍 Recommendations:", recs)
+
+                    best_rec = None
+                    chosen_score = None
+
+                    if recs:
+                        best_rec = recs[0]
+
+                        # score van de door speler gekozen coach zoeken
+                        for rec in recs:
+                            if rec["coach"].coach_id == selected_coach_id:
+                                chosen_score = rec["score"]
+                                break
+
+                    # Debug prints in console
+                    if best_rec:
+                        print(f"Beste coach: {best_rec['coach'].first_name} (score={best_rec['score']})")
+                        print(f"Gekozen coach id: {selected_coach_id}, gekozen score: {chosen_score}")
+
+                    # ---------------------------
+                    # B) POPUP TONEN ALS ANDERE COACH BETER IS
+                    # ---------------------------
+                    if best_rec and best_rec["coach"].coach_id != selected_coach_id:
+                        # threshold: minimaal 5 punten beter
+                        if chosen_score is None or best_rec["score"] >= (chosen_score + 5):
+                            # we tonen een keuze-scherm
+                            return render_template(
+                                "recommendation_choice.html",
+                                selected_coach=Coach.query.get(selected_coach_id),
+                                recommended_coach=best_rec["coach"],
+                                reasons=best_rec["reasons"],
+                                date=lesson_date,
+                                slot_id=slot_id,
+                                start_time=start_time_obj,
+                                end_time=end_time_obj,
+                            )
+
+                    # ---------------------------
+                    # C) GEEN POPUP → GEWOON LES BOEKEN
+                    # ---------------------------
                     new_lesson = Lesson(
                         coach_id=selected_coach_id,
-                        date=selected_date_obj,
+                        date=lesson_date,
                         start_time=start_time_obj,
                         end_time=end_time_obj,
                         lesson_type="Individueel"
                     )
 
-                    player = Player.query.get(player_id)
                     new_lesson.players.append(player)
                     db.session.add(new_lesson)
 
                     # Beschikbaar tijdslot verwijderen
                     slot_to_remove = CoachAvailability.query.filter_by(
                         coach_id=selected_coach_id,
-                        date=selected_date_obj,
+                        date=lesson_date,
                         start_time=start_time_obj,
                         end_time=end_time_obj
                     ).first()
@@ -907,7 +1060,7 @@ def book_lesson():
                     print("Fout bij boeken les:", e)
                     error = "Er ging iets mis bij het boeken. Probeer later opnieuw."
 
-    # ---- TEMPLATE RENDEREN ----
+    # ---- TEMPLATE RENDEREN (GET of errors) ----
     return render_template(
         "book_lesson.html",
         coaches=coaches,
@@ -916,6 +1069,140 @@ def book_lesson():
         selected_date=selected_date,
         error=error,
     )
+
+
+def _create_individual_lesson_and_redirect(player_id, coach_id, selected_date_obj, start_time_obj, end_time_obj):
+    """Hulpfunctie die effectief de les aanmaakt + beschikbaarheid updatet."""
+    try:
+        # Conflicten checken (coach)
+        conflict_coach = Lesson.query.filter(
+            Lesson.coach_id == coach_id,
+            Lesson.date == selected_date_obj,
+            Lesson.start_time < end_time_obj,
+            Lesson.end_time > start_time_obj
+        ).first()
+
+        if conflict_coach:
+            return render_template(
+                "book_lesson.html",
+                error="Deze coach heeft al een les op dit tijdstip.",
+                coaches=Coach.query.all(),
+                available_slots=[],
+                selected_coach_id=coach_id,
+                selected_date=selected_date_obj.strftime("%Y-%m-%d"),
+            )
+
+        # Conflicten checken (speler)
+        conflict_player = Lesson.query.filter(
+            Lesson.date == selected_date_obj,
+            Lesson.start_time < end_time_obj,
+            Lesson.end_time > start_time_obj,
+            Lesson.players.any(Player.player_id == player_id)
+        ).first()
+
+        if conflict_player:
+            return render_template(
+                "book_lesson.html",
+                error="Je hebt zelf al een les op dit moment.",
+                coaches=Coach.query.all(),
+                available_slots=[],
+                selected_coach_id=coach_id,
+                selected_date=selected_date_obj.strftime("%Y-%m-%d"),
+            )
+
+        # Les aanmaken
+        new_lesson = Lesson(
+            coach_id=coach_id,
+            date=selected_date_obj,
+            start_time=start_time_obj,
+            end_time=end_time_obj,
+            lesson_type="Individueel"
+        )
+
+        player = Player.query.get(player_id)
+        new_lesson.players.append(player)
+        db.session.add(new_lesson)
+
+        # Beschikbaarheid-slot verwijderen
+        slot_to_remove = CoachAvailability.query.filter_by(
+            coach_id=coach_id,
+            date=selected_date_obj,
+            start_time=start_time_obj,
+            end_time=end_time_obj
+        ).first()
+
+        if slot_to_remove:
+            db.session.delete(slot_to_remove)
+
+        db.session.commit()
+        return redirect(url_for("player_dashboard"))
+
+    except Exception as e:
+        db.session.rollback()
+        print("Fout bij definitief boeken:", e)
+        return render_template(
+            "book_lesson.html",
+            error="Er ging iets mis bij het definitief boeken.",
+            coaches=Coach.query.all(),
+            available_slots=[],
+            selected_coach_id=coach_id,
+            selected_date=selected_date_obj.strftime("%Y-%m-%d"),
+        )
+    
+@app.route("/player/confirm_lesson_choice", methods=["POST"])
+def player_confirm_lesson_choice():
+    if session.get("role") != "player":
+        return redirect(url_for("login"))
+
+    player_id = session.get("user_id")
+    player = Player.query.get(player_id)
+
+    choice = request.form.get("choice")  # "recommended" of "original"
+    recommended_id = int(request.form.get("recommended_coach_id"))
+    original_id = int(request.form.get("original_coach_id"))
+    date_str = request.form.get("date")
+    slot_id = request.form.get("slot_id")
+
+    try:
+        lesson_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        start_str, end_str = slot_id.split("-")
+        start_time_obj = datetime.strptime(start_str, "%H:%M").time()
+        end_time_obj = datetime.strptime(end_str, "%H:%M").time()
+    except Exception:
+        return render_template("error.html", message="Ongeldige data voor les.")
+
+    # Welke coach uiteindelijk gebruiken?
+    coach_id = recommended_id if choice == "recommended" else original_id
+
+    try:
+        new_lesson = Lesson(
+            coach_id=coach_id,
+            date=lesson_date,
+            start_time=start_time_obj,
+            end_time=end_time_obj,
+            lesson_type="Individueel"
+        )
+        new_lesson.players.append(player)
+        db.session.add(new_lesson)
+
+        # Beschikbaarheid-slot weghalen voor de coach die de les geeft
+        slot_to_remove = CoachAvailability.query.filter_by(
+            coach_id=coach_id,
+            date=lesson_date,
+            start_time=start_time_obj,
+            end_time=end_time_obj
+        ).first()
+
+        if slot_to_remove:
+            db.session.delete(slot_to_remove)
+
+        db.session.commit()
+        return redirect(url_for("player_dashboard"))
+
+    except Exception as e:
+        db.session.rollback()
+        print("Fout bij bevestigen leskeuze:", e)
+        return render_template("error.html", message="Er ging iets mis bij het bevestigen van de les.")
 
 
 # ============================================================

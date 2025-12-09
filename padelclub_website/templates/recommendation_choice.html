@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Aanbevolen coach</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="fullscreen-gradient">
+<div class="center-card">
+    <h1>Aanbevolen coach voor deze les</h1>
+
+    <p>
+        Je koos oorspronkelijk voor
+        <strong>{{ selected_coach.first_name }} {{ selected_coach.last_name }}</strong>,
+        maar op basis van jouw profiel en dit tijdslot raden we aan om te trainen met:
+    </p>
+
+    <h2 style="margin-top: 10px; color:#0077cc;">
+        ⭐ {{ recommended_coach.first_name }} {{ recommended_coach.last_name }}
+    </h2>
+
+    <h3 style="margin-top:25px;">Waarom deze aanbeveling?</h3>
+    <ul style="text-align:left; max-width:600px; margin:10px auto 25px auto;">
+        {% for r in reasons %}
+            <li>{{ r }}</li>
+        {% endfor %}
+    </ul>
+
+    <p>
+        Datum: <strong>{{ date }}</strong><br>
+        Tijd: <strong>{{ start_time.strftime("%H:%M") }} – {{ end_time.strftime("%H:%M") }}</strong>
+    </p>
+
+    <div class="confirm-actions">
+        <!-- Knop 1: aanbevolen coach gebruiken -->
+        <form method="post" action="{{ url_for('player_confirm_lesson_choice') }}">
+            <input type="hidden" name="choice" value="recommended">
+            <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
+            <input type="hidden" name="original_coach_id" value="{{ selected_coach.coach_id }}">
+            <input type="hidden" name="date" value="{{ date }}">
+            <input type="hidden" name="slot_id" value="{{ slot_id }}">
+            <button type="submit" class="confirm-back">
+                Kies aanbevolen coach
+            </button>
+        </form>
+
+        <!-- Knop 2: eigen keuze behouden -->
+        <form method="post" action="{{ url_for('player_confirm_lesson_choice') }}">
+            <input type="hidden" name="choice" value="original">
+            <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
+            <input type="hidden" name="original_coach_id" value="{{ selected_coach.coach_id }}">
+            <input type="hidden" name="date" value="{{ date }}">
+            <input type="hidden" name="slot_id" value="{{ slot_id }}">
+            <button type="submit" class="confirm-cancel">
+                Behoud mijn gekozen coach
+            </button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -50,6 +50,8 @@ class Coach(db.Model):
     date_of_birth = db.Column(db.Date, nullable=True)
     profile_image = db.Column(db.String, nullable=True)
     ranking = db.Column(db.String)
+    lesson_type_preference = db.Column(db.String, nullable=True)
+    playing_intensity = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     
 
