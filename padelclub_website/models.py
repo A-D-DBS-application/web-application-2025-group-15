@@ -15,6 +15,16 @@ lesson_players = db.Table(
 )
 
 # ============================================
+#  ASSOCIATION TABLE (COACHES <-> PLAYERS)
+# ============================================
+coach_players = db.Table(
+    "coach_players",
+    db.Column("coach_id", db.BigInteger, db.ForeignKey("coaches.coach_id"), primary_key=True),
+    db.Column("player_id", db.BigInteger, db.ForeignKey("players.player_id"), primary_key=True),
+    db.Column("created_at", db.DateTime, server_default=db.func.now())
+)
+
+# ============================================
 #  CLUB MODEL
 # ============================================
 
@@ -58,7 +68,7 @@ class Coach(db.Model):
 
     # Relationships
     lessons = db.relationship("Lesson", backref="coach", lazy=True)
-    players = db.relationship("Player", back_populates="assigned_coach", lazy=True)
+    students = db.relationship("Player", secondary=coach_players, back_populates="coaches", lazy="dynamic")
     availability_slots = db.relationship(
         "CoachAvailability",
         backref="coach",
@@ -90,9 +100,8 @@ class Player(db.Model):
     playing_intensity = db.Column(db.String(50))
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
-    assigned_coach_id = db.Column(db.BigInteger, db.ForeignKey("coaches.coach_id"))
-    assigned_coach = db.relationship("Coach", back_populates="players")
-
+    # Relationships
+    coaches = db.relationship("Coach", secondary=coach_players, back_populates="students")
     lessons = db.relationship(
         "Lesson",
         secondary=lesson_players

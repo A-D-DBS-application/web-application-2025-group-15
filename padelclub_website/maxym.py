@@ -88,7 +88,6 @@ def login():
                 session["user_id"] = player.player_id
                 session["role"] = "player"
                 session["name"] = player.first_name
-                session["assigned_coach_id"] = player.assigned_coach_id
                 return redirect(url_for("player_dashboard"))
             
             coach = Coach.query.filter_by(email=email_input).first()
@@ -638,7 +637,9 @@ def finalize_group_lesson_request():
     # -----------------------------
     if best_rec and best_rec["coach"].coach_id != chosen_coach_id:
         if chosen_score is None or best_rec["score"] >= (chosen_score + 5):
-            # Toon keuzescherm (exact zoals individueel, maar voor groepsles)
+            end_str = end_obj.strftime("%H:%M") 
+
+            # Toon keuzescherm
             return render_template(
                 "group_recommendation_choice.html",
                 chosen_coach=Coach.query.get(chosen_coach_id),
@@ -646,6 +647,7 @@ def finalize_group_lesson_request():
                 reasons=best_rec["reasons"],
                 date_str=date_str,
                 start_str=start_str,
+                end_str=end_str,   
                 focus=focus,
             )
 
@@ -1286,7 +1288,7 @@ def coach_dashboard():
     if not coach:
         return redirect(url_for("logout"))
 
-    students = coach.players 
+    students = coach.students.all()
 
     # UPCOMING LESSONS
     upcoming_lessons = []
@@ -1585,8 +1587,9 @@ def add_player():
 
     search_query = request.args.get("q", "").strip()
 
-    # Basisquery: alle spelers zonder coach
-    query = Player.query.filter(Player.assigned_coach_id.is_(None))
+    # qery voor spelers die nog geen student zijn van deze coach
+    coach_id = session.get("user_id")
+    query = Player.query.filter(~Player.coaches.any(Coach.coach_id == coach_id))
 
     # Als er een zoekterm is → extra filter
     if search_query:
@@ -1614,61 +1617,18 @@ def assign_coach(player_id):
     coach = Coach.query.get_or_404(coach_id)
     player = Player.query.get_or_404(player_id)
 
-    # ORM manier
-    player.assigned_coach = coach  
-    db.session.commit()
-
-    return redirect(url_for("add_player"))
-
-
-    # --- A. FORMULIER VERZONDEN (KOPPELEN) ---
-    if request.method == "POST":
-        player_id_to_add = request.form.get("player_id")  #gebruiker kan gewoon naam intypen, id wordt opgehaald via html form
-        
-        student = Player.query.get(player_id_to_add)
-        
-        if student:
-            if student not in coach.students:
-                coach.students.append(student)
-                db.session.commit()
-                return redirect(url_for("coach_dashboard"))
-            else:
-                return render_template("add_player.html", error="Deze speler staat al in je lijst!", spelers=[])
-        
-    search_query = request.args.get("q") 
-    
-    if search_query:
-        current_student_ids = [s.player_id for s in coach.students]
-        
-        players_found = Player.query.filter(
-            Player.first_name.ilike(f"%{search_query}%"), 
-            ~Player.player_id.in_(current_student_ids),   
-            Player.role == 'player'                       
-        ).all()
-
-    return render_template("add_player.html", spelers=players_found, q=search_query)
-# ============================================================
-#  COACH – SPELER VERWIJDEREN
-# ============================================================
-
-@app.route("/remove_player/<int:player_id>")
-def remove_player(player_id):
-    if session.get("role") != "coach":
-        return redirect(url_for("login"))
-    
-    coach_id = session.get("user_id")
-    coach = Coach.query.get(coach_id)
-    student = Player.query.get(player_id)
-
-    if student and student in coach.students:
+    if not coach.students.filter_by(player_id=player_id).count() > 0:
+        coach.students.append(player)
         try:
-            coach.students.remove(student)
             db.session.commit()
+            print(f"{player.first_name} {player.last_name} succesvol toegevoegd aan coach {coach.first_name} {coach.last_name}.")
         except Exception as e:
             db.session.rollback()
-            print("Fout bij verwijderen:", e)
+            print("Fout bij toewijzen coach:", e)
+    else:
+        print(f"{player.first_name} {player.last_name} is al student van coach {coach.first_name} {coach.last_name}.")
 
-    return redirect(url_for("coach_dashboard"))
+    return redirect(url_for("add_player"))
 
 # ============================================================
 #  LES INPLANNEN (INDIVIDUEEL)
@@ -1701,6 +1661,7 @@ def schedule_individual_lesson():
             end_dt = start_dt + timedelta(minutes=duration)
             end_time = end_dt.time()
 
+            # Check voor conflicten bij de coach
             conflict_coach = Lesson.query.filter(
                 Lesson.coach_id == coach_id,
                 Lesson.date == lesson_date,
@@ -1713,6 +1674,7 @@ def schedule_individual_lesson():
                                        students=coach.students, 
                                        error="Je hebt zelf al een les op dit tijdstip!")
 
+            # Check voor conflicten bij de speler
             conflict_player = Lesson.query.filter(
                 Lesson.date == lesson_date,
                 Lesson.start_time < end_time,
@@ -1725,6 +1687,7 @@ def schedule_individual_lesson():
                                        students=coach.students, 
                                        error="Deze speler heeft al les op dit moment.")
 
+            # Les aanmaken
             new_lesson = Lesson(
                 coach_id=coach_id,
                 date=lesson_date,
@@ -1735,6 +1698,12 @@ def schedule_individual_lesson():
             
             player = Player.query.get(player_id)
             new_lesson.players.append(player)
+
+            #als eerste keer bij coach is relatie toevoegen aan database
+            if coach not in player.coaches:
+                player.coaches.append(coach)
+                print(f"Nieuwe connectie gemaakt: {player.first_name} is nu gekoppeld aan {coach.first_name}")
+            # ---------------------------------------------------------
 
             db.session.add(new_lesson)
             db.session.commit()
@@ -1748,8 +1717,9 @@ def schedule_individual_lesson():
                                    students=coach.students, 
                                    error="Er ging iets mis. Controleer de datum/tijd.")
 
+    # Let op: Als je lessen wilt inplannen met spelers die NOG GEEN student zijn,
+    # moet je hieronder 'students=coach.students' veranderen naar 'students=Player.query.all()'
     return render_template("schedule_individual_lesson.html", students=coach.students)
-
 # ============================================================
 #  ICAL EXPORT (Download voor Outlook/Google)
 # ============================================================
@@ -1842,29 +1812,18 @@ def unlink_player(player_id):
         return redirect(url_for('login'))
     
     player_to_remove = Player.query.get(player_id)
+    current_coach = Coach.query.get(current_coach_id)
     
-    if player_to_remove:
+    if player_to_remove and current_coach:
 
-        if getattr(player_to_remove, 'assigned_coach_id', None) == current_coach_id:
-            
-            player_to_remove.assigned_coach_id = None 
+        if current_coach in player_to_remove.coaches:
+            player_to_remove.coaches.remove(current_coach)
             db.session.commit()
-            print(f"SUCCES: Speler {player_to_remove.first_name} is losgekoppeld.")
-            
-        elif getattr(player_to_remove, 'coach_id', None) == current_coach_id:
-
-            player_to_remove.coach_id = None
-            db.session.commit()
-            print(f"SUCCES: Speler {player_to_remove.first_name} is losgekoppeld (via coach_id).")
-            
+            print(f"Speler {player_to_remove.first_name} {player_to_remove.last_name} succesvol verwijderd uit je lijst met spelers.")
         else:
-            print("FOUT: Deze speler hoort niet bij jou (of de kolomnaam klopt nog steeds niet).")
-            print(f"Jouw ID: {current_coach_id}")
-            if hasattr(player_to_remove, 'assigned_coach_id'):
-                print(f"Speler assigned_coach_id: {player_to_remove.assigned_coach_id}")
-            
+            print(f"FOUT: Speler {player_to_remove.first_name} {player_to_remove.last_name} is geen speler van jou.")
     else:
-        print("FOUT: Speler ID niet gevonden.")
+        print("FOUT: Speler of coach niet gevonden in database.")
     
     return redirect(url_for('coach_dashboard'))
 
@@ -1920,18 +1879,13 @@ def edit_profile():
             profile.profile_image = public_url
 
         # -----------------------
-        # 3. OPSLAAN
+            # 3. OPSLAAN
         # -----------------------
         db.session.commit()
 
         return redirect(url_for("coach_dashboard" if role == "coach" else "player_dashboard"))
 
     return render_template("edit_profile.html", profile=profile)
-
-
-
-
-
 
 # ============================================================
 #  MAIN

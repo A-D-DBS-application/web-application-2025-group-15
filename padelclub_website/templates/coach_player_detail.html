@@ -129,9 +129,14 @@
     </table>
 
     <div style="margin-top:40px; text-align:right; border-top:1px solid #eee; padding-top:20px;">
-        <a href="{{ url_for('remove_player', player_id=student.player_id) }}" 
-           onclick="return confirm('Weet je zeker dat je deze speler uit jouw lijst wilt verwijderen?');"
-           class="cancel-btn">❌ Speler loskoppelen</a>
+        <form action="{{ url_for('unlink_player', player_id=student.player_id) }}" 
+            method="POST" 
+            onsubmit="return confirm('Weet je zeker dat je deze speler uit jouw lijst wilt verwijderen?');"
+            style="display:inline;">
+            <button type="submit" class="cancel-btn" style="border:none; cursor:pointer;">
+                ❌ Speler loskoppelen
+            </button>
+        </form>
     </div>
 
 </div>
