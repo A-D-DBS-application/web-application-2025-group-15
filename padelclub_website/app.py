@@ -106,7 +106,11 @@ def login():
     return render_template("login.html")
 
 # ============================================================
+<<<<<<< Updated upstream
 #  PLAYER DASHBOARD
+=======
+#  PLAYER DASHBOARD 
+>>>>>>> Stashed changes
 # ============================================================
 @app.route("/player")
 def player_dashboard():
@@ -374,10 +378,13 @@ def register_coach_step2():
         hand_preference = request.form.get("hand_preference")
         gender = request.form.get("gender")
         dob_str = request.form.get("dob")
+<<<<<<< Updated upstream
         lesson_type_preference = request.form.get("lesson_type_preference")
         playing_intensity = request.form.get("playing_intensity")
 
 
+=======
+>>>>>>> Stashed changes
 
         dob = None
         if dob_str:
@@ -429,8 +436,11 @@ def register_coach_step2():
             hand_preference=hand_preference,
             date_of_birth=dob,
             profile_image=profile_url,
+<<<<<<< Updated upstream
             lesson_type_preference=lesson_type_preference,
             playing_intensity=playing_intensity,
+=======
+>>>>>>> Stashed changes
         )
 
         try:
@@ -972,6 +982,10 @@ def book_lesson():
         # =============================
         if action == "book":
             slot_id = request.form.get("slot")
+<<<<<<< Updated upstream
+=======
+            # optioneel: les-focus (bv. uit extra veld in je formulier)
+>>>>>>> Stashed changes
             focus = request.form.get("focus") or None
             intensity = getattr(player, "playing_intensity", None)
 
@@ -1791,12 +1805,19 @@ def coach_player_detail(player_id):
     
     history = []
     for row in past_lessons:
+<<<<<<< Updated upstream
         coach = Coach.query.get(row.coach_id)
         history.append({
             "date": row.date,
             "has_evaluation": bool(row.coach_feedback),
             "lesson_id": row.lesson_id,
             "coach_name": f"{coach.first_name} {coach.last_name}" if coach else "Onbekend"
+=======
+        history.append({
+            "date": row.date,
+            "has_evaluation": bool(row.coach_feedback),
+            "lesson_id": row.lesson_id
+>>>>>>> Stashed changes
         })
 
     return render_template("coach_player_detail.html", student=student, history=history)
@@ -1856,8 +1877,13 @@ def edit_profile():
         profile.phone = request.form.get("phone")
         profile.gender = request.form.get("gender")
         profile.ranking = request.form.get("ranking")
+<<<<<<< Updated upstream
         profile.lesson_type_preference = request.form.get("lesson_type_preference") or None
         profile.playing_intensity = request.form.get("playing_intensity") or None
+=======
+        profile.lesson_type_preference = request.form.get("lesson_type_preference")
+        profile.playing_intensity = request.form.get("playing_intensity")
+>>>>>>> Stashed changes
 
 
         if role == "player":
@@ -1899,4 +1925,8 @@ def edit_profile():
 # ============================================================
 
 if __name__ == "__main__":
+<<<<<<< Updated upstream
     app.run(debug=True)
+=======
+    app.run(debug=True)
+>>>>>>> Stashed changes
