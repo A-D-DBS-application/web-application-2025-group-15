@@ -60,8 +60,8 @@ class Coach(db.Model):
     date_of_birth = db.Column(db.Date, nullable=True)
     profile_image = db.Column(db.String, nullable=True)
     ranking = db.Column(db.String)
-    lesson_type_preference = db.Column(db.String, nullable=True)
-    playing_intensity = db.Column(db.String, nullable=True)
+    lesson_type_preference = db.Column(db.Enum('individual', 'group', name='lesson_pref_enum'), nullable=True)
+    playing_intensity = db.Column(db.Enum('recreational', 'competitive', name='intensity_enum'), nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     
 
@@ -96,8 +96,8 @@ class Player(db.Model):
     profile_image = db.Column(db.String, nullable=True)
     strengths = db.Column(db.Text)
     weaknesses = db.Column(db.Text)
-    lesson_type_preference = db.Column(db.String(50))
-    playing_intensity = db.Column(db.String(50))
+    lesson_type_preference = db.Column(db.Enum('individual', 'group', name='lesson_pref_enum'), nullable=True)
+    playing_intensity = db.Column(db.Enum('recreational', 'competitive', name='intensity_enum'), nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
     # Relationships

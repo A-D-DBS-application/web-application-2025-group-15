@@ -374,6 +374,10 @@ def register_coach_step2():
         hand_preference = request.form.get("hand_preference")
         gender = request.form.get("gender")
         dob_str = request.form.get("dob")
+        lesson_type_preference = request.form.get("lesson_type_preference")
+        playing_intensity = request.form.get("playing_intensity")
+
+
 
         dob = None
         if dob_str:
@@ -425,6 +429,8 @@ def register_coach_step2():
             hand_preference=hand_preference,
             date_of_birth=dob,
             profile_image=profile_url,
+            lesson_type_preference=lesson_type_preference,
+            playing_intensity=playing_intensity,
         )
 
         try:
@@ -966,7 +972,6 @@ def book_lesson():
         # =============================
         if action == "book":
             slot_id = request.form.get("slot")
-            # optioneel: les-focus (bv. uit extra veld in je formulier)
             focus = request.form.get("focus") or None
             intensity = getattr(player, "playing_intensity", None)
 
@@ -1849,8 +1854,8 @@ def edit_profile():
         profile.phone = request.form.get("phone")
         profile.gender = request.form.get("gender")
         profile.ranking = request.form.get("ranking")
-        profile.lesson_type_preference = request.form.get("lesson_type_preference")
-        profile.playing_intensity = request.form.get("playing_intensity")
+        profile.lesson_type_preference = request.form.get("lesson_type_preference") or None
+        profile.playing_intensity = request.form.get("playing_intensity") or None
 
 
         if role == "player":
