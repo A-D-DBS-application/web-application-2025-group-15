@@ -106,7 +106,7 @@ def login():
     return render_template("login.html")
 
 # ============================================================
-#  PLAYER DASHBOARD 
+#  PLAYER DASHBOARD
 # ============================================================
 @app.route("/player")
 def player_dashboard():
