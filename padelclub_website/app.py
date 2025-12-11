@@ -1791,10 +1791,12 @@ def coach_player_detail(player_id):
     
     history = []
     for row in past_lessons:
+        coach = Coach.query.get(row.coach_id)
         history.append({
             "date": row.date,
             "has_evaluation": bool(row.coach_feedback),
-            "lesson_id": row.lesson_id
+            "lesson_id": row.lesson_id,
+            "coach_name": f"{coach.first_name} {coach.last_name}" if coach else "Onbekend"
         })
 
     return render_template("coach_player_detail.html", student=student, history=history)

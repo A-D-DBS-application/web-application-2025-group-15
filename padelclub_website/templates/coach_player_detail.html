@@ -4,39 +4,41 @@
     <meta charset="UTF-8">
     <title>Speler Profiel | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        /* Specifieke styling voor de detail pagina */
-        textarea {
-            width: 100%;
-            min-height: 80px;
-            resize: vertical;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: inherit;
-        }
-        .section-title {
-            color: #0077cc;
-            border-bottom: 2px solid #00c6a7;
-            padding-bottom: 5px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-    </style>
 </head>
+
 <body>
 
 <div class="container">
+
+    <!-- Topbar -->
     <div class="topbar">
         <h1>👤 Profiel: {{ student.first_name }} {{ student.last_name }}</h1>
         <a href="{{ url_for('coach_dashboard') }}" class="back-btn">⬅ Terug</a>
     </div>
 
+    <div class="profile-header">
+    <div class="profile-photo-wrapper">
+        {% if student.profile_image %}
+            <img src="{{ student.profile_image }}" class="profile-photo">
+        {% else %}
+            <img src="/static/default_profile.png" class="profile-photo">
+        {% endif %}
+    </div>
+
+    <div class="profile-name">
+        <h2>{{ student.first_name }} {{ student.last_name }}</h2>
+    </div>
+</div>
+
+
+
+    <!-- Algemene info -->
     <h2 class="section-title">📊 Algemene Info & Notities</h2>
+
     <form method="POST">
-        <table>
+        <table class="profile-table">
             <tr>
-                <th style="width:150px;">E-mail</th>
+                <th>E-mail</th>
                 <td>{{ student.email }}</td>
             </tr>
             <tr>
@@ -45,7 +47,7 @@
             </tr>
             <tr>
                 <th>Ranking</th>
-                <td><span style="font-weight:bold; color:#00a884;">{{ student.ranking or "Geen" }}</span></td>
+                <td class="highlight">{{ student.ranking or "Geen" }}</td>
             </tr>
             <tr>
                 <th>Hand</th>
@@ -59,9 +61,9 @@
                     {% elif student.lesson_type_preference == "individual" %}
                         Individuele lessen
                     {% else %}
-                          -
+                        -
                     {% endif %}
-                 </td>
+                </td>
             </tr>
             <tr>
                 <th>Speelstijl</th>
@@ -71,37 +73,37 @@
                     {% elif student.playing_intensity == "competitive" %}
                         Serieus / competitief
                     {% else %}
-                           -
+                        -
                     {% endif %}
-                 </td>
+                </td>
             </tr>
             <tr>
                 <th>Sterktes</th>
                 <td>
-                    <textarea name="strengths" placeholder="Wat zijn de sterke punten?">{{ student.strengths or "" }}</textarea>
+                    <textarea name="strengths">{{ student.strengths or "" }}</textarea>
                 </td>
             </tr>
             <tr>
                 <th>Werkpunten</th>
                 <td>
-                    <textarea name="weaknesses" placeholder="Waar moet aan gewerkt worden?">{{ student.weaknesses or "" }}</textarea>
+                    <textarea name="weaknesses">{{ student.weaknesses or "" }}</textarea>
                 </td>
             </tr>
         </table>
-        
-        <div style="margin-top: 15px;">
-            <button type="submit" class="button">💾 Notities Opslaan</button>
-        </div>
+
+        <button type="submit" class="button save-btn">💾 Notities Opslaan</button>
     </form>
 
+    <!-- Lesgeschiedenis -->
+    <h2 class="section-title">📘 Lesgeschiedenis</h2>
 
-    <h2 class="section-title"> Lesgeschiedenis</h2>
-    <table>
+    <table class="history-table">
         <thead>
             <tr>
                 <th>Datum</th>
-                <th>status</th>
-                <th>evaluatie</th>
+                <th>Status</th>
+                <th>Feedback door</th>
+                <th>Evaluatie</th>
             </tr>
         </thead>
         <tbody>
@@ -109,13 +111,26 @@
                 {% for item in history %}
                 <tr>
                     <td>{{ item.date }}</td>
+
+                    <!-- status -->
                     <td>
                         {% if item.has_evaluation %}
-                            <span style="color:green;">✔ Geëvalueerd</span>
+                            <span class="status-done">✔ Geëvalueerd</span>
                         {% else %}
-                            <span style="color:orange;">⏳ Nog geen feedback</span>
+                            <span class="status-pending">⏳ Nog geen feedback</span>
                         {% endif %}
                     </td>
+
+                    <!-- feedback door -->
+                    <td>
+                        {% if item.has_evaluation %}
+                            {{ item.coach_name }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <!-- evaluatie bekijken -->
                     <td>
                         <a href="{{ url_for('view_evaluation', lesson_id=item.lesson_id) }}" 
                            class="link-btn">Bekijken</a>
@@ -123,22 +138,21 @@
                 </tr>
                 {% endfor %}
             {% else %}
-                <tr><td colspan="3">Nog geen lessen gevolgd.</td></tr>
+                <tr><td colspan="4">Nog geen lessen gevolgd.</td></tr>
             {% endif %}
         </tbody>
     </table>
 
-    <div style="margin-top:40px; text-align:right; border-top:1px solid #eee; padding-top:20px;">
+    <!-- Speler ontkoppelen -->
+    <div class="unlink-container">
         <form action="{{ url_for('unlink_player', player_id=student.player_id) }}" 
-            method="POST" 
-            onsubmit="return confirm('Weet je zeker dat je deze speler uit jouw lijst wilt verwijderen?');"
-            style="display:inline;">
-            <button type="submit" class="cancel-btn" style="border:none; cursor:pointer;">
-                ❌ Speler loskoppelen
-            </button>
+              method="POST"
+              onsubmit="return confirm('Weet je zeker dat je deze speler uit jouw lijst wilt verwijderen?');">
+            <button type="submit" class="cancel-btn">❌ Speler loskoppelen</button>
         </form>
     </div>
 
 </div>
+
 </body>
 </html>

@@ -17,19 +17,24 @@
     </p>
 
     <div class="review-box">
-        <p><strong>Datum:</strong> {{ date }}</p>
-        <p><strong>Tijd:</strong> {{ time }}</p>
+        <p class="review-detail"><strong>Datum:</strong> {{ date }}</p>
+        <p class="review-detail"><strong>Tijd:</strong> {{ time }}</p>
 
-        <p><strong>Onderwerp:</strong>
-            {% if focus == 'volleys' %} Netspel & Volleys
-            {% elif focus == 'bandeja_vibora' %} Bandeja / Vibora
-            {% elif focus == 'tactics' %} Positionering & Tactiek
+        <p class="review-detail"><strong>Onderwerp:</strong>
+            {% if focus == 'volleys' %}
+                Netspel & Volleys
+            {% elif focus == 'bandeja_vibora' %}
+                Bandeja / Vibora
+            {% elif focus == 'tactics' %}
+                Positionering & Tactiek
+            {% else %}
+                Onbekend
             {% endif %}
         </p>
     </div>
 
-    <p style="margin-top:20px;">
-        Zodra genoeg spelers zijn gevonden, word je automatisch ingepland.
+    <p style="margin-top: 20px;">
+        Zodra genoeg spelers zich aanmelden, word je automatisch ingepland in de groepsles.
     </p>
 
     <div class="back-link">
