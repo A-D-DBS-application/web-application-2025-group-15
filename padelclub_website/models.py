@@ -200,6 +200,3 @@ class GroupLessonRequest(db.Model):
 
     player = db.relationship("Player", backref="group_requests")
     coach = db.relationship("Coach", backref="group_requests")
-
-
-
