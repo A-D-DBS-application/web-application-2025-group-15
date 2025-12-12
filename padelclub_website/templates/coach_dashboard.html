@@ -7,6 +7,14 @@
 </head>
 
 <body class="dashboard-bg">
+    <div class="top-nav">
+  <div class="top-nav-inner">
+    <a href="{{ url_for('edit_profile') }}" class="button top-btn">⚙ Profiel</a>
+    <a href="{{ url_for('coach_availability') }}" class="button top-btn">📅 Beschikbaarheid instellen</a>
+    <a href="{{ url_for('logout') }}" class="button top-btn logout-btn">⏻ Uitloggen</a>
+  </div>
+</div>
+
 
 <div class="container coach-dashboard">
 
@@ -24,11 +32,7 @@
             <p class="subtitle">Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
         </div>
 
-        <!-- Rechterkant: knoppen -->
-        <div class="dashboard-top-buttons">
-            <a href="{{ url_for('edit_profile') }}" class="button top-btn">⚙️ Profiel</a>
-            <a href="{{ url_for('logout') }}" class="button top-btn logout-btn">⎋ Uitloggen</a>
-        </div>
+  
 
     </div>
 
@@ -85,9 +89,7 @@
             <a href="{{ url_for('add_player') }}" class="button cta-btn">
                 + Speler toevoegen
             </a>
-            <a href="{{ url_for('coach_availability') }}" class="button cta-btn">
-                📅 Beschikbaarheid instellen
-            </a>
+            
         </div>
     </section>
 

@@ -2010,3 +2010,88 @@ textarea {
     font-weight: bold;
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
+
+/* STICKY TOP BAR zoals speler */
+.top-nav{
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+
+  width: 100%;
+  background: #fff;           /* witte balk */
+  padding: 16px 0;            /* hoogte zoals speler */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* knoppen mooi gecentreerd */
+.top-nav-inner{
+  width: 100%;
+  display: flex;
+  justify-content: center;    /* centrum */
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* duw je card iets naar beneden zodat hij niet onder de balk komt */
+.container.coach-dashboard{
+  margin-top: 20px;
+}
+
+.top-nav{
+  position: fixed;          /* BELANGRIJK: fixed i.p.v. sticky */
+  top: 0;
+  left: 0;
+
+  width: 100vw;             /* volledige schermbreedte */
+  background: #ffffff;      /* wit */
+  padding: 16px 0;
+
+  z-index: 10000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* ===== TOP NAV (player + coach) ===== */
+.top-nav{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  background: #fff;
+  padding: 16px 0;
+  z-index: 10000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.top-nav-inner{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* zorg dat de pagina niet onder de balk start */
+body{
+  padding-top: 90px; /* pas aan indien te groot/klein */
+}
+
+.dashboard-top-buttons,
+.action-buttons{
+  display: none !important;
+}
+
+/* PLAYER: maak hoofdcontent terug normaal (geen rare flex kolommen) */
+.container.dashboard-card{
+  display: block !important;
+}
+.dashboard-content,
+.dashboard-sections{
+  display: block !important;
+}
+/* VERBERG rechter dashboard knoppen */
+.dashboard-buttons,
+.dashboard-top-buttons {
+  display: none !important;
+}

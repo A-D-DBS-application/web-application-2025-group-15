@@ -7,6 +7,14 @@
 </head>
 
 <body class="dashboard-bg">
+    <div class="top-nav">
+  <div class="top-nav-inner">
+    <a href="{{ url_for('edit_profile') }}" class="button">⚙ Profiel</a>
+    <a href="{{ url_for('request_lesson_type') }}" class="button">📅 Les aanvragen</a>
+    <a href="{{ url_for('logout') }}" class="button logout-btn">⏻ Uitloggen</a>
+  </div>
+</div>
+
 
 <div class="container dashboard-card">
 
@@ -60,21 +68,14 @@
         </div>
 
         <!-- DASHBOARD KNOPPEN -->
-        <div class="dashboard-buttons">
-            <a href="{{ url_for('edit_profile') }}" class="button profile-btn">
-                ⚙️ Profiel
-            </a>
+	<div class="dashboard-buttons">
+	    <a href="{{ url_for('edit_profile') }}" class="button profile-btn">Profiel</a>
+	    <a href="{{ url_for('request_lesson_type') }}" class="button green-btn">Les aanvragen</a>
+	    <a href="{{ url_for('logout') }}" class="logout-btn">Uitloggen</a>
+	</div>
+	
+	    </div>
 
-            <a href="{{ url_for('request_lesson_type') }}" class="button green-btn">
-                Les aanvragen
-            </a>
-
-            <a href="{{ url_for('logout') }}" class="logout-btn">
-                ⎋ Uitloggen
-            </a>
-        </div>
-
-    </div>
 
     <!-- STERKTES & WERKPUNTEN -->
     <div class="player-strengths-card">
