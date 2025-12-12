@@ -2095,3 +2095,86 @@ body{
 .dashboard-top-buttons {
   display: none !important;
 }
+
+
+
+/* --- Dashboard Topbar Styling --- */
+
+.dashboard-topbar {
+    display: flex;              
+    flex-direction: row;        /* Zeker zijn dat het naast elkaar staat */
+    align-items: center;        /* Verticaal centreren */
+    justify-content: flex-start; /* Alles naar LINKS duwen */
+    gap: 25px;                  /* Afstand tussen foto en tekst (niet te groot) */
+    
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+/* De container voor de tekst (Naam + Stats) */
+.welcome-block {
+    text-align: left;           /* Forceer tekst naar LINKS */
+    flex-grow: 1;               /* Neemt de rest van de ruimte in */
+}
+
+/* De Welkomsttitel */
+.welcome-block h1 {
+    margin: 0 0 10px 0;         /* Minder ruimte onder de naam */
+    font-size: 2rem;
+    color: #007bff;             
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* De profielfoto */
+.profile-pic-large {
+    width: 130px;               /* Iets kleiner zoals in je voorbeeld */
+    height: 130px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: block;             /* Voorkomt vage witruimtes */
+}
+
+/* De statistieken */
+.coach-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 1rem;
+    color: #333;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+}
+
+.stat-label {
+    font-weight: 700;
+    color: #2c3e50;
+    width: 110px;               /* Zorgt dat de dubbele punten mooi onder elkaar staan */
+    display: inline-block;
+}
+
+/* Mobiel: wel alles onder elkaar en centreren */
+@media (max-width: 768px) {
+    .dashboard-topbar {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .welcome-block {
+        text-align: center;
+    }
+    
+    .stat-label {
+        width: auto;            /* Op mobiel mag het gewoon vloeien */
+    }
+}
+

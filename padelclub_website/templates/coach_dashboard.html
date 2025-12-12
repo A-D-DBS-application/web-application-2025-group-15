@@ -18,21 +18,48 @@
 
 <div class="container coach-dashboard">
 
-    <!-- TOPBAR -->
-    <div class="dashboard-topbar">
+<div class="dashboard-topbar">
 
-        <!-- Profielfoto links -->
         <div class="profile-header">
             <img src="{{ coach.profile_image or '/static/default_profile.png' }}" class="profile-pic-large">
         </div>
 
-        <!-- Titel + welkomtekst -->
         <div class="welcome-block">
-            <h1>Welkom coach, {{ coach.first_name }}! 👋</h1>
-            <p class="subtitle">Hier vind je een overzicht van jouw spelers en geplande lessen.</p>
+            <h1>Welkom, coach {{ coach.first_name }} ! 👋</h1>
+            
+            <div class="coach-stats-list">
+                <div class="stat-row">
+                    <span class="stat-label">Ranking:</span> 
+                    <span class="stat-value">{{ coach.ranking or 'Geen ranking' }}</span>
+                </div>
+                
+                <div class="stat-row">
+                    <span class="stat-label">Lesvoorkeur:</span>
+                    <span class="stat-value">
+                        {% if coach.lesson_type_preference == 'group' %}
+                            Groepslessen
+                        {% elif coach.lesson_type_preference == 'individual' %}
+                            Individueel
+                        {% else %}
+                            {{ coach.lesson_type_preference or 'Niet opgegeven' }}
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="stat-row">
+                    <span class="stat-label">Speelstijl:</span>
+                    <span class="stat-value">
+                        {% if coach.playing_intensity == 'recreational' %}
+                            Recreatief / Ontspanning
+                        {% elif coach.playing_intensity == 'competitive' %}
+                            Serieus / Competitief
+                        {% else %}
+                            {{ coach.playing_intensity or 'Niet opgegeven' }}
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
         </div>
-
-  
 
     </div>
 

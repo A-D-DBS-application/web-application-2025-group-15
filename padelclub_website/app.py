@@ -28,6 +28,75 @@ app.config.from_object(Config)
 
 db.init_app(app)
 
+# =========================================================
+#  HULPFUNCTIES (BEST PRACTICES)
+# =========================================================
+
+# --- tijdsloten ---
+def get_daily_time_slots(opening=9, closing=22, duration=60):
+    slots = []
+    t = datetime.strptime(f"{opening}:00", "%H:%M")
+    end_limit = datetime.strptime(f"{closing}:00", "%H:%M")
+
+    while t + timedelta(minutes=duration) <= end_limit:
+        start_str = t.strftime("%H:%M")
+        end_str = (t + timedelta(minutes=duration)).strftime("%H:%M")
+        slots.append((start_str, end_str))
+        t += timedelta(minutes=duration)
+    return slots
+
+# --- profielfoto's ---
+def upload_profile_image(file_obj, email, folder="profile_pictures"):
+    if not file_obj or not file_obj.filename:
+        return None
+
+    ext = os.path.splitext(file_obj.filename)[1].lower()
+    # Maak bestandsnaam veilig
+    safe_email = email.replace("@", "_").replace(".", "_")
+    filename = f"{folder}/{safe_email}_{int(datetime.now().timestamp())}{ext}"
+    
+    file_bytes = file_obj.read()
+
+    try:
+        supabase.storage.from_("profile_pictures").upload(filename, file_bytes)
+        return f"{Config.SUPABASE_URL}/storage/v1/object/public/profile_pictures/{filename}"
+    except Exception as e:
+        print(f"Fout bij uploaden ({folder}):", repr(e))
+        return None
+
+# --- agenda conflicten controleren ---
+def check_scheduling_conflict(date_obj, start_time, end_time, coach_id, player_id=None):
+    """
+    Controleert of er een conflict is in de agenda.
+    Geeft een foutmelding (string) terug als er overlap is, anders None.
+    """
+    
+    # 1. Check: Heeft de COACH al een les?
+    # Logica: Een les overlapt als (Start < Einde_Nieuw) EN (Einde > Start_Nieuw)
+    conflict_coach = Lesson.query.filter(
+        Lesson.coach_id == coach_id,
+        Lesson.date == date_obj,
+        Lesson.start_time < end_time,
+        Lesson.end_time > start_time
+    ).first()
+
+    if conflict_coach:
+        return "De coach heeft al een les op dit tijdstip."
+
+    # 2. Check: Heeft de SPELER al een les? (Alleen als player_id is meegegeven)
+    if player_id:
+        conflict_player = Lesson.query.filter(
+            Lesson.date == date_obj,
+            Lesson.start_time < end_time,
+            Lesson.end_time > start_time,
+            Lesson.players.any(Player.player_id == player_id)
+        ).first()
+
+        if conflict_player:
+            return "De speler heeft al een les op dit tijdstip."
+
+    return None # Geen conflicten gevonden
+
 #om lessen te verzetten naar completed lessons als ze in het verleden liggen
 def cleanup_past_lessons():
     try:
@@ -156,23 +225,23 @@ def player_dashboard():
             })
 
     # ------------------------------
-    # PAST LESSONS
+# ------------------------------
+    # PAST LESSONS (GEOPTIMALISEERD)
     # ------------------------------
     past_lessons = []
-    completed_rows = (CompletedLesson.query
-                      .filter_by(player_id=player_id)
-                      .order_by(CompletedLesson.date.desc())
-                      .limit(10)
-                      .all())
+    
+    # We gebruiken een JOIN om de Les én de Coach in één keer op te halen
+    results = (db.session.query(CompletedLesson, Coach)
+               .outerjoin(Coach, CompletedLesson.coach_id == Coach.coach_id)
+               .filter(CompletedLesson.player_id == player_id)
+               .order_by(CompletedLesson.date.desc())
+               .limit(10)
+               .all())
 
-    for row in completed_rows:
-        has_evaluation = True if row.coach_feedback else False
-
-        coach_name = "Onbekend"
-        if row.coach_id:
-            c_obj = Coach.query.get(row.coach_id)
-            if c_obj:
-                coach_name = f"{c_obj.first_name} {c_obj.last_name}"
+    for row, coach in results:
+        # Nu hebben we het coach-object al direct (of None als hij niet bestaat)
+        coach_name = f"{coach.first_name} {coach.last_name}" if coach else "Onbekend"
+        has_evaluation = bool(row.coach_feedback)
 
         past_lessons.append({
             "lesson_id": row.lesson_id,
@@ -190,7 +259,6 @@ def player_dashboard():
         upcoming_lessons=upcoming_lessons,
         past_lessons=past_lessons
     )
-
 # ============================================================
 #  REGISTER ROUTES (SPELER & COACH)
 # ============================================================
@@ -263,32 +331,7 @@ def register_player_step2():
         # PROFIELFOTO UPLOAD (SPELER)
         # -------------------------
         file = request.files.get("image")
-        profile_url = None
-
-        if file and file.filename:
-            # veilige unieke bestandsnaam
-            ext = os.path.splitext(file.filename)[1].lower()  # .jpg / .png ...
-            safe_email = data["email"].replace("@", "_").replace(".", "_")
-            filename = f"players/{safe_email}_{int(datetime.now().timestamp())}{ext}"
-
-            file_bytes = file.read()
-
-            try:
-                # upload naar Supabase bucket "profile_pictures"
-                supabase.storage.from_("profile_pictures").upload(
-                    filename,
-                    file_bytes
-                )
-
-                # publieke URL opbouwen
-                profile_url = (
-                    f"{Config.SUPABASE_URL}"
-                    f"/storage/v1/object/public/profile_pictures/{filename}"
-                )
-            except Exception as e:
-                print("Fout bij uploaden profielfoto speler:", repr(e))
-                # eventueel: toch doorgaan zonder foto
-                profile_url = None
+        profile_url = upload_profile_image(file, data["email"], folder="players")
 
         # -------------------------
         # NIEUWE SPELER MAKEN
@@ -393,28 +436,7 @@ def register_coach_step2():
         # PROFIELFOTO UPLOAD (COACH)
         # -------------------------
         file = request.files.get("image")
-        profile_url = None
-
-        if file and file.filename:
-            ext = os.path.splitext(file.filename)[1].lower()
-            safe_email = data["email"].replace("@", "_").replace(".", "_")
-            filename = f"coaches/{safe_email}_{int(datetime.now().timestamp())}{ext}"
-
-            file_bytes = file.read()
-
-            try:
-                supabase.storage.from_("profile_pictures").upload(
-                    filename,
-                    file_bytes
-                )
-
-                profile_url = (
-                    f"{Config.SUPABASE_URL}"
-                    f"/storage/v1/object/public/profile_pictures/{filename}"
-                )
-            except Exception as e:
-                print("Fout bij uploaden profielfoto coach:", repr(e))
-                profile_url = None
+        profile_url = upload_profile_image(file, data["email"], folder="coaches")
 
         # -------------------------
         # NIEUWE COACH MAKEN
@@ -475,19 +497,7 @@ def request_group_lesson():
     selected_date = None
     error = None
 
-    ALL_SLOTS = []
-    OPENING = 9
-    CLOSING = 22
-    DURATION = 60
-
-    t = datetime.strptime(f"{OPENING}:00", "%H:%M")
-    end_limit = datetime.strptime(f"{CLOSING}:00", "%H:%M")
-
-    while t + timedelta(minutes=DURATION) <= end_limit:
-        start_str = t.strftime("%H:%M")
-        end_str = (t + timedelta(minutes=DURATION)).strftime("%H:%M")
-        ALL_SLOTS.append((start_str, end_str))
-        t += timedelta(minutes=DURATION)
+    ALL_SLOTS = get_daily_time_slots()
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -888,21 +898,7 @@ def book_lesson():
     error = None
 
     # ---- ALGEMENE TIJDSLOTEN GENEREREN ----
-    ALL_SLOTS = []
-    OPENING_HOUR = 9
-    CLOSING_HOUR = 22
-    DURATION_MINUTES = 60
-
-    current_time = datetime.strptime(f"{OPENING_HOUR}:00", "%H:%M")
-    end_time_limit = datetime.strptime(f"{CLOSING_HOUR}:00", "%H:%M")
-
-    while current_time + timedelta(minutes=DURATION_MINUTES) <= end_time_limit:
-        start_str = current_time.strftime("%H:%M")
-        slot_end = current_time + timedelta(minutes=DURATION_MINUTES)
-        end_str = slot_end.strftime("%H:%M")
-
-        ALL_SLOTS.append((start_str, end_str))
-        current_time = slot_end
+    ALL_SLOTS = get_daily_time_slots()
 
     # ---- POST ACTIES ----
     if request.method == "POST":
@@ -970,6 +966,9 @@ def book_lesson():
         # =============================
         # 2) LES BOEKEN (MET RECOMMENDER)
         # =============================
+        # =============================
+        # 2) LES BOEKEN (MET RECOMMENDER)
+        # =============================
         if action == "book":
             slot_id = request.form.get("slot")
             focus = request.form.get("focus") or None
@@ -984,8 +983,35 @@ def book_lesson():
                     start_time_obj = datetime.strptime(start_str, "%H:%M").time()
                     end_time_obj = datetime.strptime(end_str, "%H:%M").time()
 
+                    # -------------------------------------------------------------
+                    # [NIEUW 1] CONFLICT CHECK
+                    # -------------------------------------------------------------
+                    conflict_error = check_scheduling_conflict(
+                        lesson_date, 
+                        start_time_obj, 
+                        end_time_obj, 
+                        selected_coach_id, 
+                        player_id 
+                    )
+
+                    if conflict_error:
+                        # Coaches opnieuw ophalen voor de template
+                        try:
+                            coaches_list = Coach.query.all()
+                        except:
+                            coaches_list = []
+                            
+                        return render_template(
+                            "book_lesson.html",
+                            coaches=coaches_list,
+                            error=conflict_error,
+                            selected_date=selected_date,
+                            selected_coach_id=selected_coach_id
+                        )
+                    # -------------------------------------------------------------
+
                     # ---------------------------
-                    # A) RECOMMENDATION ALGORTIME
+                    # A) RECOMMENDATION ALGORITME
                     # ---------------------------
                     recs = recommend_coaches_for_lesson(
                         players=[player],
@@ -1004,25 +1030,16 @@ def book_lesson():
 
                     if recs:
                         best_rec = recs[0]
-
-                        # score van de door speler gekozen coach zoeken
                         for rec in recs:
                             if rec["coach"].coach_id == selected_coach_id:
                                 chosen_score = rec["score"]
                                 break
 
-                    # Debug prints in console
-                    if best_rec:
-                        print(f"Beste coach: {best_rec['coach'].first_name} (score={best_rec['score']})")
-                        print(f"Gekozen coach id: {selected_coach_id}, gekozen score: {chosen_score}")
-
                     # ---------------------------
                     # B) POPUP TONEN ALS ANDERE COACH BETER IS
                     # ---------------------------
                     if best_rec and best_rec["coach"].coach_id != selected_coach_id:
-                        # threshold: minimaal 5 punten beter
                         if chosen_score is None or best_rec["score"] >= (chosen_score + 5):
-                            # we tonen een keuze-scherm
                             return render_template(
                                 "recommendation_choice.html",
                                 selected_coach=Coach.query.get(selected_coach_id),
@@ -1046,6 +1063,15 @@ def book_lesson():
                     )
 
                     new_lesson.players.append(player)
+                    
+                    # -------------------------------------------------------------
+                    # [NIEUW 2] AUTO-LINK COACH AAN SPELER
+                    # -------------------------------------------------------------
+                    coach_obj = Coach.query.get(selected_coach_id)
+                    if coach_obj and coach_obj not in player.coaches:
+                        player.coaches.append(coach_obj)
+                    # -------------------------------------------------------------
+
                     db.session.add(new_lesson)
 
                     # Beschikbaar tijdslot verwijderen
@@ -1389,21 +1415,20 @@ def coach_availability():
         try:
             selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
 
-            # Slots genereren
-            current_time = datetime.strptime(f"{OPENING_HOUR}:00", "%H:%M")
-            end_time_limit = datetime.strptime(f"{CLOSING_HOUR}:00", "%H:%M")
+            
+            # Slots genereren via de hulpfunctie
+            raw_slots = get_daily_time_slots()
+            
+            # Omzetten naar het formaat dat coach_availability.html verwacht
+            all_slots = [
+                {
+                    "id": f"{s}-{e}",
+                    "label": f"{s} – {e}"
+                }
+                for s, e in raw_slots
+            ]
 
-            while current_time + timedelta(minutes=DURATION_MINUTES) <= end_time_limit:
-                start_str = current_time.strftime("%H:%M")
-                slot_end = current_time + timedelta(minutes=DURATION_MINUTES)
-                end_str = slot_end.strftime("%H:%M")
-
-                all_slots.append({
-                    "id": f"{start_str}-{end_str}",
-                    "label": f"{start_str} – {end_str}"
-                })
-
-                current_time = slot_end
+            
 
             # Bestaande beschikbaarheid ophalen
             existing = CoachAvailability.query.filter_by(
@@ -1667,30 +1692,12 @@ def schedule_individual_lesson():
             end_time = end_dt.time()
 
             # Check voor conflicten bij de coach
-            conflict_coach = Lesson.query.filter(
-                Lesson.coach_id == coach_id,
-                Lesson.date == lesson_date,
-                Lesson.start_time < end_time,
-                Lesson.end_time > start_time
-            ).first()
-
-            if conflict_coach:
+            conflict_error = check_scheduling_conflict(lesson_date, start_time, end_time, coach_id, player_id)
+            
+            if conflict_error:
                 return render_template("schedule_individual_lesson.html", 
                                        students=coach.students, 
-                                       error="Je hebt zelf al een les op dit tijdstip!")
-
-            # Check voor conflicten bij de speler
-            conflict_player = Lesson.query.filter(
-                Lesson.date == lesson_date,
-                Lesson.start_time < end_time,
-                Lesson.end_time > start_time,
-                Lesson.players.any(player_id=player_id) 
-            ).first()
-
-            if conflict_player:
-                return render_template("schedule_individual_lesson.html", 
-                                       students=coach.students, 
-                                       error="Deze speler heeft al les op dit moment.")
+                                       error=conflict_error)
 
             # Les aanmaken
             new_lesson = Lesson(
@@ -1866,24 +1873,18 @@ def edit_profile():
                 profile.date_of_birth = dob
 
         # -----------------------
-        # 2. FOTO UPLOAD BLOK
+        # 2. FOTO UPLOAD BLOK (Via Hulpfunctie)
         # -----------------------
         file = request.files.get("image")
-
-        if file and file.filename != "":
-            ext = file.filename.split(".")[-1]
-            filename = f"profile_{user_id}_{int(datetime.now().timestamp())}.{ext}"
-
-            file_bytes = file.read()  # <-- Supabase verwacht BYTES
-
-            # Upload naar Supabase Storage
-            supabase.storage.from_("profile_pictures").upload(filename, file_bytes)
-
-            # Publieke URL ophalen
-            public_url = supabase.storage.from_("profile_pictures").get_public_url(filename)
-
-            # Opslaan in database
-            profile.profile_image = public_url
+        if file:
+            # Bepaal de map op basis van de rol
+            folder = "coaches" if role == "coach" else "players"
+            
+            # Gebruik je hulpfunctie!
+            new_url = upload_profile_image(file, profile.email, folder=folder)
+            
+            if new_url:
+                profile.profile_image = new_url
 
         # -----------------------
             # 3. OPSLAAN
