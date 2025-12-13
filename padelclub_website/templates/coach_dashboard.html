@@ -10,7 +10,7 @@
     <div class="top-nav">
   <div class="top-nav-inner">
     <a href="{{ url_for('edit_profile') }}" class="button top-btn">⚙ Profiel</a>
-    <a href="{{ url_for('coach_availability') }}" class="button top-btn">📅 Beschikbaarheid instellen</a>
+    <a href="{{ url_for('coach_availability') }}" class="button top-btn"> Beschikbaarheid instellen</a>
     <a href="{{ url_for('logout') }}" class="button top-btn logout-btn">⏻ Uitloggen</a>
   </div>
 </div>
@@ -25,7 +25,7 @@
         </div>
 
         <div class="welcome-block">
-            <h1>Welkom, coach {{ coach.first_name }} ! 👋</h1>
+            <h1>Welkom, coach {{ coach.first_name }} ! </h1>
             
             <div class="coach-stats-list">
                 <div class="stat-row">
@@ -66,9 +66,9 @@
     <!-- SPELERSLIJST -->
     <section class="coach-section">
         <div class="section-header">
-            <h2 class="section-title">📋 Mijn spelers</h2>
+            <h2 class="section-title"> Mijn spelers</h2>
             <input type="text" id="playerSearch" class="search-input"
-                   placeholder="🔍 Zoek speler..." onkeyup="filterPlayers()">
+                   placeholder="Zoek speler..." onkeyup="filterPlayers()">
         </div>
 
         <div class="table-scroll">
@@ -122,7 +122,7 @@
 
     <!-- GEPLANDE LESSEN -->
     <section class="coach-section">
-        <h2 class="section-title">📘 Geplande lessen</h2>
+        <h2 class="section-title"> Geplande lessen</h2>
 
         <div class="table-scroll">
             <table class="coach-table">
@@ -159,7 +159,7 @@
 
     <!-- AFGELOPEN LESSEN -->
     <section class="coach-section">
-        <h2 class="section-title">📘 Afgelopen lessen</h2>
+        <h2 class="section-title"> Afgelopen lessen</h2>
 
         <div class="table-scroll">
             <table class="coach-table">
@@ -182,12 +182,12 @@
                                 {% if lesson.has_evaluation %}
                                     <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}"
                                        class="button table-btn success-btn">
-                                       📝 Evaluatie bekijken
+                                        Evaluatie bekijken
                                     </a>
                                 {% else %}
                                     <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}"
                                        class="button table-btn warning-btn">
-                                       🖊️ Les evalueren
+                                       Les evalueren
                                     </a>
                                 {% endif %}
                             </td>

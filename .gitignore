@@ -5,4 +5,5 @@ __pycache__/
 *.db
 .idea/
 .vscode/
-
+.env.save
+.DS_Store

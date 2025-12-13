@@ -10,7 +10,7 @@
     <div class="top-nav">
   <div class="top-nav-inner">
     <a href="{{ url_for('edit_profile') }}" class="button">⚙ Profiel</a>
-    <a href="{{ url_for('request_lesson_type') }}" class="button">📅 Les aanvragen</a>
+    <a href="{{ url_for('request_lesson_type') }}" class="button"> Les aanvragen</a>
     <a href="{{ url_for('logout') }}" class="button logout-btn">⏻ Uitloggen</a>
   </div>
 </div>
@@ -30,7 +30,7 @@
         </div>
 
         <div class="profile-info">
-            <h1>Welkom, {{ user.first_name }}! 👋</h1>
+            <h1>Welkom, {{ user.first_name }}! </h1>
 
             <p class="profile-details">
                 <strong>Ranking:</strong> {{ user.ranking or "Geen ranking" }} <br>
@@ -83,19 +83,19 @@
         
         <div class="strengths-grid">
             <div class="strength-box">
-                <h4>💪 Sterktes</h4>
+                <h4> Sterktes</h4>
                 <p>{{ user.strengths or "Je coach heeft nog geen sterktes ingevuld." }}</p>
             </div>
             
             <div class="strength-box">
-                <h4>🎯 Werkpunten</h4>
+                <h4> Werkpunten</h4>
                 <p>{{ user.weaknesses or "Je coach heeft nog geen werkpunten ingevuld." }}</p>
             </div>
         </div>
     </div>
 
     <!-- GEPLANDE LESSEN -->
-    <h2 class="dashboard-section-title">📆 Mijn Geplande Lessen</h2>
+    <h2 class="dashboard-section-title"> Mijn Geplande Lessen</h2>
 
     <table class="dashboard-table">
         <thead>
@@ -134,7 +134,7 @@
     </table>
 
     <!-- GESCHIEDENIS -->
-    <h2 class="dashboard-section-title">🏆 Mijn Geschiedenis</h2>
+    <h2 class="dashboard-section-title"> Mijn Geschiedenis</h2>
 
     <div class="table-scroll">
         <table class="dashboard-table">

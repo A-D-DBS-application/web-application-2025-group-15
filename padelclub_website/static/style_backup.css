@@ -546,18 +546,18 @@ select {
 
 .login-container {
     background: white;
-    padding: 70px;
-    border-radius: 20px;
-    max-width: 720px;
-    margin: 80px auto;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    padding: 35px;
+    border-radius: 16px;
+    max-width: 450px;
+    margin: auto;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.15);
 }
 
 .login-title {
     text-align: center;
     color: #0077cc;
     margin-bottom: 20px;
-    font-size: 36px;
+    font-size: 28px;
 }
 
 .login-subtitle {
@@ -574,22 +574,22 @@ select {
 
 .login-input {
     width: 100%;
-    padding: 16px;
-    border-radius: 10px;
+    padding: 12px;
+    border-radius: 8px;
     border: 1px solid #ccc;
     margin-top: 6px;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .login-btn {
     width: 100%;
-    margin-top: 30px;
-    padding: 16px;
-    background-color: #e10600;
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #00a884;
     color: white;
     border: none;
-    border-radius: 12px;
-    font-size: 18px;
+    border-radius: 8px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
 }
@@ -2013,12 +2013,12 @@ textarea {
 
 /* STICKY TOP BAR zoals speler */
 .top-nav{
-  position: fixed;
+  position: sticky;
   top: 0;
   z-index: 9999;
 
   width: 100%;
-  background: #0f0f0f;           /* witte balk */
+  background: #fff;           /* witte balk */
   padding: 16px 0;            /* hoogte zoals speler */
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
@@ -2057,7 +2057,7 @@ textarea {
   top: 0;
   left: 0;
   width: 100vw;
-  background: #0f0f0f;
+  background: #fff;
   padding: 16px 0;
   z-index: 10000;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
@@ -2178,246 +2178,3 @@ body{
     }
 }
 
-/* =========================================================
-   PROFESSIONAL PADEL THEME – RED / BLACK (OVERRIDE)
-   ========================================================= */
-
-:root {
-  --red: #E10600;
-  --red-dark: #B30500;
-  --black: #0B0B0D;
-  --text: #111827;
-  --muted: #6B7280;
-  --bg: #F4F5F7;
-  --card: #FFFFFF;
-  --border: #E5E7EB;
-}
-
-/* Achtergrond: geen blauw/groen meer */
-body,
-.login-page,
-.index-page,
-.role-page,
-.cancel-page,
-.fullscreen-gradient {
-  background: var(--bg) !important;
-  color: var(--text) !important;
-}
-
-/* Cards & containers */
-.container,
-.login-container,
-.role-container,
-.center-card,
-.modal,
-.eval-container,
-.evaluation-container {
-  background: var(--card) !important;
-  border: 1px solid var(--border);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-}
-
-/* Titels */
-h1, h2, h3 {
-  color: var(--black) !important;
-  font-weight: 700;
-}
-
-/* Subtiele rode accentlijn */
-.section-title {
-  border-bottom: 3px solid var(--red) !important;
-  padding-bottom: 6px;
-}
-
-/* Knoppen – strak & professioneel */
-.button,
-.link-btn,
-.login-btn,
-.form-btn,
-.eval-next-btn,
-.save-button {
-  background: var(--red) !important;
-  color: white !important;
-  border-radius: 10px;
-  font-weight: 600;
-}
-
-.button:hover,
-.link-btn:hover,
-.login-btn:hover,
-.form-btn:hover,
-.eval-next-btn:hover {
-  background: var(--red-dark) !important;
-}
-
-/* Secundaire knoppen (zwart) */
-.back-btn,
-.eval-prev-btn,
-.confirm-back {
-  background: var(--black) !important;
-  color: white !important;
-}
-
-/* Tabellen */
-th,
-thead th {
-  background: var(--black) !important;
-  color: white !important;
-}
-
-tr:nth-child(even) {
-  background: #fafafa !important;
-}
-
-tr:hover {
-  background: #f1f1f1 !important;
-}
-
-/* Inputs */
-input,
-select,
-textarea {
-  border-radius: 10px;
-  border: 1px solid var(--border);
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(225,6,0,0.15);
-}
-
-/* Accent tekst */
-.highlight {
-  color: var(--red) !important;
-}
-
-/* Footer */
-footer {
-  color: var(--muted) !important;
-}
-
-/* ===============================
-   DARK BACKGROUND – PADEL STYLE
-   =============================== */
-
-/* Algemene pagina-achtergrond */
-body {
-  background-color: #0b0b0d !important; /* diep zwart */
-}
-
-/* Pagina’s die vroeger licht waren */
-.login-page,
-.index-page,
-.role-page,
-.eval-page,
-.evaluation-page,
-.cancel-page,
-.fullscreen-gradient {
-  background: #0b0b0d !important;
-}
-
-/* Witte kaarten voor leesbaarheid */
-.container,
-.login-container,
-.role-container,
-.center-card,
-.modal,
-.eval-container,
-.evaluation-container,
-.card,
-.review-box,
-.player-strengths-card,
-.info-box {
-  background: #ffffff !important;
-  color: #111827 !important;
-}
-
-/* Subtiele rode accentlijn links */
-.section-title,
-.player-strengths-card,
-.review-box,
-.info-box {
-  border-left: 5px solid #e10600 !important;
-}
-
-/* Top navigatie op donkere achtergrond */
-.top-nav {
-  background: #ffffff !important;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-/* =====================================
-   WELKOM / ROLE PAGE – RODE KNOPPEN
-   ===================================== */
-
-/* Knoppen op welkomspagina */
-.index-page .index-btn,
-.role-page .choice-card,
-.role-page .player-btn,
-.role-page .coach-btn {
-  background: #e10600 !important;   /* padel rood */
-  color: #ffffff !important;
-  border: none;
-  font-weight: 600;
-}
-
-/* Hover effect */
-.index-page .index-btn:hover,
-.role-page .choice-card:hover {
-  background: #b30500 !important;   /* donkerder rood */
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-}
-
-.welcome-logo{
-  width: 170px;
-  height: auto;
-  display: block;
-  margin: 0 auto 24px auto; /* center + space onder */
-}
-
-/* Top nav buttons */
-.top-nav .button,
-.top-nav .link-btn {
-  background: #d80000;
-  color: #fff;
-}
-
-.top-nav .button:hover,
-.top-nav .link-btn:hover {
-  background: #b50000;
-}
-
-/* ===== FINAL OVERRIDE: TOP NAV MUST BE BLACK ===== */
-.top-nav,
-.top-nav-inner{
-  background: #0f0f0f !important;
-}
-
-.top-nav{
-  border-bottom: none !important;
-  box-shadow: none !important;
-}
-
-/* ===== STERKTES & WERKPUNTEN – ZWART / ROOD ===== */
-
-.strength-box h4,
-.eval-title,
-.highlight {
-    color: #e10600 !important;   /* rood */
-    font-weight: 700;
-}
-
-/* Linker rode accent blijft */
-.player-strengths-card,
-.eval-section {
-    border-left: 5px solid #e10600 !important;
-}
-
-/* Tekst in boxen zwart */
-.strength-box p {
-    color: #111;
-}
