@@ -2465,16 +2465,18 @@ body {
     }
 
     /* --- 2. TABEL: WEG MET HET ZWART --- */
-    /* Forceer dat ALLE cellen wit zijn op mobiel */
-    td, tr {
-        background-color: #ffffff !important;
-        border-bottom: 1px solid #f0f0f0 !important;
-    }
-    
-    /* De rij waar de knoppen in zitten (Actie) mag geen zwarte achtergrond hebben */
-    td:last-child {
-        background-color: #ffffff !important;
-    }
+   /* Forceer dat ALLE cellen wit zijn op mobiel */
+   td, tr {
+       background-color: #ffffff !important;
+       border-bottom: 1px solid #f0f0f0 !important;
+       color: #000000 !important;  /* <--- DEZE REGEL ZORGT VOOR ZWARTE TEKST */
+   }
+   
+   /* De rij waar de knoppen in zitten (Actie) mag geen zwarte achtergrond hebben */
+   td:last-child {
+       background-color: #ffffff !important;
+       color: #000000 !important; /* <--- DEZE OOK VOOR DE ZEKERHEID */
+   }
 
     /* Knoppen in de tabel kleiner maken */
     .table-btn {
