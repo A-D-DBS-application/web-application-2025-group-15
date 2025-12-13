@@ -2421,3 +2421,115 @@ body {
 .strength-box p {
     color: #111;
 }
+
+
+/* =========================================================
+   MOBIELE AANPASSINGEN (SCHOON & ELEGANT)
+   ========================================================= */
+@media (max-width: 768px) {
+
+    /* --- 1. NAVIGATIEBALK (COMPACT) --- */
+    .top-nav {
+        padding: 10px 0;
+        background: #0f0f0f;
+    }
+
+    .top-nav-inner {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 0 10px;
+    }
+
+    .top-nav .button, 
+    .top-nav .logout-btn {
+        flex: 1;
+        width: auto;
+        font-size: 11px;
+        padding: 8px 4px;
+        height: 36px;
+        background-color: transparent; 
+        border: 1px solid #333;
+        color: #fff;
+        border-radius: 6px;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .top-nav .button:active {
+        border-color: #E10600;
+        color: #E10600;
+    }
+
+    /* --- 2. TABEL: WEG MET HET ZWART --- */
+    /* Forceer dat ALLE cellen wit zijn op mobiel */
+    td, tr {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #f0f0f0 !important;
+    }
+    
+    /* De rij waar de knoppen in zitten (Actie) mag geen zwarte achtergrond hebben */
+    td:last-child {
+        background-color: #ffffff !important;
+    }
+
+    /* Knoppen in de tabel kleiner maken */
+    .table-btn {
+        font-size: 11px !important;
+        padding: 5px 8px !important;
+        border-radius: 6px !important;
+        margin-right: 4px;
+    }
+
+    /* --- 3. ANNULEREN KNOP (OUTLINE STIJL) --- */
+    /* In plaats van een rood blok, maken we het wit met een rood randje */
+    .danger-btn {
+        background-color: transparent !important; /* Doorzichtig/Wit */
+        border: 1px solid #dc3545 !important;     /* Rood randje */
+        color: #dc3545 !important;                /* Rode tekst */
+        font-weight: 600;
+        box-shadow: none !important;
+    }
+    
+    /* Zorg dat iCal knop er mooi naast past (ook outline) */
+    .ical-btn {
+        background-color: transparent !important;
+        border: 1px solid #0077cc !important;
+        color: #0077cc !important;
+        box-shadow: none !important;
+    }
+
+    /* --- 4. PROFIEL KAART --- */
+    .dashboard-topbar {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .profile-pic-large {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    
+    .welcome-block h1 { font-size: 1.6rem; }
+    .stat-row { justify-content: center; }
+
+    /* Algemene witruimte */
+    body { padding-top: 65px; }
+    .container { padding: 15px; margin: 10px auto; width: 95%; }
+
+
+    /* Zorg dat lange namen niet lelijk afbreken */
+    .welcome-block h1 { 
+        font-size: 1.5rem;   /* Iets kleiner op mobiel */
+        line-height: 1.3;    /* Iets meer ruimte tussen regels als hij toch breekt */
+        word-wrap: break-word; 
+    }
+
+    
+}
