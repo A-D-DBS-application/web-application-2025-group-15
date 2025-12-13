@@ -53,9 +53,17 @@
                     {{ selected_date.strftime('%d-%m-%Y') }}
                 </h3>
 
-
                 <form method="POST">
                     <input type="hidden" name="date" value="{{ date_str }}">
+
+                    <div style="margin-bottom: 20px; text-align: center;">
+                        <button type="button" class="button button-primary" onclick="toggleSlots(true)" style="margin-right: 10px;">
+                            ✅ Hele dag beschikbaar
+                        </button>
+                        <button type="button" class="button" onclick="toggleSlots(false)" style="background-color: #6c757d; color: white;">
+                            ❌ Alles wissen
+                        </button>
+                    </div>
 
                     <div class="slots-grid">
                         {% for slot in all_slots %}
@@ -80,7 +88,7 @@
                             ✅ Beschikbaarheid Opslaan
                         </button>
                     {% else %}
-                        <p class="no-slots-message">Geen slots te tonen voor de gedefinieerde uren ({{ OPENING_HOUR }}:00 - {{ CLOSING_HOUR }}:00).</p>
+                        <p class="no-slots-message">Geen slots te tonen voor vandaag.</p>
                     {% endif %}
                 </form>
             </div>
@@ -88,5 +96,41 @@
 
         <p class="back-link"><a href="{{ url_for('coach_dashboard') }}">← Terug naar Dashboard</a></p>
     </div>
+
+    <script>
+        function toggleSlots(checkStatus) {
+            // Zoek alle checkboxes met de naam 'slots'
+            const checkboxes = document.getElementsByName('slots');
+            
+            for (let i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = checkStatus;
+                
+                // Update ook de kleur (klasse 'selected')
+                const parentRow = checkboxes[i].closest('.slot-row');
+                if (parentRow) {
+                    if (checkStatus) {
+                        parentRow.classList.add('selected');
+                    } else {
+                        parentRow.classList.remove('selected');
+                    }
+                }
+            }
+        }
+
+        // Zorg dat handmatig klikken ook de kleur update
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.getElementsByName('slots');
+            for (let i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].addEventListener('change', function() {
+                    const parentRow = this.closest('.slot-row');
+                    if (this.checked) {
+                        parentRow.classList.add('selected');
+                    } else {
+                        parentRow.classList.remove('selected');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
