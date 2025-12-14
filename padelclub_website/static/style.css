@@ -2422,6 +2422,61 @@ body {
     color: #111;
 }
 
+/* =========================================================
+   ALLEEN RECHTERKANT VAN TABEL WIT MAKEN
+   ========================================================= */
+
+/* Dit pakt alleen de LAATSTE cel in een rij (de rechterkolom) */
+td:last-child {
+    background-color: #ffffff !important;  /* Achtergrond wit */
+    color: #000000 !important;            /* Tekst zwart */
+}
+
+/* Zorg dat eventuele links (e-mailadres etc) in die rechterkolom ook zwart zijn */
+td:last-child a {
+    color: #000000 !important;
+}
+
+/* =========================================================
+   ELEGANTE LINKS MET PIJLTJE (DUIDELIJK KLIKBAAR)
+   ========================================================= */
+
+td a {
+    color: #333333 !important;      /* Donkergrijs/Zwart */
+    text-decoration: none !important; 
+    font-weight: 600;               
+    font-size: 16px; 
+    
+    /* Dit zorgt voor de uitlijning van het pijltje */
+    display: flex;                 
+    justify-content: space-between; /* Naam links, pijltje rechts */
+    align-items: center;            /* Netjes verticaal gecentreerd */
+    
+    padding: 10px 5px;              /* Iets meer ruimte om te tappen */
+    transition: all 0.2s ease;
+}
+
+/* HET PIJLTJE (CHEVRON) TOEVOEGEN */
+td a::after {
+    content: "›";                   /* Het pijltje */
+    font-size: 24px;                /* Iets groter dan de tekst */
+    color: #cccccc;                 /* Lichtgrijs (subtiel) */
+    font-weight: 300;               /* Dun en elegant */
+    margin-left: 10px;
+}
+
+/* Hover effect (voor desktop) */
+td a:hover {
+    color: #cc0000 !important;      /* Tekst wordt rood */
+    background-color: #f9f9f9;      
+}
+
+/* Zorg dat het pijltje ook rood wordt als je hovert */
+td a:hover::after {
+    color: #cc0000;
+}
+
+
 
 /* =========================================================
    MOBIELE AANPASSINGEN (SCHOON & ELEGANT)
@@ -2533,5 +2588,6 @@ body {
         word-wrap: break-word; 
     }
 
-    
+
+
 }
