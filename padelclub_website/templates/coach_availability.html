@@ -2,136 +2,135 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coach Beschikbaarheid Instellen</title>
+    <title>Beschikbaarheid | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Extra CSS voor mooie Toggle Knoppen ipv saaie checkboxes */
+        .slot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .slot-checkbox {
+            display: none; /* Verberg de standaard checkbox */
+        }
+
+        .slot-label {
+            display: block;
+            padding: 15px;
+            background: #2A2A2A;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: #ccc;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        /* Als de checkbox AANGEVINKT is: */
+        .slot-checkbox:checked + .slot-label {
+            background: #E10600;
+            border-color: #E10600;
+            color: white;
+        }
+
+        .slot-label:hover {
+            border-color: #E10600;
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Coach Beschikbaarheid Instellen</h1>
-        
-        {% if error %}
-            <div class="alert alert-error">
-                ❌ Fout: {{ error }}
-            </div>
-        {% endif %}
-        {% if message %}
-            <div class="alert alert-success">
-                ✅ Beschikbaarheid succesvol opgeslagen!
-            </div>
-        {% endif %}
-        
-        <div class="card">
-            <h3>Kies een Dag</h3>
-            <form method="GET" class="form-row">
-                <div class="input-group">
-                    <label for="date_selector">Datum:</label>
-                    <input 
-                        type="date" 
-                        id="date_selector" 
-                        name="date" 
-                        value="{{ date_str or '' }}" 
-                        required
-                    >
-                </div>
-                <button type="submit" class="button button-primary">Toon Slots</button>
-            </form>
+
+<body class="index-page">
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('coach_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('add_player') }}" class="nav-link">Speler toevoegen</a></li>
+                <li><a href="{{ url_for('coach_availability') }}" class="nav-link">Beschikbaarheid</a></li>
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
         </div>
+    </nav>
 
-        {% if selected_date %}
-            <div class="card slot-selection-card">
-                <h3>
-                    Duid jouw beschikbaarheden aan op 
-                    {{ selected_date.strftime('%A') | replace('Monday','maandag') 
-                                   | replace('Tuesday','dinsdag')
-                                   | replace('Wednesday','woensdag')
-                                   | replace('Thursday','donderdag')
-                                   | replace('Friday','vrijdag')
-                                   | replace('Saturday','zaterdag')
-                                   | replace('Sunday','zondag') 
-                    }} 
-                    {{ selected_date.strftime('%d-%m-%Y') }}
-                </h3>
+    <div class="container" style="max-width: 800px;">
+        
+        <div class="dashboard-card dark-card">
+            <h1 class="section-title">📅 Mijn Beschikbaarheid</h1>
+            
+            {% if message %}
+                <div style="background: rgba(40, 167, 69, 0.2); color: #4dff4d; padding: 10px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #4dff4d;">
+                    {{ message }}
+                </div>
+            {% endif %}
+            
+            {% if error %}
+                <div style="background: rgba(225, 6, 0, 0.2); color: #ff4d4d; padding: 10px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #ff4d4d;">
+                    {{ error }}
+                </div>
+            {% endif %}
 
-                <form method="POST">
+            <form method="GET" action="{{ url_for('coach_availability') }}" style="margin-bottom: 30px;">
+                <label style="color: white; display: block; margin-bottom: 10px;">Kies een datum om te bewerken:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" name="date" value="{{ date_str or '' }}" required class="login-input" style="margin: 0;">
+                    <button type="submit" class="cta-btn" style="border: none;">Laden</button>
+                </div>
+            </form>
+
+            <hr style="border-color: #333; margin: 30px 0;">
+
+            {% if selected_date %}
+                <h3 style="color: white;">Beschikbare uren voor {{ selected_date.strftime('%d-%m-%Y') }}</h3>
+                <p style="color: #999; font-size: 14px;">Klik op de uren dat je beschikbaar bent (Rood = Beschikbaar).</p>
+
+                <form method="POST" action="{{ url_for('coach_availability') }}">
                     <input type="hidden" name="date" value="{{ date_str }}">
 
-                    <div style="margin-bottom: 20px; text-align: center;">
-                        <button type="button" class="button button-primary" onclick="toggleSlots(true)" style="margin-right: 10px;">
-                            ✅ Hele dag beschikbaar
-                        </button>
-                        <button type="button" class="button" onclick="toggleSlots(false)" style="background-color: #6c757d; color: white;">
-                            ❌ Alles wissen
-                        </button>
-                    </div>
-
-                    <div class="slots-grid">
+                    <div class="slot-grid">
                         {% for slot in all_slots %}
-                            {% set is_selected = slot.id in selected_slot_ids %}
-                            
-                            <div class="slot-row {% if is_selected %}selected{% endif %}">
-                                <span class="slot-label">{{ slot.label }}</span>
-
-                                <input 
-                                    type="checkbox" 
-                                    name="slots" 
-                                    value="{{ slot.id }}"
-                                    class="slot-checkbox"
-                                    {% if is_selected %}checked{% endif %}
-                                >
+                            <div>
+                                <input type="checkbox" 
+                                       id="slot_{{ slot.id }}" 
+                                       name="slots" 
+                                       value="{{ slot.id }}" 
+                                       class="slot-checkbox"
+                                       {% if slot.id in selected_slot_ids %}checked{% endif %}>
+                                
+                                <label for="slot_{{ slot.id }}" class="slot-label">
+                                    {{ slot.label }}
+                                </label>
                             </div>
                         {% endfor %}
                     </div>
 
-                    {% if all_slots %}
-                        <button type="submit" class="button button-success save-button">
-                            ✅ Beschikbaarheid Opslaan
+                    <div style="margin-top: 30px; text-align: right;">
+                        <button type="submit" class="cta-btn" style="width: 100%; font-size: 18px; border: none;">
+                            💾 Opslaan
                         </button>
-                    {% else %}
-                        <p class="no-slots-message">Geen slots te tonen voor vandaag.</p>
-                    {% endif %}
+                    </div>
                 </form>
-            </div>
-        {% endif %}
+            {% else %}
+                <div style="text-align: center; color: #666; padding: 40px;">
+                    Selecteer eerst een datum hierboven.
+                </div>
+            {% endif %}
 
-        <p class="back-link"><a href="{{ url_for('coach_dashboard') }}">← Terug naar Dashboard</a></p>
+        </div>
+        
+        <div class="back-home" style="margin-top: 20px; text-align: center;">
+            <a href="{{ url_for('coach_dashboard') }}" style="color: #ccc;">← Terug naar Dashboard</a>
+        </div>
+
     </div>
 
-    <script>
-        function toggleSlots(checkStatus) {
-            // Zoek alle checkboxes met de naam 'slots'
-            const checkboxes = document.getElementsByName('slots');
-            
-            for (let i = 0; i < checkboxes.length; i++) {
-                checkboxes[i].checked = checkStatus;
-                
-                // Update ook de kleur (klasse 'selected')
-                const parentRow = checkboxes[i].closest('.slot-row');
-                if (parentRow) {
-                    if (checkStatus) {
-                        parentRow.classList.add('selected');
-                    } else {
-                        parentRow.classList.remove('selected');
-                    }
-                }
-            }
-        }
-
-        // Zorg dat handmatig klikken ook de kleur update
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkboxes = document.getElementsByName('slots');
-            for (let i = 0; i < checkboxes.length; i++) {
-                checkboxes[i].addEventListener('change', function() {
-                    const parentRow = this.closest('.slot-row');
-                    if (this.checked) {
-                        parentRow.classList.add('selected');
-                    } else {
-                        parentRow.classList.remove('selected');
-                    }
-                });
-            }
-        });
-    </script>
 </body>
 </html>

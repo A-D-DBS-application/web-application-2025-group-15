@@ -1,41 +1,52 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inloggen | Fit Out Padel Destelbergen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inloggen | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body class="login-page">
+<body class="index-page">
 
-<div class="login-container">
+    <div class="login-container dark-card">
+        
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" class="login-logo">
 
-    <h1 class="login-title"> Inloggen</h1>
-    <p class="login-subtitle">Log in met je e-mailadres (geen wachtwoord nodig).</p>
+        <h1 class="login-title">Welkom terug</h1>
+        <p class="login-subtitle">Log in om je lessen te beheren</p>
 
-    <form method="POST" action="/login">
+        <form method="POST" action="/login">
+            <label for="email" class="login-label">E-mailadres</label>
+            <input type="email" id="email" name="email" 
+                   required placeholder="jouw@email.com"
+                   class="login-input">
 
-        <label for="email" class="login-label">E-mailadres</label>
-        <input type="email" id="email" name="email" 
-               required placeholder="jouw@email.com"
-               class="login-input">
+            <button type="submit" class="login-btn">Inloggen</button>
 
-        <button type="submit" class="login-btn">Inloggen</button>
+            {% if error %}
+            <div class="login-error">
+                ⚠ {{ error }}
+            </div>
+            {% endif %}
+        </form>
 
-        {% if error %}
-        <div class="login-error">
-            {{ error }}
+        <div class="login-divider">
+            <span>of</span>
         </div>
-        {% endif %}
-    </form>
 
-    <a class="login-register-link" href="{{ url_for('register') }}">
-        Nog geen account? Registreer hier
-    </a>
+        <div class="register-section">
+            <p>Nog geen lid bij Fit Out Padel?</p>
+            <a href="{{ url_for('register') }}" class="register-btn">
+                Nieuw account aanmaken
+            </a>
+        </div>
+        
+        <div class="back-home">
+             <a href="/">← Terug naar start</a>
+        </div>
 
-</div>
+    </div>
 
 </body>
 </html>

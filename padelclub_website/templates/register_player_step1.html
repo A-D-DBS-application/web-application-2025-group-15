@@ -2,36 +2,54 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speler Registratie Stap 1/2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registratie Speler (1/2) | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <div class="container form-container">
-        <h1>Speler: Wie ben je?</h1>
-        <p class="subtitle">Stap 1 van 2</p>
+
+<body class="index-page">
+
+    <div class="login-container dark-card">
         
-        {% if error %} <div class="error">{{ error }}</div> {% endif %}
+        <h1 class="login-title">Speler Profiel</h1>
+        <p class="login-subtitle">Stap 1 van 2: Persoonlijke gegevens</p>
+
+        {% if error %} 
+            <div class="login-error">{{ error }}</div> 
+        {% endif %}
 
         <form method="POST" action="{{ url_for('register_player_step1') }}">
-            <label for="first_name">Voornaam:</label>
-            <input type="text" id="first_name" name="first_name" minlength="2" maxlength="20" required placeholder="Bijv. Fernando">
+            
+            <label for="first_name" class="login-label">Voornaam</label>
+            <input type="text" id="first_name" name="first_name" 
+                   required placeholder="Bijv. Fernando"
+                   class="login-input">
 
-            <label for="last_name">Achternaam:</label>
-            <input type="text" id="last_name" name="last_name" minlength="2" maxlength="30" required placeholder="Bijv. Belasteguin">
+            <label for="last_name" class="login-label">Achternaam</label>
+            <input type="text" id="last_name" name="last_name" 
+                   required placeholder="Bijv. Belasteguin"
+                   class="login-input">
 
-            <label for="email">E-mailadres:</label>
-            <input type="email" id="email" name="email" required placeholder="max@speler.be">
+            <label for="email" class="login-label">E-mailadres</label>
+            <input type="email" id="email" name="email" 
+                   required placeholder="max@speler.be"
+                   class="login-input">
 
-            <label for="phone">Telefoonnummer:</label>
-            <input type="tel" id="phone" name="phone" pattern="0[0-9]{9}" placeholder="04..." title="Vul 10 cijfers in zonder spaties of streepjes (bv. 0475123456)" required>
+            <label for="phone" class="login-label">Telefoonnummer</label>
+            <input type="tel" id="phone" name="phone" 
+                   pattern="0[0-9]{9}" 
+                   placeholder="0475123456" 
+                   title="Vul 10 cijfers in zonder spaties" 
+                   required
+                   class="login-input">
 
-            <button type="submit" class="form-btn">Volgende stap &rarr;</button>
+            <button type="submit" class="login-btn">Volgende stap &rarr;</button>
         </form>
 
-        <div class="back-link">
+        <div class="back-home">
             <a href="/register">← Terug naar keuze</a>
         </div>
     </div>
+
 </body>
 </html>

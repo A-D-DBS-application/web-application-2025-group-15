@@ -2,224 +2,258 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coach Dashboard | Fit Out Padel Destelbergen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Dashboard | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* --- ALGEMENE LAYOUT --- */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        /* HEADER */
+        .dashboard-header.dark-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-pic-dashboard {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #E10600;
+        }
+
+        /* TABELLEN & KAARTEN */
+        .dashboard-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .section-title {
+            color: white;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: #ccc; padding: 10px; border-bottom: 1px solid #444; }
+        td { padding: 12px 10px; border-bottom: 1px solid #333; color: white; }
+        tr:last-child td { border-bottom: none; }
+
+        /* --- KNOPPEN STYLING --- */
+        .dashboard-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 13px;
+            text-align: center;
+            border: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* ROOD (Standaard actie: iCal, Evalueren) */
+        .btn-red {
+            background-color: #E10600;
+            color: white;
+        }
+        .btn-red:hover {
+            background-color: #b30500;
+        }
+
+        /* GRIJS (Secundair: Bekijken) */
+        .btn-grey {
+            background-color: #444;
+            color: white;
+        }
+        .btn-grey:hover {
+            background-color: #555;
+        }
+
+        /* STUDENTEN GRID */
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .student-card {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #444;
+            transition: transform 0.2s;
+            text-decoration: none;
+            color: white;
+        }
+        .student-card:hover {
+            transform: translateY(-3px);
+            border-color: #E10600;
+        }
+        .student-name { font-weight: bold; display: block; margin-bottom: 5px; }
+        .student-rank { color: #888; font-size: 13px; }
+
+        @media (max-width: 768px) {
+            .dashboard-header.dark-card { flex-direction: column; text-align: center; }
+            .profile-pic-dashboard { margin-right: 0; margin-bottom: 20px; }
+        }
+    </style>
 </head>
 
-<body class="dashboard-bg">
-    <div class="top-nav">
-  <div class="top-nav-inner">
-    <a href="{{ url_for('edit_profile') }}" class="button top-btn">⚙ Profiel</a>
-    <a href="{{ url_for('coach_availability') }}" class="button top-btn"> Beschikbaarheid instellen</a>
-    <a href="{{ url_for('logout') }}" class="button top-btn logout-btn">⏻ Uitloggen</a>
-  </div>
-</div>
+<body class="index-page">
 
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" style="max-height: 40px;">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('coach_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('add_player') }}" class="nav-link">Speler Toevoegen</a></li>
+                <li><a href="{{ url_for('coach_availability') }}" class="nav-link">Beschikbaarheid</a></li>
+                <li><a href="{{ url_for('schedule_individual_lesson') }}" class="nav-link">Les Inplannen</a></li>
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<div class="container coach-dashboard">
+    <div class="container">
 
-<div class="dashboard-topbar">
-
-        <div class="profile-header">
-            <img src="{{ coach.profile_image or '/static/default_profile.png' }}" class="profile-pic-large">
+        <div class="dashboard-header dark-card">
+            <img src="{{ user.profile_image or url_for('static', filename='default_profile.png') }}" 
+                 alt="Profiel" 
+                 class="profile-pic-dashboard"
+                 onerror="this.src='{{ url_for('static', filename='default_profile.png') }}';">
+            
+            <div class="header-info">
+                <h1 style="margin: 0; color: white;">Coach {{ user.first_name }}</h1>
+                <p style="color: #ccc; margin: 5px 0;">{{ user.email }}</p>
+                <p style="color: #E10600; font-weight: bold;">{{ students|length }} Studenten</p>
+            </div>
         </div>
 
-        <div class="welcome-block">
-            <h1>Welkom, coach {{ coach.first_name }} ! </h1>
-            
-            <div class="coach-stats-list">
-                <div class="stat-row">
-                    <span class="stat-label">Ranking:</span> 
-                    <span class="stat-value">{{ coach.ranking or 'Geen ranking' }}</span>
+        <div class="dashboard-card">
+            <h2 class="section-title">👥 Mijn Studenten</h2>
+            {% if students %}
+                <div class="students-grid">
+                    {% for student in students %}
+                        <a href="{{ url_for('coach_player_detail', player_id=student.player_id) }}" class="student-card">
+                            <span class="student-name">{{ student.first_name }} {{ student.last_name }}</span>
+                            <span class="student-rank">{{ student.ranking or 'Geen ranking' }}</span>
+                        </a>
+                    {% endfor %}
                 </div>
-                
-                <div class="stat-row">
-                    <span class="stat-label">Lesvoorkeur:</span>
-                    <span class="stat-value">
-                        {% if coach.lesson_type_preference == 'group' %}
-                            Groepslessen
-                        {% elif coach.lesson_type_preference == 'individual' %}
-                            Individueel
+            {% else %}
+                <p style="color: #888; font-style: italic;">Je hebt nog geen studenten gekoppeld.</p>
+                <a href="{{ url_for('add_player') }}" style="color: #E10600;">Student toevoegen →</a>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-card">
+            <h2 class="section-title">📅 Komende Lessen</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Tijd</th>
+                            <th>Speler(s)</th>
+                            <th>Type</th>
+                            <th>Actie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if upcoming_lessons %}
+                            {% for lesson in upcoming_lessons %}
+                            <tr>
+                                <td>{{ lesson.date }}</td>
+                                <td>{{ lesson.start_time }} - {{ lesson.end_time }}</td>
+                                <td>{{ lesson.players }}</td>
+                                <td>{{ lesson.lesson_type }}</td>
+                                <td>
+                                    <a href="{{ url_for('download_ics', lesson_id=lesson.lesson_id) }}" class="dashboard-btn btn-red">
+                                        iCal
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
                         {% else %}
-                            {{ coach.lesson_type_preference or 'Niet opgegeven' }}
+                            <tr>
+                                <td colspan="5" style="color: #888; text-align: center; padding: 20px;">
+                                    Geen lessen gepland.
+                                </td>
+                            </tr>
                         {% endif %}
-                    </span>
-                </div>
-                
-                <div class="stat-row">
-                    <span class="stat-label">Speelstijl:</span>
-                    <span class="stat-value">
-                        {% if coach.playing_intensity == 'recreational' %}
-                            Recreatief / Ontspanning
-                        {% elif coach.playing_intensity == 'competitive' %}
-                            Serieus / Competitief
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h2 class="section-title">✅ Afgeronde Lessen (Evaluaties)</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Tijd</th>
+                            <th>Speler</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if past_lessons %}
+                            {% for lesson in past_lessons %}
+                            <tr>
+                                <td>{{ lesson.date }}</td>
+                                <td>{{ lesson.start_time }} - {{ lesson.end_time }}</td>
+                                <td>{{ lesson.player_name }}</td>
+                                <td>
+                                    {% if lesson.has_evaluation %}
+                                        <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}" class="dashboard-btn btn-grey">
+                                            Bekijk Rapport
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}" class="dashboard-btn btn-red">
+                                            ✍️ Evalueer Nu
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
                         {% else %}
-                            {{ coach.playing_intensity or 'Niet opgegeven' }}
+                            <tr>
+                                <td colspan="4" style="color: #888; text-align: center; padding: 20px;">
+                                    Nog geen afgeronde lessen.
+                                </td>
+                            </tr>
                         {% endif %}
-                    </span>
-                </div>
+                    </tbody>
+                </table>
             </div>
         </div>
 
     </div>
-
-    <!-- SPELERSLIJST -->
-    <section class="coach-section">
-        <div class="section-header">
-            <h2 class="section-title"> Mijn spelers</h2>
-            <input type="text" id="playerSearch" class="search-input"
-                   placeholder="Zoek speler..." onkeyup="filterPlayers()">
-        </div>
-
-        <div class="table-scroll">
-            <table id="playersTable" class="coach-table">
-                <thead>
-                    <tr>
-                        <th>Naam</th>
-                        <th>Email</th>
-                        <th>Telefoon</th>
-                        <th>Actie</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if students %}
-                        {% for student in students %}
-                        <tr>
-                            <td>
-                                <a href="{{ url_for('coach_player_detail', player_id=student.player_id) }}"
-                                   class="player-link">
-                                    {{ student.first_name }} {{ student.last_name }}
-                                </a>
-                            </td>
-                            <td>{{ student.email }}</td>
-                            <td>{{ student.phone or '' }}</td>
-                            <td>
-                                <form action="{{ url_for('unlink_player', player_id=student.player_id) }}" 
-                                      method="POST"
-                                      onsubmit="return confirm('Weet je zeker dat je {{ student.first_name }} wilt loskoppelen?');">
-                                    <button type="submit" class="button table-btn danger-btn">
-                                        ❌ Loskoppelen
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="4">Nog geen spelers gekoppeld.</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- EXTRA ACTIEKNOPPEN -->
-        <div class="coach-action-bar coach-action-bar--center">
-            <a href="{{ url_for('add_player') }}" class="button cta-btn">
-                + Speler toevoegen
-            </a>
-            
-        </div>
-    </section>
-
-    <!-- GEPLANDE LESSEN -->
-    <section class="coach-section">
-        <h2 class="section-title"> Geplande lessen</h2>
-
-        <div class="table-scroll">
-            <table class="coach-table">
-                <thead>
-                    <tr>
-                        <th>Datum</th>
-                        <th>Tijd</th>
-                        <th>Speler(s)</th>
-                        <th>Actie</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if upcoming_lessons %}
-                        {% for lesson in upcoming_lessons %}
-                        <tr>
-                            <td>{{ lesson.date }}</td>
-                            <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
-                            <td>{{ lesson.players }}</td>
-                            <td>
-                                <a href="{{ url_for('export_lesson', lesson_id=lesson.lesson_id) }}" 
-                                   class="button table-btn ical-btn">
-                                   📅 iCal
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="4">Nog geen lessen ingepland.</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>   
-    </section>
-
-    <!-- AFGELOPEN LESSEN -->
-    <section class="coach-section">
-        <h2 class="section-title"> Afgelopen lessen</h2>
-
-        <div class="table-scroll">
-            <table class="coach-table">
-                <thead>
-                    <tr>
-                        <th>Datum</th>
-                        <th>Tijd</th>
-                        <th>Speler(s)</th>
-                        <th>Actie</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if past_lessons %}
-                        {% for lesson in past_lessons %}
-                        <tr>
-                            <td>{{ lesson.date }}</td>
-                            <td>{{ lesson.start_time }} – {{ lesson.end_time }}</td>
-                            <td>{{ lesson.player_name }}</td>
-                            <td>
-                                {% if lesson.has_evaluation %}
-                                    <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}"
-                                       class="button table-btn success-btn">
-                                        Evaluatie bekijken
-                                    </a>
-                                {% else %}
-                                    <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}"
-                                       class="button table-btn warning-btn">
-                                       Les evalueren
-                                    </a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="4">Nog geen afgelopen lessen.</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-</div>
-
-<footer>© 2025 Fit Out Padel Destelbergen</footer>
-
-<script>
-    function filterPlayers() {
-        const input = document.getElementById("playerSearch");
-        const filter = input.value.toLowerCase();
-        const rows = document.querySelectorAll("#playersTable tbody tr");
-
-        rows.forEach(row => {
-            const nameCell = row.querySelector("td");
-            if (!nameCell) return;
-            const text = nameCell.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? "" : "none";
-        });
-    }
-</script>
 
 </body>
 </html>

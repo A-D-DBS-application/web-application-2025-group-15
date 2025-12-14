@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, make_response
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash
 from config import Config
 from extensions import db
 from sqlalchemy import or_, and_
@@ -33,16 +33,13 @@ db.init_app(app)
 # =========================================================
 
 # --- tijdsloten ---
-def get_daily_time_slots(opening=9, closing=22, duration=60):
+def get_daily_time_slots():
+    # Genereert uren van 09:00 tot 22:00
     slots = []
-    t = datetime.strptime(f"{opening}:00", "%H:%M")
-    end_limit = datetime.strptime(f"{closing}:00", "%H:%M")
-
-    while t + timedelta(minutes=duration) <= end_limit:
-        start_str = t.strftime("%H:%M")
-        end_str = (t + timedelta(minutes=duration)).strftime("%H:%M")
-        slots.append((start_str, end_str))
-        t += timedelta(minutes=duration)
+    for hour in range(9, 22):
+        start = f"{hour:02d}:00"
+        end = f"{hour+1:02d}:00"
+        slots.append((start, end))
     return slots
 
 # --- profielfoto's ---
@@ -1244,36 +1241,33 @@ def player_confirm_lesson_choice():
 #  CONFIRM CANCEL LESSON (PLAYER)
 # ============================================================
 
+# 1. DE TUSSENPAGINA (Bevestiging vragen)
 @app.route("/confirm_cancel_lesson/<int:lesson_id>")
 def confirm_cancel_lesson(lesson_id):
     if session.get("role") != "player":
         return redirect(url_for("login"))
-
+    
+    # We sturen de gebruiker naar de aparte HTML pagina
     return render_template("confirm_cancel_lesson.html", lesson_id=lesson_id)
 
-# ============================================================
-#  LES ANNULEREN (PLAYER)
-# ============================================================
 
-@app.route("/cancel_lesson/<int:lesson_id>")
+# 2. DE ACTIE (Daadwerkelijk verwijderen)
+# Deze wordt aangeroepen als je OP de bevestigingspagina op "JA" klikt
+@app.route("/cancel_lesson/<int:lesson_id>", methods=["POST"])
 def cancel_lesson(lesson_id):
-    if session.get("role") != "player":
+    if "user_id" not in session or session.get("role") != "player":
         return redirect(url_for("login"))
 
     player_id = session.get("user_id")
-
-    # Les en speler ophalen
-    lesson = Lesson.query.get(lesson_id)
+    lesson = Lesson.query.get_or_404(lesson_id)
     player = Player.query.get(player_id)
 
-    if not lesson:
-        return render_template("error.html", message="Les niet gevonden.")
-
     if player not in lesson.players:
-        return render_template("error.html", message="Je mag deze les niet annuleren.")
+        flash("Je kunt alleen je eigen lessen annuleren.", "error")
+        return redirect(url_for("player_dashboard"))
 
     try:
-        # 1️⃣ Tijdslot terug vrijgeven in CoachAvailability
+        # Tijdslot herstellen
         restored_slot = CoachAvailability(
             coach_id=lesson.coach_id,
             date=lesson.date,
@@ -1282,25 +1276,17 @@ def cancel_lesson(lesson_id):
         )
         db.session.add(restored_slot)
 
-        # 2️⃣ Les verwijderen
+        # Les verwijderen
         db.session.delete(lesson)
         db.session.commit()
+        flash("Les geannuleerd en tijdslot vrijgegeven.", "success")
 
     except Exception as e:
         db.session.rollback()
-        print("Fout bij annuleren (ORM):", e)
-        return render_template("error.html", message="Er ging iets mis bij het annuleren.")
+        print("Fout:", e)
+        flash("Kon de les niet annuleren.", "error")
 
-    # 3️⃣ Alleen als alles goed is gegaan → succespagina
-    return redirect(url_for("cancel_success"))
-
-
-@app.route("/cancel_success")
-def cancel_success():
-    if session.get("role") != "player":
-        return redirect(url_for("login"))
-    return render_template("cancel_success.html")
-
+    return redirect(url_for("player_dashboard"))
 # ============================================================
 #  COACH DASHBOARD
 # ============================================================
@@ -1389,7 +1375,7 @@ def coach_dashboard():
 #  COACH BESCHIKBAARHEID INSTELLEN
 # ============================================================
 
-@app.route("/coach/availability", methods=["GET", "POST"])
+@app.route("/coach_availability", methods=["GET", "POST"])
 def coach_availability():
     if session.get("role") != "coach":
         return redirect(url_for("login"))
@@ -1397,82 +1383,71 @@ def coach_availability():
     coach_id = session.get("user_id")
     coach = Coach.query.get_or_404(coach_id)
 
-    # Basis parameters
-    OPENING_HOUR = 9
-    CLOSING_HOUR = 22
-    DURATION_MINUTES = 60
-
-    # Datum ophalen
+    # 1. Datum bepalen
     date_str = request.values.get("date")
+    
     selected_date = None
     all_slots = []
     selected_slot_ids = set()
     message = None
     error = None
 
-    # Als er een datum is
     if date_str:
         try:
             selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
 
-            
-            # Slots genereren via de hulpfunctie
+            # 2. POST: Opslaan
+            if request.method == "POST":
+                chosen_slots = request.form.getlist("slots") 
+
+                try:
+                    # VERVANGEN: Availability -> CoachAvailability
+                    # Eerst alles wissen van die dag
+                    CoachAvailability.query.filter_by(coach_id=coach_id, date=selected_date).delete()
+
+                    # Nieuwe toevoegen
+                    for slot_id in chosen_slots:
+                        start_str, end_str = slot_id.split("-")
+                        start_t = datetime.strptime(start_str, "%H:%M").time()
+                        end_t = datetime.strptime(end_str, "%H:%M").time()
+
+                        # VERVANGEN: Availability -> CoachAvailability
+                        new_slot = CoachAvailability(
+                            coach_id=coach_id,
+                            date=selected_date,
+                            start_time=start_t,
+                            end_time=end_t
+                        )
+                        db.session.add(new_slot)
+
+                    db.session.commit()
+                    message = "Beschikbaarheid succesvol bijgewerkt!"
+                
+                except Exception as e:
+                    db.session.rollback()
+                    print("Fout:", e)
+                    error = "Kon niet opslaan."
+
+            # 3. GET: Weergave voorbereiden
             raw_slots = get_daily_time_slots()
             
-            # Omzetten naar het formaat dat coach_availability.html verwacht
-            all_slots = [
-                {
+            all_slots = []
+            for s, e in raw_slots:
+                all_slots.append({
                     "id": f"{s}-{e}",
                     "label": f"{s} – {e}"
-                }
-                for s, e in raw_slots
-            ]
+                })
 
+            # VERVANGEN: Availability -> CoachAvailability
+            existing = CoachAvailability.query.filter_by(coach_id=coach_id, date=selected_date).all()
             
-
-            # Bestaande beschikbaarheid ophalen
-            existing = CoachAvailability.query.filter_by(
-                coach_id=coach_id,
-                date=selected_date
-            ).all()
-
             selected_slot_ids = {
                 f"{av.start_time.strftime('%H:%M')}-{av.end_time.strftime('%H:%M')}"
                 for av in existing
             }
 
-            # POST: opslaan
-            if request.method == "POST":
-                chosen_slots = request.form.getlist("slots")
-
-                # Oude verwijderen
-                CoachAvailability.query.filter_by(
-                    coach_id=coach_id,
-                    date=selected_date
-                ).delete()
-
-                # Nieuwe opslaan
-                for slot_id in chosen_slots:
-                    start_str, end_str = slot_id.split("-")
-                    start_t = datetime.strptime(start_str, "%H:%M").time()
-                    end_t = datetime.strptime(end_str, "%H:%M").time()
-
-                    av = CoachAvailability(
-                        coach_id=coach_id,
-                        date=selected_date,
-                        start_time=start_t,
-                        end_time=end_t
-                    )
-                    db.session.add(av)
-
-                db.session.commit()
-                message = "Beschikbaarheid opgeslagen!"
-                selected_slot_ids = set(chosen_slots)
-
-        except Exception as e:
-            db.session.rollback()
-            print("Fout bij instellen beschikbaarheid:", e)
-            error = "Er ging iets mis bij het opslaan van je beschikbaarheid."
+        except ValueError:
+            error = "Ongeldige datum."
 
     return render_template(
         "coach_availability.html",
@@ -1484,7 +1459,6 @@ def coach_availability():
         message=message,
         error=error
     )
-
 # ============================================================
 #  EVALUATIE LES (COACH)
 # ============================================================
@@ -1647,7 +1621,7 @@ def assign_coach(player_id):
     coach = Coach.query.get_or_404(coach_id)
     player = Player.query.get_or_404(player_id)
 
-    if not coach.students.filter_by(player_id=player_id).count() > 0:
+    if player not in coach.students:
         coach.students.append(player)
         try:
             db.session.commit()
@@ -1735,28 +1709,40 @@ def schedule_individual_lesson():
 # ============================================================
 #  ICAL EXPORT (Download voor Outlook/Google)
 # ============================================================
+@app.route("/download_ics/<int:lesson_id>")
+def download_ics(lesson_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
 
-@app.route("/export_lesson/<int:lesson_id>")
-def export_lesson(lesson_id):
-    lesson = Lesson.query.get(lesson_id)
-    if not lesson:
-        return "Les niet gevonden", 404
+    lesson = Lesson.query.get_or_404(lesson_id)
 
     cal = Calendar()
-    cal.add('prodid', '-//Fit Out Padel//maxym-app//NL')
+    cal.add('prodid', '-//Fit Out Padel//App//NL')
     cal.add('version', '2.0')
 
     event = Event()
-    event.add('summary', f"Padel Les ({lesson.lesson_type})")
+    # Check of lesson_type bestaat, anders fallback
+    summary_text = f"Padel Les ({lesson.lesson_type})" if hasattr(lesson, 'lesson_type') else "Padel Les"
+    event.add('summary', summary_text)
     
     start_dt = datetime.combine(lesson.date, lesson.start_time)
-    end_dt = datetime.combine(lesson.date, lesson.end_time)
     
+    # Check of end_time bestaat
+    if lesson.end_time:
+        end_dt = datetime.combine(lesson.date, lesson.end_time)
+    else:
+        end_dt = start_dt # Fallback als er geen eindtijd is
+
     event.add('dtstart', start_dt)
     event.add('dtend', end_dt)
     event.add('dtstamp', datetime.now())
     
-    coach_name = f"{lesson.coach.first_name} {lesson.coach.last_name}"
+    # Coach check
+    if lesson.coach:
+        coach_name = f"{lesson.coach.first_name} {lesson.coach.last_name}"
+    else:
+        coach_name = "Onbekend"
+
     event.add('description', f"Training gegeven door {coach_name}. Zorg dat je 10 min op voorhand bent!")
     event.add('location', "Fit Out Padel Destelbergen")
 
@@ -1843,56 +1829,54 @@ def unlink_player(player_id):
 
 @app.route("/edit_profile", methods=["GET", "POST"])
 def edit_profile():
-    user_id = session.get("user_id")
-    role = session.get("role")
-
-    if not user_id:
+    # 1. Check of gebruiker is ingelogd
+    if "user_id" not in session:
         return redirect(url_for("login"))
 
-    # Juiste model ophalen
-    profile = Coach.query.get(user_id) if role == "coach" else Player.query.get(user_id)
+    user_id = session["user_id"]
+    role = session.get("role")
 
+    # 2. Haal het juiste profiel op (Coach of Speler)
+    if role == "coach":
+        profile = Coach.query.get(user_id)
+    else:
+        profile = Player.query.get(user_id)
+
+    # 3. Als er op OPSLAAN is gedrukt (POST)
     if request.method == "POST":
-
-        # -----------------------
-        # 1. NORMALE VELDEN
-        # -----------------------
+        # A. Basisgegevens
         profile.first_name = request.form.get("first_name")
         profile.last_name = request.form.get("last_name")
         profile.email = request.form.get("email")
         profile.phone = request.form.get("phone")
-        profile.gender = request.form.get("gender")
+
+        # B. Sportieve gegevens (DIT ZORGT DAT HET OPGESLAGEN WORDT)
+        # We wijzen de waarde direct toe. Als het formulier leeg is, wordt de DB ook leeg.
         profile.ranking = request.form.get("ranking")
-        profile.lesson_type_preference = request.form.get("lesson_type_preference") or None
-        profile.playing_intensity = request.form.get("playing_intensity") or None
+        profile.playing_intensity = request.form.get("playing_intensity")
+        profile.lesson_type_preference = request.form.get("lesson_type_preference")
 
+        # C. Foto upload
+        if "image" in request.files:
+            file = request.files["image"]
+            if file and file.filename != "":
+                filename = secure_filename(file.filename)
+                # Zorg dat je 'import os' bovenaan hebt staan!
+                file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                profile.profile_image = url_for("static", filename=filename)
 
-        if role == "player":
-            dob = request.form.get("dob")
-            if dob:
-                profile.date_of_birth = dob
+        # D. Opslaan in Database (Commit)
+        try:
+            db.session.commit()
+            flash("Profiel succesvol bijgewerkt!", "success")
+        except Exception as e:
+            db.session.rollback()
+            print("Fout bij opslaan profiel:", e)
+            flash("Er ging iets mis bij het opslaan.", "error")
+        
+        return redirect(url_for("edit_profile"))
 
-        # -----------------------
-        # 2. FOTO UPLOAD BLOK (Via Hulpfunctie)
-        # -----------------------
-        file = request.files.get("image")
-        if file:
-            # Bepaal de map op basis van de rol
-            folder = "coaches" if role == "coach" else "players"
-            
-            # Gebruik je hulpfunctie!
-            new_url = upload_profile_image(file, profile.email, folder=folder)
-            
-            if new_url:
-                profile.profile_image = new_url
-
-        # -----------------------
-            # 3. OPSLAAN
-        # -----------------------
-        db.session.commit()
-
-        return redirect(url_for("coach_dashboard" if role == "coach" else "player_dashboard"))
-
+    # 4. Pagina tonen (GET)
     return render_template("edit_profile.html", profile=profile)
 
 # ============================================================

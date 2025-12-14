@@ -2,40 +2,148 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>Les type kiezen | Fit Out Padel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kies Les Type | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <style>
+        /* --- STYLE FIXES --- */
+        body {
+            background-color: #121212; /* Forceer donkere achtergrond */
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        .selection-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+
+        .selection-card {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid #333;
+        }
+
+        .selection-title {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .selection-subtitle {
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        /* Op grotere schermen knoppen naast elkaar */
+        @media (min-width: 600px) {
+            .options-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* KNOPPEN */
+        .option-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #2d2d2d;
+            border: 2px solid #E10600;
+            border-radius: 8px;
+            padding: 30px 20px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .option-btn:hover {
+            background-color: #E10600;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(225, 6, 0, 0.3);
+        }
+
+        /* Zorg dat tekstkleur goed blijft bij hover */
+        .option-btn:hover .option-heading,
+        .option-btn:hover .option-desc,
+        .option-btn:hover .option-icon {
+            color: white;
+        }
+
+        .option-icon { font-size: 32px; margin-bottom: 15px; }
+        .option-heading { color: white; font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .option-desc { color: #ccc; font-size: 13px; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: #E10600; }
+    </style>
 </head>
+<body class="index-page">
 
-<body class="dashboard-bg">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" style="max-height: 40px;">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('player_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('request_lesson_type') }}" class="nav-link">Les aanvragen</a></li>
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<div class="container lesson-choice-container fancy-card">
+    <div class="selection-container">
+        
+        <div class="selection-card">
+            <h1 class="selection-title">Welke les wil je boeken?</h1>
+            <p class="selection-subtitle">Kies het type les dat het beste bij jou past.</p>
 
-    <h2 class="title">Welke les wil je boeken? </h2>
-    <p class="subtitle">Kies het type les dat het beste bij jou past.</p>
+            <div class="options-grid">
+                
+                <a href="{{ url_for('book_lesson') }}" class="option-btn">
+                    <span class="option-icon">👤</span>
+                    <span class="option-heading">Individuele les</span>
+                    <span class="option-desc">Persoonlijke coaching</span>
+                </a>
 
-    <div class="lesson-buttons">
+                <a href="{{ url_for('request_group_lesson') }}" class="option-btn">
+                    <span class="option-icon">👥</span>
+                    <span class="option-heading">Groepsles</span>
+                    <span class="option-desc">Train samen met anderen</span>
+                </a>
 
-        <!-- INDIVIDUELE LES -->
-        <a href="{{ url_for('book_lesson') }}" class="button lesson-btn individual">
-            <span>👤 Individuele les</span>
-            <small>Persoonlijke coaching</small>
-        </a>
+            </div>
 
-        <!-- GROEPSLES -->
-        <a href="{{ url_for('request_group_lesson') }}" class="button lesson-btn group">
-            <span>👥 Groepsles</span>
-            <small>Train samen met anderen</small>
-        </a>
+            <a href="{{ url_for('player_dashboard') }}" class="back-link">
+                ← Terug naar dashboard
+            </a>
+        </div>
 
     </div>
-
-    <div class="back-link">
-        <a href="{{ url_for('player_dashboard') }}">← Terug naar dashboard</a>
-    </div>
-
-</div>
 
 </body>
 </html>

@@ -2,82 +2,187 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>Stap 1 – Techniek</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluatie Stap 1/5 | Techniek</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* BASIS CSS */
+        body { 
+            background-color: #121212; 
+            color: white; 
+            font-family: sans-serif; 
+            margin: 0; 
+            padding: 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
+        
+        .eval-card { 
+            background-color: #1e1e1e; 
+            padding: 30px; 
+            border-radius: 12px; 
+            border: 1px solid #333; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+        }
+
+        h1 { text-align: center; margin-bottom: 5px; color: white; }
+        .step-indicator { text-align: center; color: #E10600; font-weight: bold; margin-bottom: 40px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- SLIDER STYLING --- */
+        .slider-wrapper { margin-bottom: 35px; }
+
+        /* HEADER: Tekst wit, Cijfer rood */
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .slider-header label { color: white; }
+
+        .slider-value-display { 
+            color: #E10600; 
+            font-weight: bold; 
+            font-size: 18px; 
+        }
+
+        /* CONTAINER VOOR BALK + KNOP */
+        .slider-input-container {
+            position: relative;
+            height: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* DE RODE LIJN (TRACK) - DUNNER GEMAAKT (6px) */
+        .slider-track {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 6px; 
+            background-color: #E10600; 
+            border-radius: 3px;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px; 
+        }
+
+        /* WITTE STREEPJES IN DE LIJN */
+        .tick {
+            width: 2px;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+        .tick.major { background-color: white; width: 2px; }
+
+        /* GETALLEN ONDER DE LIJN */
+        .tick-number {
+            position: absolute;
+            top: 15px; 
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* DE INPUT (Onzichtbaar, maar sleepbaar) */
+        input[type=range] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            -webkit-appearance: none;
+            background: transparent;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        /* HET RODE BOLLETJE (Chrome, Safari, Edge) */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #E10600; 
+            border: 2px solid white; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            margin-top: -9px; 
+        }
+
+        /* HET RODE BOLLETJE (Firefox) */
+        input[type=range]::-moz-range-thumb {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #E10600;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        /* --- TEXTAREA & BUTTONS --- */
+        textarea { width: 100%; padding: 12px; background-color: #2d2d2d; border: 1px solid #444; border-radius: 6px; color: white; min-height: 80px; box-sizing: border-box; resize: vertical; margin-top: 10px; }
+        textarea:focus { outline: none; border-color: #E10600; }
+
+        .btn-container { display: flex; justify-content: space-between; margin-top: 40px; }
+        .btn-next { background-color: #E10600; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; }
+        .btn-next:hover { background-color: #b30500; }
+        .btn-cancel { background-color: transparent; color: #888; padding: 12px 24px; border: 1px solid #444; border-radius: 6px; text-decoration: none; }
+        .btn-cancel:hover { color: white; border-color: white; }
+    </style>
 </head>
+<body>
 
-<body class="eval-page">
+<div class="container">
+    <div class="eval-card">
+        <h1>🎾 Techniek</h1>
+        <div class="step-indicator">Stap 1 van 5</div>
 
-<div class="eval-container">
-    <h2>Stap 1: Techniek</h2>
+        <form method="POST">
+            
+            {% macro render_slider(name, label) %}
+            <div class="slider-wrapper">
+                <div class="slider-header">
+                    <label>{{ label }}</label>
+                    <span id="val_{{ name }}" class="slider-value-display">5</span>
+                </div>
+                <div class="slider-input-container">
+                    <div class="slider-track">
+                        <div class="tick major"><span class="tick-number">0</span></div>
+                        <div class="tick"></div><div class="tick"></div><div class="tick"></div><div class="tick"></div>
+                        <div class="tick major"><span class="tick-number">5</span></div>
+                        <div class="tick"></div><div class="tick"></div><div class="tick"></div><div class="tick"></div>
+                        <div class="tick major"><span class="tick-number">10</span></div>
+                    </div>
+                    <input type="range" name="{{ name }}" min="0" max="10" value="5" 
+                           oninput="document.getElementById('val_{{ name }}').innerText = this.value">
+                </div>
+            </div>
+            {% endmacro %}
 
-    {% set tech = evaluation.get('techniek', {}) %}
+            {{ render_slider('forehand', 'Forehand') }}
+            {{ render_slider('backhand', 'Backhand') }}
+            {{ render_slider('volley', 'Volley') }}
+            {{ render_slider('smash', 'Smash') }}
+            {{ render_slider('bandeja', 'Bandeja / Vibora') }}
+            {{ render_slider('service', 'Service') }}
 
-    <form method="POST">
+            <hr style="border-color: #333; margin: 30px 0;">
 
-        <!-- Forehand -->
-        <label>Forehand</label>
-        <select name="forehand_score">
-            <option value="">Kies een score</option>
-            {% for i in range(1,11) %}
-                <option value="{{ i }}"
-                    {% if tech.get('forehand')|int == i %}selected{% endif %}>
-                    {{ i }}
-                </option>
-            {% endfor %}
-        </select>
+            <label style="font-weight: bold; display: block; margin-bottom: 10px; color: white;">Opmerking (Optioneel):</label>
+            <textarea name="opmerking" placeholder="Wat ging goed? Wat kan beter?"></textarea>
 
-        <!-- Backhand -->
-        <label>Backhand</label>
-        <select name="backhand_score">
-            <option value="">Kies een score</option>
-            {% for i in range(1,11) %}
-                <option value="{{ i }}"
-                    {% if tech.get('backhand')|int == i %}selected{% endif %}>
-                    {{ i }}
-                </option>
-            {% endfor %}
-        </select>
+            <div class="btn-container">
+                <a href="{{ url_for('coach_dashboard') }}" class="btn-cancel">Annuleren</a>
+                <button type="submit" class="btn-next">Volgende →</button>
+            </div>
 
-        <!-- Volley -->
-        <label>Volley</label>
-        <select name="volley_score">
-            <option value="">Kies een score</option>
-            {% for i in range(1,11) %}
-                <option value="{{ i }}"
-                    {% if tech.get('volley')|int == i %}selected{% endif %}>
-                    {{ i }}
-                </option>
-            {% endfor %}
-        </select>
-
-        <!-- Smash -->
-        <label>Smash</label>
-        <select name="smash_score">
-            <option value="">Kies een score</option>
-            {% for i in range(1,11) %}
-                <option value="{{ i }}"
-                    {% if tech.get('smash')|int == i %}selected{% endif %}>
-                    {{ i }}
-                </option>
-            {% endfor %}
-        </select>
-
-        <!-- Opmerking -->
-        <label>Opmerking techniek</label>
-        <textarea name="opmerking" rows="3">{{ tech.get('opmerking','') }}</textarea>
-
-        <div class="eval-button-row">
-            <button type="submit" class="eval-next-btn">Volgende → Tactiek</button>
-
-            <a href="{{ url_for('coach_dashboard') }}" class="eval-cancel-btn">
-                Annuleren
-            </a>
-        </div>
-
-    </form>
+        </form>
+    </div>
 </div>
 
 </body>

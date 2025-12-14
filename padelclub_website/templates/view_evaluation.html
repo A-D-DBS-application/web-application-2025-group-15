@@ -2,59 +2,262 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>Evaluatie bekijken</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluatie Bekijken | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* --- DARK MODE STYLING --- */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container-custom {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .eval-card {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        h1 { color: white; text-align: center; margin-bottom: 10px; }
+        .subtitle { color: #888; text-align: center; margin-bottom: 30px; font-size: 15px; }
+
+        /* HEADER INFO */
+        .info-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        /* SECTIES (Techniek, Tactiek, etc.) */
+        .eval-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .eval-section:last-child { border-bottom: none; }
+
+        h3 { 
+            color: #E10600; 
+            margin-bottom: 15px; 
+            border-left: 4px solid #E10600; 
+            padding-left: 10px; 
+            font-size: 18px;
+        }
+
+        /* SCORE GRID */
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .score-item {
+            background-color: #2d2d2d;
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #444;
+        }
+
+        .score-label { color: #ccc; font-size: 14px; }
+        
+        .score-value { 
+            font-weight: bold; 
+            color: white; 
+            background-color: #E10600; 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            font-size: 14px;
+        }
+
+        /* OPMERKINGEN BOX */
+        .comment-box {
+            margin-top: 15px;
+            background-color: #252525;
+            padding: 15px;
+            border-radius: 6px;
+            font-style: italic;
+            color: #aaa;
+            font-size: 14px;
+            border-left: 3px solid #555;
+        }
+        .comment-label { 
+            font-weight: bold; 
+            color: #888; 
+            display: block; 
+            margin-bottom: 5px; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+        }
+
+        /* TERUG KNOP */
+        .back-btn {
+            display: block;
+            width: fit-content;
+            margin: 30px auto 0 auto;
+            padding: 12px 30px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 1px solid #555;
+        }
+        .back-btn:hover { 
+            background-color: #E10600; 
+            border-color: #E10600;
+        }
+
+    </style>
 </head>
+<body>
 
-<body class="evaluation-page">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" style="max-height: 40px;">
+            </a>
+            <ul class="navbar-menu">
+                {% if session.get('role') == 'coach' %}
+                    <li><a href="{{ url_for('coach_dashboard') }}" class="nav-link">Dashboard</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('player_dashboard') }}" class="nav-link">Dashboard</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<div class="evaluation-container">
+    <div class="container-custom">
+        <div class="eval-card">
+            
+            <div class="info-header">
+                <h1>📝 Evaluatie Rapport</h1>
+                <p class="subtitle">
+                    Les van <strong>{{ lesson.date }}</strong><br>
+                    Coach: <span style="color: #E10600;">{{ coach.first_name }} {{ coach.last_name }}</span>
+                </p>
+            </div>
 
-    <h2>Evaluatie van deze les</h2>
+            {% if evaluation %}
+                
+                {% if evaluation.techniek %}
+                <div class="eval-section">
+                    <h3>🎾 Techniek</h3>
+                    <div class="score-grid">
+                        {% for key, val in evaluation.techniek.items() %}
+                            {% if key != 'opmerking' and val %}
+                                <div class="score-item">
+                                    <span class="score-label">{{ key|capitalize }}</span>
+                                    <span class="score-value">{{ val }}/10</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if evaluation.techniek.opmerking %}
+                        <div class="comment-box">
+                            <span class="comment-label">Opmerking van coach:</span>
+                            "{{ evaluation.techniek.opmerking }}"
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
 
-    {% set tech = evaluation.get('techniek', {}) %}
-    {% set tac = evaluation.get('tactiek', {}) %}
-    {% set fys = evaluation.get('fysiek', {}) %}
-    {% set men = evaluation.get('mentaal', {}) %}
+                {% if evaluation.tactiek %}
+                <div class="eval-section">
+                    <h3>🧠 Tactiek</h3>
+                    <div class="score-grid">
+                        {% for key, val in evaluation.tactiek.items() %}
+                            {% if key != 'opmerking' and val %}
+                                <div class="score-item">
+                                    <span class="score-label">{{ key|replace('_', ' ')|capitalize }}</span>
+                                    <span class="score-value">{{ val }}/10</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if evaluation.tactiek.opmerking %}
+                        <div class="comment-box">
+                            <span class="comment-label">Opmerking van coach:</span>
+                            "{{ evaluation.tactiek.opmerking }}"
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
 
-    <!-- Techniek -->
-    <h3>Techniek</h3>
-    <div class="evaluation-row"><span class="evaluation-label">Forehand:</span> {{ tech.get('forehand', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Backhand:</span> {{ tech.get('backhand', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Volley:</span> {{ tech.get('volley', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Smash:</span> {{ tech.get('smash', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Opmerking:</span> {{ tech.get('opmerking', '-') }}</div>
+                {% if evaluation.fysiek %}
+                <div class="eval-section">
+                    <h3>💪 Fysiek</h3>
+                    <div class="score-grid">
+                        {% for key, val in evaluation.fysiek.items() %}
+                            {% if key != 'opmerking' and val %}
+                                <div class="score-item">
+                                    <span class="score-label">{{ key|capitalize }}</span>
+                                    <span class="score-value">{{ val }}/10</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if evaluation.fysiek.opmerking %}
+                        <div class="comment-box">
+                            <span class="comment-label">Opmerking van coach:</span>
+                            "{{ evaluation.fysiek.opmerking }}"
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
 
-    <!-- Tactiek -->
-    <h3>Tactiek</h3>
-    <div class="evaluation-row"><span class="evaluation-label">Positiespel:</span> {{ tac.get('positiespel', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Keuze slagen:</span> {{ tac.get('keuze_slagen', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Samenwerking:</span> {{ tac.get('samenwerking', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Speelstrategie:</span> {{ tac.get('speelstrategie', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Opmerking:</span> {{ tac.get('opmerking', '-') }}</div>
+                {% if evaluation.mentaal %}
+                <div class="eval-section">
+                    <h3>🧘 Mentaal</h3>
+                    <div class="score-grid">
+                        {% for key, val in evaluation.mentaal.items() %}
+                            {% if key != 'opmerking' and val %}
+                                <div class="score-item">
+                                    <span class="score-label">{{ key|capitalize }}</span>
+                                    <span class="score-value">{{ val }}/10</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if evaluation.mentaal.opmerking %}
+                        <div class="comment-box">
+                            <span class="comment-label">Opmerking van coach:</span>
+                            "{{ evaluation.mentaal.opmerking }}"
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
 
-    <!-- Fysiek -->
-    <h3>Fysiek</h3>
-    <div class="evaluation-row"><span class="evaluation-label">Conditie:</span> {{ fys.get('conditie', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Reactiesnelheid:</span> {{ fys.get('reactiesnelheid', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Explosiviteit:</span> {{ fys.get('explosiviteit', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Opmerking:</span> {{ fys.get('opmerking', '-') }}</div>
+            {% else %}
+                <p style="text-align: center; color: #ccc; padding: 20px;">
+                    Er zijn nog geen evaluatiegegevens ingevuld voor deze les.
+                </p>
+            {% endif %}
 
-    <!-- Mentaal -->
-    <h3>Mentaal</h3>
-    <div class="evaluation-row"><span class="evaluation-label">Focus:</span> {{ men.get('focus', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Doorzettingsvermogen:</span> {{ men.get('doorzettingsvermogen', '-') }}</div>
-    <div class="evaluation-row"><span class="evaluation-label">Opmerking:</span> {{ men.get('opmerking', '-') }}</div>
+            {% if session.get('role') == 'coach' %}
+                <a href="{{ url_for('coach_dashboard') }}" class="back-btn">← Terug naar Dashboard</a>
+            {% else %}
+                <a href="{{ url_for('player_dashboard') }}" class="back-btn">← Terug naar Dashboard</a>
+            {% endif %}
 
-</div>
-
-<!-- Floating terugknop -->
-<a href="{{ url_for('coach_dashboard') }}" class="floating-dashboard-btn">
-    <img src="https://cdn-icons-png.flaticon.com/512/467/467272.png" alt="">
-    Terug naar dashboard
-</a>
+        </div>
+    </div>
 
 </body>
 </html>

@@ -2,60 +2,96 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>Stap 2 – Tactiek</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluatie Stap 2/5 | Tactiek</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* BASIS CSS */
+        body { background-color: #121212; color: white; font-family: sans-serif; margin: 0; padding: 20px; min-height: 100vh; }
+        .container { max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
+        .eval-card { background-color: #1e1e1e; padding: 30px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h1 { text-align: center; margin-bottom: 5px; color: white; }
+        .step-indicator { text-align: center; color: #E10600; font-weight: bold; margin-bottom: 40px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* SLIDER STYLING */
+        .slider-wrapper { margin-bottom: 35px; }
+        .slider-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin-bottom: 12px; }
+        .slider-header label { color: white; }
+        .slider-value-display { color: #E10600; font-weight: bold; font-size: 18px; }
+
+        .slider-input-container { position: relative; height: 30px; display: flex; align-items: center; }
+        
+        .slider-track {
+            position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+            height: 6px; background-color: #E10600; border-radius: 3px; z-index: 1;
+            display: flex; justify-content: space-between; padding: 0 10px;
+        }
+
+        .tick { width: 2px; height: 100%; background-color: rgba(255, 255, 255, 0.6); }
+        .tick.major { background-color: white; width: 2px; }
+        .tick-number { position: absolute; top: 15px; transform: translateX(-50%); font-size: 12px; color: #aaa; }
+
+        input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; -webkit-appearance: none; background: transparent; z-index: 2; cursor: pointer; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #E10600; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.5); margin-top: -9px; }
+        input[type=range]::-moz-range-thumb { height: 24px; width: 24px; border-radius: 50%; background: #E10600; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
+        textarea { width: 100%; padding: 12px; background-color: #2d2d2d; border: 1px solid #444; border-radius: 6px; color: white; min-height: 80px; box-sizing: border-box; resize: vertical; margin-top: 10px; }
+        textarea:focus { outline: none; border-color: #E10600; }
+
+        .btn-container { display: flex; justify-content: space-between; margin-top: 40px; }
+        .btn-next { background-color: #E10600; color: white; padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; }
+        .btn-next:hover { background-color: #b30500; }
+        .btn-back { background-color: transparent; color: #888; padding: 12px 24px; border: 1px solid #444; border-radius: 6px; text-decoration: none; }
+        .btn-back:hover { color: white; border-color: white; }
+    </style>
 </head>
+<body>
 
-<body class="eval-page">
+<div class="container">
+    <div class="eval-card">
+        <h1>🧠 Tactiek</h1>
+        <div class="step-indicator">Stap 2 van 5</div>
 
-<div class="eval-container">
-    <h2>Stap 2: Tactiek</h2>
+        <form method="POST">
+            
+            {% macro render_slider(name, label) %}
+            <div class="slider-wrapper">
+                <div class="slider-header">
+                    <label>{{ label }}</label>
+                    <span id="val_{{ name }}" class="slider-value-display">5</span>
+                </div>
+                <div class="slider-input-container">
+                    <div class="slider-track">
+                        <div class="tick major"><span class="tick-number">0</span></div>
+                        <div class="tick"></div><div class="tick"></div><div class="tick"></div><div class="tick"></div>
+                        <div class="tick major"><span class="tick-number">5</span></div>
+                        <div class="tick"></div><div class="tick"></div><div class="tick"></div><div class="tick"></div>
+                        <div class="tick major"><span class="tick-number">10</span></div>
+                    </div>
+                    <input type="range" name="{{ name }}" min="0" max="10" value="5" 
+                           oninput="document.getElementById('val_{{ name }}').innerText = this.value">
+                </div>
+            </div>
+            {% endmacro %}
 
-    {% set tac = evaluation.get('tactiek', {}) %}
+            {{ render_slider('positie', 'Positie kiezen') }}
+            {{ render_slider('keuzes', 'Bal-keuzes (Shot Selection)') }}
+            {{ render_slider('samenwerking', 'Samenwerking / Communicatie') }}
+            {{ render_slider('netspel', 'Netspel') }}
+            {{ render_slider('verdediging', 'Verdediging') }}
 
-    <form method="POST">
+            <hr style="border-color: #333; margin: 30px 0;">
 
-        {% set items = {
-            "positiespel": "Positiespel",
-            "keuze_slagen": "Keuze van slagen",
-            "samenwerking": "Samenwerking",
-            "speelstrategie": "Speelstrategie"
-        } %}
+            <label style="font-weight: bold; display: block; margin-bottom: 10px; color: white;">Opmerking (Optioneel):</label>
+            <textarea name="opmerking" placeholder="Tactisch inzicht..."></textarea>
 
-        {% for key, label in items.items() %}
-            <label>{{ label }}</label>
-            <select name="{{ key }}_score" required>
-                <option value="">Kies een score</option>
-                {% for i in range(1,11) %}
-                    <option value="{{ i }}"
-                        {% if tac.get(key)|int == i %}selected{% endif %}>
-                        {{ i }}
-                    </option>
-                {% endfor %}
-            </select>
-        {% endfor %}
+            <div class="btn-container">
+                <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}" class="btn-back">← Vorige</a>
+                <button type="submit" class="btn-next">Volgende →</button>
+            </div>
 
-        <label>Opmerking tactiek</label>
-        <textarea name="opmerking" rows="3">{{ tac.get('opmerking','') }}</textarea>
-
-        <div class="eval-button-row">
-
-            <!-- Vorige -->
-            <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}" 
-               class="eval-btn eval-prev-btn">
-               ← Vorige
-            </a>
-
-            <!-- Volgende -->
-            <button type="submit" class="eval-btn eval-next-btn">
-                Volgende → Fysiek
-            </button>
-
-        </div>
-
-    </form>
+        </form>
+    </div>
 </div>
 
 </body>

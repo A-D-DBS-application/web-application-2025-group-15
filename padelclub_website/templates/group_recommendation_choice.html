@@ -2,77 +2,135 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coach aanbeveling (Groepsles) | Fit Out Padel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groepscoach Aanbeveling | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Zelfde styling als hierboven */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+
+        .container-custom {
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .choice-card {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        h2 { color: white; margin-bottom: 10px; }
+        .subtitle { color: #ccc; margin-bottom: 30px; }
+
+        .coach-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .coach-box {
+            background-color: #2d2d2d;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .coach-box.recommended {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+
+        .coach-box:hover { transform: translateY(-3px); }
+
+        .coach-title { font-weight: bold; font-size: 1.1em; display: block; margin-bottom: 5px; }
+        .coach-name { color: #E10600; font-size: 1.2em; font-weight: bold; margin-bottom: 10px; display: block; }
+        .coach-reason { font-size: 0.9em; color: #ccc; margin-top: 10px; display: block; }
+
+        .btn {
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-green { background-color: #28a745; }
+        .btn-green:hover { background-color: #218838; }
+
+        .btn-grey { background-color: #555; }
+        .btn-grey:hover { background-color: #444; }
+
+    </style>
 </head>
-<body class="fullscreen-gradient">
-<div class="center-card">
+<body>
 
-    <h1>We hebben een coach-aanbeveling voor jouw groepsles</h1>
+<div class="container-custom">
+    <div class="choice-card">
+        <h2>💡 Suggestie voor de groep</h2>
+        <p class="subtitle">
+            Deze coach past mogelijk beter bij het onderwerp <strong>"{{ focus }}"</strong> en jullie niveau.
+        </p>
 
-    <p>
-        Je koos oorspronkelijk voor
-        <strong>{{ chosen_coach.first_name }} {{ chosen_coach.last_name }}</strong>,<br>
-        maar op basis van jouw profiel en dit tijdslot raden we aan om te trainen met:
-        <br><br>
-        <strong>⭐ {{ recommended_coach.first_name }} {{ recommended_coach.last_name }}</strong>
-    </p>
-
-    <h3>Waarom deze aanbeveling?</h3>
-    <ul style="text-align:left; max-width:600px; margin: 0 auto 20px auto;">
-        {% for r in reasons %}
-        <li>{{ r }}</li>
-        {% endfor %}
-    </ul>
-
-    <p>
-        <strong>Datum:</strong> {{ date_str }}<br>
-        <strong>Tijd:</strong> {{ start_str }} – {{ end_str }}
-        <!-- simpele weergave, je kan dit zelf nog stylen -->
-    </p>
-
-    <p>
-        <strong>Onderwerp:</strong>
-        {% if focus == 'volleys' %}
-            Netspel & Volleys
-        {% elif focus == 'bandeja_vibora' %}
-            Bandeja / Vibora
-        {% elif focus == 'tactics' %}
-            Positionering & Tactiek
-        {% else %}
-            {{ focus }}
-        {% endif %}
-    </p>
-
-    <div class="confirm-actions">
-        <!-- Kies aanbevolen coach -->
         <form action="{{ url_for('player_confirm_group_choice') }}" method="POST">
-            <input type="hidden" name="decision" value="recommended">
             <input type="hidden" name="chosen_coach_id" value="{{ chosen_coach.coach_id }}">
             <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
             <input type="hidden" name="date" value="{{ date_str }}">
             <input type="hidden" name="start" value="{{ start_str }}">
             <input type="hidden" name="focus" value="{{ focus }}">
-            <button type="submit" class="confirm-back">
-                ✅ Kies aanbevolen coach
-            </button>
+
+            <div class="coach-comparison">
+                
+                <div class="coach-box recommended">
+                    <span class="coach-title">🔥 Aanbeveling</span>
+                    <span class="coach-name">{{ recommended_coach.first_name }}</span>
+                    <div class="coach-reason">
+                        {% for reason in reasons %}
+                            • {{ reason }}<br>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" name="decision" value="recommended" class="btn btn-green">
+                        Kies {{ recommended_coach.first_name }}
+                    </button>
+                </div>
+
+                <div class="coach-box">
+                    <span class="coach-title">Jouw Keuze</span>
+                    <span class="coach-name">{{ chosen_coach.first_name }}</span>
+                    <span class="coach-reason">Je originele keuze.</span>
+                    <button type="submit" name="decision" value="chosen" class="btn btn-grey">
+                        Behoud {{ chosen_coach.first_name }}
+                    </button>
+                </div>
+
+            </div>
         </form>
 
-        <!-- Blijf bij eigen keuze -->
-        <form action="{{ url_for('player_confirm_group_choice') }}" method="POST">
-            <input type="hidden" name="decision" value="chosen">
-            <input type="hidden" name="chosen_coach_id" value="{{ chosen_coach.coach_id }}">
-            <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
-            <input type="hidden" name="date" value="{{ date_str }}">
-            <input type="hidden" name="start" value="{{ start_str }}">
-            <input type="hidden" name="focus" value="{{ focus }}">
-            <button type="submit" class="confirm-cancel">
-                🙋‍♂️ Behoud mijn gekozen coach
-            </button>
-        </form>
     </div>
-
 </div>
+
 </body>
 </html>

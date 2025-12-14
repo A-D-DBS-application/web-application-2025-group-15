@@ -2,158 +2,282 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speler Profiel | Fit Out Padel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speler Details | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* --- ALGEMENE STIJL (Consistent met Dashboard) --- */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        /* HEADER (Gekopieerd van Dashboard) */
+        .dashboard-header.dark-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-pic-dashboard {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #E10600;
+        }
+
+        /* KAARTEN & GRID */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Twee kolommen naast elkaar */
+            gap: 30px;
+        }
+
+        /* Op mobiel onder elkaar */
+        @media (max-width: 800px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .dashboard-header.dark-card { flex-direction: column; text-align: center; }
+        }
+
+        .dashboard-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .section-title {
+            color: white;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        /* INPUTS & TEXTAREA (Strakke donkere stijl) */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: white;
+            font-family: sans-serif;
+            margin-bottom: 20px;
+            resize: vertical;
+            min-height: 100px;
+            box-sizing: border-box; 
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #E10600;
+        }
+
+        /* INFO RIJEN */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #888; }
+        .info-value { font-weight: bold; color: white; }
+
+        /* TABEL (Exact zoals Dashboard) */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: #ccc; padding: 10px; border-bottom: 1px solid #444; }
+        td { padding: 12px 10px; border-bottom: 1px solid #333; color: white; }
+        tr:last-child td { border-bottom: none; }
+
+        /* KNOPPEN */
+        .btn-save {
+            background-color: #E10600;
+            color: white;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-save:hover { background-color: #b30500; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #888;
+            text-decoration: none;
+        }
+        .back-link:hover { color: #E10600; }
+
+        /* Actie Knoppen (Rood vs Grijs) */
+        .btn-action {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            transition: background 0.3s;
+            border: none;
+        }
+
+        .btn-red {
+            background-color: #E10600;
+            color: white;
+        }
+        .btn-red:hover { background-color: #b30500; }
+
+        .btn-grey {
+            background-color: #444;
+            color: white;
+        }
+        .btn-grey:hover { background-color: #555; }
+
+    </style>
 </head>
 
-<body>
+<body class="index-page">
 
-<div class="container">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" style="max-height: 40px;">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('coach_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('add_player') }}" class="nav-link">Speler Toevoegen</a></li>
+                <li><a href="{{ url_for('coach_availability') }}" class="nav-link">Beschikbaarheid</a></li>
+                <li><a href="{{ url_for('schedule_individual_lesson') }}" class="nav-link">Les Inplannen</a></li>
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
 
-    <!-- Topbar -->
-    <div class="topbar">
-        <h1>👤 Profiel: {{ student.first_name }} {{ student.last_name }}</h1>
-        <a href="{{ url_for('coach_dashboard') }}" class="back-btn">⬅ Terug</a>
+    <div class="container">
+
+        <div class="dashboard-header dark-card">
+            <img src="{{ student.profile_image or url_for('static', filename='default_profile.png') }}" 
+                 alt="Profiel" 
+                 class="profile-pic-dashboard"
+                 onerror="this.src='{{ url_for('static', filename='default_profile.png') }}';">
+            
+            <div class="header-info">
+                <h1 style="margin: 0; color: white;">{{ student.first_name }} {{ student.last_name }}</h1>
+                <p style="color: #ccc; margin: 5px 0;">{{ student.email }}</p>
+                <div style="margin-top: 10px;">
+                    <span style="background-color: #E10600; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                        {{ student.ranking or 'Geen Ranking' }}
+                    </span>
+                    <span style="background-color: #333; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px;">
+                        {{ student.phone or 'Geen tel.' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <div>
+                <div class="dashboard-card" style="margin-bottom: 30px;">
+                    <h2 class="section-title">ℹ️ Speler Info</h2>
+                    <div class="info-row">
+                        <span class="info-label">Hand:</span>
+                        <span class="info-value">{{ student.hand or '-' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Lesvoorkeur:</span>
+                        <span class="info-value">{{ student.lesson_type_preference or '-' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Intensiteit:</span>
+                        <span class="info-value">{{ student.playing_intensity or '-' }}</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h2 class="section-title">📝 Coach Notities</h2>
+                    <form method="POST">
+                        <label>Sterktes:</label>
+                        <textarea name="strengths" placeholder="Wat zijn de sterke punten?">{{ student.strengths or '' }}</textarea>
+
+                        <label>Werkpunten:</label>
+                        <textarea name="weaknesses" placeholder="Waar moet aan gewerkt worden?">{{ student.weaknesses or '' }}</textarea>
+
+                        <button type="submit" class="btn-save">💾 Opslaan</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="dashboard-card" style="height: fit-content;">
+                <h2 class="section-title">📅 Lesgeschiedenis</h2>
+                
+                {% if history %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Status</th>
+                                <th>Actie</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lesson in history %}
+                            <tr>
+                                <td>{{ lesson.date }}</td>
+                                <td>
+                                    {% if lesson.has_evaluation %}
+                                        <span style="color: #28a745; font-weight: bold;">✔ Klaar</span>
+                                    {% else %}
+                                        <span style="color: #ffc107;">⏳ Open</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if lesson.has_evaluation %}
+                                        <a href="{{ url_for('view_evaluation', lesson_id=lesson.lesson_id) }}" class="btn-action btn-grey">
+                                            Bekijk
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('evaluate_lesson', lesson_id=lesson.lesson_id, step=1) }}" class="btn-action btn-red">
+                                            ✍️ Evalueer
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="color: #888; font-style: italic; padding: 10px;">Nog geen lessen gevolgd.</p>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <a href="{{ url_for('coach_dashboard') }}" class="back-link">← Terug naar Dashboard</a>
+
     </div>
-
-    <div class="profile-header">
-    <div class="profile-photo-wrapper">
-        {% if student.profile_image %}
-            <img src="{{ student.profile_image }}" class="profile-photo">
-        {% else %}
-            <img src="/static/default_profile.png" class="profile-photo">
-        {% endif %}
-    </div>
-
-    <div class="profile-name">
-        <h2>{{ student.first_name }} {{ student.last_name }}</h2>
-    </div>
-</div>
-
-
-
-    <!-- Algemene info -->
-    <h2 class="section-title">📊 Algemene Info & Notities</h2>
-
-    <form method="POST">
-        <table class="profile-table">
-            <tr>
-                <th>E-mail</th>
-                <td>{{ student.email }}</td>
-            </tr>
-            <tr>
-                <th>Telefoon</th>
-                <td>{{ student.phone or "-" }}</td>
-            </tr>
-            <tr>
-                <th>Ranking</th>
-                <td class="highlight">{{ student.ranking or "Geen" }}</td>
-            </tr>
-            <tr>
-                <th>Hand</th>
-                <td>{{ student.hand_preference or "-" }}</td>
-            </tr>
-            <tr>
-                <th>Lesvoorkeur</th>
-                <td>
-                    {% if student.lesson_type_preference == "group" %}
-                        Groepslessen
-                    {% elif student.lesson_type_preference == "individual" %}
-                        Individuele lessen
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <th>Speelstijl</th>
-                <td>
-                    {% if student.playing_intensity == "recreational" %}
-                        Recreatief / ontspanning
-                    {% elif student.playing_intensity == "competitive" %}
-                        Serieus / competitief
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <th>Sterktes</th>
-                <td>
-                    <textarea name="strengths">{{ student.strengths or "" }}</textarea>
-                </td>
-            </tr>
-            <tr>
-                <th>Werkpunten</th>
-                <td>
-                    <textarea name="weaknesses">{{ student.weaknesses or "" }}</textarea>
-                </td>
-            </tr>
-        </table>
-
-        <button type="submit" class="button save-btn">💾 Notities Opslaan</button>
-    </form>
-
-    <!-- Lesgeschiedenis -->
-    <h2 class="section-title">📘 Lesgeschiedenis</h2>
-
-    <table class="history-table">
-        <thead>
-            <tr>
-                <th>Datum</th>
-                <th>Status</th>
-                <th>Feedback door</th>
-                <th>Evaluatie</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if history and history|length > 0 %}
-                {% for item in history %}
-                <tr>
-                    <td>{{ item.date }}</td>
-
-                    <!-- status -->
-                    <td>
-                        {% if item.has_evaluation %}
-                            <span class="status-done">✔ Geëvalueerd</span>
-                        {% else %}
-                            <span class="status-pending">⏳ Nog geen feedback</span>
-                        {% endif %}
-                    </td>
-
-                    <!-- feedback door -->
-                    <td>
-                        {% if item.has_evaluation %}
-                            {{ item.coach_name }}
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-
-                    <!-- evaluatie bekijken -->
-                    <td>
-                        <a href="{{ url_for('view_evaluation', lesson_id=item.lesson_id) }}" 
-                           class="link-btn">Bekijken</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr><td colspan="4">Nog geen lessen gevolgd.</td></tr>
-            {% endif %}
-        </tbody>
-    </table>
-
-    <!-- Speler ontkoppelen -->
-    <div class="unlink-container">
-        <form action="{{ url_for('unlink_player', player_id=student.player_id) }}" 
-              method="POST"
-              onsubmit="return confirm('Weet je zeker dat je deze speler uit jouw lijst wilt verwijderen?');">
-            <button type="submit" class="cancel-btn">❌ Speler loskoppelen</button>
-        </form>
-    </div>
-
-</div>
 
 </body>
 </html>

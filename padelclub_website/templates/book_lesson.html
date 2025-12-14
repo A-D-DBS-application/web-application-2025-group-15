@@ -2,68 +2,216 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Les aanvragen | Fit Out Padel Destelbergen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boek Individuele Les | Fit Out Padel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        .container-custom {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+            padding: 20px;
+        }
+
+        .form-card {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #333;
+        }
+
+        h1 { text-align: center; margin-bottom: 25px; color: white; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ccc;
+        }
+
+        select, input[type="date"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background-color: #2d2d2d;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #E10600;
+        }
+
+        .primary-btn {
+            background-color: #E10600;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .primary-btn:hover {
+            background-color: #b30500;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            text-decoration: none;
+        }
+        .back-link:hover { color: #E10600; }
+
+        .error-msg {
+            background-color: rgba(225, 6, 0, 0.2);
+            border: 1px solid #E10600;
+            color: #ffcccc;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Tijdsloten selectie styling */
+        .slot-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .slot-label {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .slot-label:hover {
+            border-color: #E10600;
+        }
+
+        input[type="radio"] {
+            display: none; 
+        }
+        
+        input[type="radio"]:checked + .slot-label {
+            background-color: #E10600;
+            color: white;
+            border-color: #E10600;
+        }
+    </style>
 </head>
+<body class="index-page">
 
-<body>
-<div class="container card">
-    <h1> Les aanvragen</h1>
-
-    {% if error %}
-        <div class="alert alert-error">❌ {{ error }}</div>
-    {% endif %}
-
-    <!-- FORM 1 -->
-    <form method="POST" class="card section">
-        <label class="form-label">Kies coach:</label>
-        <select name="coach_id" class="form-input" required>
-            <option value="">-- Selecteer coach --</option>
-            {% for c in coaches %}
-                <option value="{{ c.coach_id }}"
-                    {% if selected_coach_id and selected_coach_id|int == c.coach_id %}selected{% endif %}>
-                    {{ c.first_name }} {{ c.last_name }}
-                </option>
-            {% endfor %}
-        </select>
-
-        <label class="form-label">Kies datum:</label>
-        <input type="date" name="date" class="form-input" value="{{ selected_date or '' }}" required>
-
-        <div class="form-actions">
-            <button type="submit" name="action" value="show_slots" class="button button-primary">
-                Toon beschikbare tijdsloten
-            </button>
-            <a href="{{ url_for('player_dashboard') }}" class="cancel-link">Annuleren</a>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" style="max-height: 40px;">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('player_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('request_lesson_type') }}" class="nav-link">Les aanvragen</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
         </div>
-    </form>
+    </nav>
 
-    {% if available_slots %}
-        <hr>
+    <div class="container-custom">
+        <div class="form-card">
+            <h1>👤 Individuele Les</h1>
 
-        <h2 class="section-title">Beschikbare tijdsloten</h2>
+            {% if error %}
+                <div class="error-msg">{{ error }}</div>
+            {% endif %}
 
-        <!-- FORM 2 -->
-        <form method="POST">
-            <input type="hidden" name="coach_id" value="{{ selected_coach_id }}">
-            <input type="hidden" name="date" value="{{ selected_date }}">
-
-            {% for slot in available_slots %}
-                <label class="availability-item">
-                    <span class="availability-time">{{ slot.label }}</span>
-                    <input type="radio" name="slot" value="{{ slot.id }}" required>
-                </label>
-            {% endfor %}
-
-            <div class="form-actions">
-                <button type="submit" name="action" value="book" class="button button-success">
-                    Boek deze les
-                </button>
+            <form method="POST">
                 
-            </div>
-        </form>
-    {% endif %}
-</div>
+                <label for="coach">Kies een Coach:</label>
+                <select name="coach_id" id="coach" required>
+                    <option value="" disabled {% if not selected_coach_id %}selected{% endif %}>-- Selecteer Coach --</option>
+                    {% for coach in coaches %}
+                        <option value="{{ coach.coach_id }}" {% if selected_coach_id == coach.coach_id %}selected{% endif %}>
+                            {{ coach.first_name }} {{ coach.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <label for="date">Kies een Datum:</label>
+                <input type="date" name="date" id="date" value="{{ selected_date }}" required>
+
+                <button type="submit" name="action" value="show_slots" class="primary-btn" style="background-color: #444; margin-bottom: 20px;">
+                    🔍 Zoek Beschikbare Tijden
+                </button>
+
+                {% if available_slots %}
+                    <hr style="border-color: #333; margin: 20px 0;">
+                    <label>Beschikbare Tijdsloten:</label>
+                    
+                    <div class="slot-container">
+                        {% for slot in available_slots %}
+                            <div>
+                                <input type="radio" name="slot" id="slot_{{ slot.id }}" value="{{ slot.id }}" required>
+                                <label for="slot_{{ slot.id }}" class="slot-label">
+                                    {{ slot.start }} - {{ slot.end }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <label for="focus">Waar wil je op trainen?</label>
+                    <select name="focus" id="focus" required>
+                        <option value="" disabled selected>-- Kies onderwerp --</option>
+                        <option value="Techniek (Algemeen)">Techniek (Algemeen)</option>
+                        <option value="Forehand">Forehand</option>
+                        <option value="Backhand">Backhand</option>
+                        <option value="Volley">Volley</option>
+                        <option value="Smash / Bandeja">Smash / Bandeja</option>
+                        <option value="Tactiek & Positiespel">Tactiek & Positiespel</option>
+                        <option value="Wedstrijdvorm">Wedstrijdvorm</option>
+                        <option value="Conditie / Fysiek">Conditie / Fysiek</option>
+                        <option value="Anders">Anders...</option>
+                    </select>
+
+                    <button type="submit" name="action" value="book" class="primary-btn">
+                        ✅ Boek Les
+                    </button>
+                {% elif selected_date and not error %}
+                    <p style="text-align: center; color: #888; font-style: italic;">
+                        Geen tijdsloten beschikbaar op deze dag.
+                    </p>
+                {% endif %}
+
+            </form>
+
+            <a href="{{ url_for('request_lesson_type') }}" class="back-link">← Terug</a>
+        </div>
+    </div>
+
 </body>
 </html>
