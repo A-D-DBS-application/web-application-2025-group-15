@@ -37,7 +37,7 @@
             <div style="text-align: center; margin-bottom: 20px;">
                 <img src="{{ profile.profile_image or url_for('static', filename='default_profile.png') }}" 
                      style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #555; display: inline-block;"
-                     onerror="this.src='{{ url_for('static', filename='default_profile.png') }}';">
+                     onerror="this.onerror=null;this.src='{{ url_for("static", filename="default.png") }}';">
                 <div style="margin-top: 10px;">
                      <label for="file-upload" style="cursor: pointer; color: #E10600; font-size: 13px; font-weight: bold;">
                         Wijzig Foto

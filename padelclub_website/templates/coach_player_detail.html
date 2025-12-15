@@ -181,7 +181,7 @@
             <img src="{{ student.profile_image or url_for('static', filename='default.png') }}" 
             alt="Profiel van {{ student.first_name }}" 
             class="profile-pic-dashboard"
-            onerror="this.onerror=null;this.src='{{ url_for('static', filename='default.png') }}';">
+            onerror="this.onerror=null;this.src='{{ url_for("static", filename="default.png") }}';">
             
             <div class="header-info">
                 <h1 style="margin: 0; color: white;">{{ student.first_name }} {{ student.last_name }}</h1>

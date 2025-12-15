@@ -59,7 +59,7 @@
                                 <img src="{{ speler.profile_image or url_for('static', filename='default.png') }}" 
                                 class="table-avatar" 
                                 alt="Foto"
-                                onerror="this.onerror=null;this.src='{{ url_for('static', filename='default.png') }}';">
+                                onerror="this.onerror=null;this.src='{{ url_for("static", filename="default.png")}}';">
                             </td>
 
                             <td style="font-weight: 600; color: white;">

@@ -833,7 +833,7 @@ label {
     filter: grayscale(100%) brightness(1000%); 
 }
 
-<style>
+
     /* ... je bestaande CSS ... */
 
     /* SPECIFIEK VOOR PRINTEN / PDF MAKEN */
@@ -881,4 +881,3 @@ label {
             padding: 15px;
         }
     }
-</style>
