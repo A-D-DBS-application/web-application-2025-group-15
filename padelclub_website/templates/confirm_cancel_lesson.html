@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les annuleren | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Zorg dat deze pagina ook de dark mode styling heeft */
+        body {
+            background-color: #121212; /* Donkere achtergrond */
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            margin: 0;
+        }
+
+        .center-card {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 1px solid #333;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 { margin-bottom: 20px; font-size: 24px; }
+        p { color: #ccc; margin-bottom: 30px; line-height: 1.6; }
+
+        .confirm-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Styling voor de Terug knop */
+        .confirm-back {
+            padding: 12px 24px;
+            color: #ccc;
+            text-decoration: none;
+            border: 1px solid #555;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .confirm-back:hover {
+            border-color: white;
+            color: white;
+            background-color: #333;
+        }
+
+        /* Styling voor de Annuleer knop (MOET EEN BUTTON ZIJN VOOR POST) */
+        .confirm-cancel-btn {
+            background-color: #E10600;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .confirm-cancel-btn:hover {
+            background-color: #b30500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="center-card">
+
+        <h1>Les annuleren</h1>
+
+        <p>
+            Weet je zeker dat je deze les wilt annuleren?<br>
+            Het tijdslot komt dan weer vrij voor andere spelers.
+        </p>
+
+        <div class="confirm-actions">
+            <a href="{{ url_for('player_dashboard') }}" class="confirm-back">
+                Nee, terug
+            </a>
+
+            <form action="{{ url_for('cancel_lesson', lesson_id=lesson_id) }}" method="POST">
+                <button type="submit" class="confirm-cancel-btn">
+                    Ja, annuleer les
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+</html>

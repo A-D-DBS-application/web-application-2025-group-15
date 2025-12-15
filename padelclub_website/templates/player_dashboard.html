@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Dashboard | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* --- LAYOUT & SPACING --- */
+        
+        /* De Header (Welkom...) krijgt nu ruimte aan de onderkant */
+        .dashboard-header.dark-card {
+            margin-bottom: 30px; 
+        }
+
+        /* Het grid voor Sterktes/Werkpunten */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px; /* Ruimte naar de tabel toe */
+        }
+
+        /* --- KNOPPEN STYLING --- */
+        
+        /* Basisstijl: zorgt voor gelijke grootte en vorm */
+        .dashboard-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 14px;
+            text-align: center;
+            border: 2px solid #E10600;
+            transition: all 0.3s ease;
+            min-width: 110px; /* Beide knoppen even breed */
+        }
+
+        /* iCal: WIT met RODE tekst */
+        .ical-btn {
+            background-color: #ffffff !important;
+            color: #E10600 !important;
+        }
+        .ical-btn:hover {
+            background-color: #f2f2f2 !important; /* Lichtgrijs bij hover */
+        }
+
+        /* Annuleren: ROOD met WITTE tekst */
+        .danger-btn {
+            background-color: #E10600 !important;
+            color: #ffffff !important;
+        }
+        .danger-btn:hover {
+            background-color: #b30500 !important; /* Donkerder rood bij hover */
+            border-color: #b30500 !important;
+        }
+
+        /* Mobiele aanpassingen */
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .dashboard-header.dark-card { flex-direction: column; text-align: center; }
+            .profile-pic-dashboard { margin-right: 0; margin-bottom: 20px; }
+            .dashboard-btn { width: 100%; margin-bottom: 5px; } /* Knoppen onder elkaar op mobiel */
+        }
+    </style>
+</head>
+
+<body class="index-page">
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('player_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('request_lesson_type') }}" class="nav-link">Les aanvragen</a></li>
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="dashboard-header dark-card">
+            <img src="{{ user.profile_image or url_for('static', filename='default.png') }}" 
+            alt="Profiel" 
+            class="profile-pic-dashboard"
+            onerror="this.onerror=null;this.src='{{ url_for('static', filename='default.png') }}';''>
+            
+            <div class="header-info">
+                <h1 style="color: white; margin-bottom: 10px;">Welkom, {{ user.first_name }}!</h1>
+                
+                <p style="color: #ccc; margin: 5px 0;"><strong>Ranking:</strong> {{ user.ranking or 'Nog niet ingesteld' }}</p>
+                <p style="color: #ccc; margin: 5px 0;"><strong>Lesvoorkeur:</strong> {{ user.lesson_type_preference or 'Geen voorkeur' }}</p>
+                <p style="color: #ccc; margin: 5px 0;"><strong>Speelstijl:</strong> {{ user.playing_intensity or 'Onbekend' }}</p>
+                
+                <p style="color: #ccc; margin: 5px 0;">
+                    <strong>Mijn Coaches:</strong> 
+                    {% if user.coaches %}
+                        {% for coach in user.coaches %}
+                            {{ coach.first_name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span style="font-style: italic; color: #888;">Nog geen coaches.</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="dashboard-card dark-card">
+                <h3 style="color: white; border-left: 4px solid #4dff4d; padding-left: 10px; margin-bottom: 15px;">Sterktes</h3>
+                <p style="color: #ccc; line-height: 1.6;">{{ user.strengths or 'Nog geen sterktes ingevuld door je coach.' }}</p>
+            </div>
+            <div class="dashboard-card dark-card">
+                <h3 style="color: white; border-left: 4px solid #E10600; padding-left: 10px; margin-bottom: 15px;">Werkpunten</h3>
+                <p style="color: #ccc; line-height: 1.6;">{{ user.weaknesses or 'Nog geen werkpunten ingevuld door je coach.' }}</p>
+            </div>
+        </div>
+
+        <div class="dashboard-card dark-card">
+            <h2 class="section-title">Mijn Geplande Lessen</h2>
+            
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Tijd</th>
+                            <th>Coach</th>
+                            <th>Type</th>
+                            <th>Actie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if upcoming_lessons %}
+                            {% for lesson in upcoming_lessons %}
+                            <tr>
+                                <td>{{ lesson.date }}</td>
+                                <td>{{ lesson.start_time }} - {{ lesson.end_time }}</td>
+                                <td>{{ lesson.coach_name }}</td>
+                                <td>{{ lesson.lesson_type }}</td>
+                                <td style="display: flex; gap: 15px; justify-content: center; align-items: center;">
+                                    
+                                    <a href="{{ url_for('download_ics', lesson_id=lesson.lesson_id) }}" class="dashboard-btn ical-btn">
+                                        iCal
+                                    </a>
+
+                                    <a href="{{ url_for('confirm_cancel_lesson', lesson_id=lesson.lesson_id) }}" class="dashboard-btn danger-btn">
+                                        Annuleren
+                                    </a>
+
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="color: #888; padding: 30px;">
+                                    Je hebt nog geen lessen gepland. 
+                                    <a href="{{ url_for('request_lesson_type') }}" style="color: #E10600;">Vraag nu een les aan!</a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if past_lessons %}
+        <div class="dashboard-card dark-card" style="margin-top: 30px;">
+            <h2 class="section-title">Afgeronde Lessen</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Tijd</th>
+                            <th>Coach</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lesson in past_lessons %}
+                        <tr>
+                            <td>{{ lesson.date }}</td>
+                            <td>{{ lesson.start_time }} - {{ lesson.end_time }}</td>
+                            <td>{{ lesson.coach_name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

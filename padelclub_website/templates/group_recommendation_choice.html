@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Aanbeveling | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { background-color: #121212; color: white; font-family: sans-serif; margin: 0; padding: 20px; }
+        
+        .container-custom { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding-bottom: 50px;
+        }
+
+        h1 { text-align: center; color: white; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #ccc; margin-bottom: 40px; font-size: 18px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+
+        /* DE VERGELIJKING CONTAINERS */
+        .comparison-grid {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: stretch;
+            flex-wrap: wrap; /* Zorgt dat het op mobiel onder elkaar gaat */
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 30px;
+            flex: 1; /* Beide kaarten nemen evenveel ruimte in */
+            min-width: 300px; /* Niet smaller dan dit */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        /* SPECIFIEKE STIJLEN VOOR AANBEVELING (GROEN/ROOD ACCENT) */
+        .card.recommended {
+            border: 2px solid #28a745; /* Groene rand voor positieve vibe */
+            background: linear-gradient(180deg, #1e1e1e 0%, #162b1a 100%);
+        }
+
+        /* SPECIFIEKE STIJLEN VOOR EIGEN KEUZE (GRIJS) */
+        .card.original {
+            border: 2px solid #444;
+            opacity: 0.9;
+        }
+
+        .icon-top { font-size: 40px; margin-bottom: 15px; }
+        
+        .card-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .coach-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #E10600;
+            margin-bottom: 20px;
+        }
+
+        /* LIJST MET REDENEN */
+        .reasons-list {
+            text-align: left;
+            width: 100%;
+            margin-bottom: 30px;
+            flex-grow: 1; /* Duwt de knop naar beneden */
+        }
+
+        .reasons-list li {
+            margin-bottom: 12px;
+            color: #ddd;
+            line-height: 1.4;
+            display: flex;
+            align-items: start;
+        }
+
+        .reasons-list li::before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .card.original .reasons-list li::before {
+            content: "•";
+            color: #888;
+        }
+
+        /* KNOPPEN */
+        .btn-select {
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            border: none;
+            transition: transform 0.2s;
+        }
+        
+        .btn-select:hover { transform: scale(1.02); }
+
+        .btn-green { background-color: #28a745; color: white; }
+        .btn-green:hover { background-color: #218838; }
+
+        .btn-grey { background-color: #444; color: white; }
+        .btn-grey:hover { background-color: #555; }
+
+        .vs-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            color: #666;
+            margin: 20px 0; /* Alleen zichtbaar op mobiel als ze onder elkaar staan */
+            display: none; 
+        }
+
+        @media (max-width: 768px) {
+            .vs-badge { display: flex; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container-custom">
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="height: 50px;">
+    </div>
+
+    <h1>Suggestie voor de groep!</h1>
+    <p class="subtitle">
+        Op basis van het onderwerp <strong>"{{ focus }}"</strong> en jullie niveau, denken we dat deze coach een betere match is.
+    </p>
+
+    <div class="comparison-grid">
+
+        <div class="card recommended">
+            <div class="icon-top"></div>
+            <div class="card-title" style="color: #28a745;">Aanbeveling</div>
+            <div class="coach-name">{{ recommended_coach.first_name }}</div>
+
+            <ul class="reasons-list">
+                {% for reason in reasons %}
+                    <li>{{ reason }}</li>
+                {% endfor %}
+            </ul>
+
+            <form action="{{ url_for('player_confirm_group_choice') }}" method="POST" style="width: 100%;">
+                <input type="hidden" name="decision" value="recommended">
+                <input type="hidden" name="chosen_coach_id" value="{{ chosen_coach.coach_id }}">
+                <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
+                <input type="hidden" name="date" value="{{ date_str }}">
+                <input type="hidden" name="start" value="{{ start_str }}">
+                <input type="hidden" name="focus" value="{{ focus }}">
+
+                <button type="submit" class="btn-select btn-green">
+                    Kies {{ recommended_coach.first_name }}
+                </button>
+            </form>
+        </div>
+
+        <div class="card original">
+            <div class="icon-top"></div>
+            <div class="card-title" style="color: #888;">Jouw Keuze</div>
+            <div class="coach-name" style="color: #ccc;">{{ chosen_coach.first_name }}</div>
+
+            <ul class="reasons-list">
+                <li>Je originele keuze.</li>
+                <li>Geen extra match-voordelen gevonden voor dit specifieke thema.</li>
+            </ul>
+
+            <form action="{{ url_for('player_confirm_group_choice') }}" method="POST" style="width: 100%; margin-top: auto;">
+                <input type="hidden" name="decision" value="chosen">
+                <input type="hidden" name="chosen_coach_id" value="{{ chosen_coach.coach_id }}">
+                <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
+                <input type="hidden" name="date" value="{{ date_str }}">
+                <input type="hidden" name="start" value="{{ start_str }}">
+                <input type="hidden" name="focus" value="{{ focus }}">
+
+                <button type="submit" class="btn-select btn-grey">
+                    Behoud {{ chosen_coach.first_name }}
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

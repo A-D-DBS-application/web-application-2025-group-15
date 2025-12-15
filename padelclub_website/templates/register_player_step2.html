@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registratie Speler (2/2) | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="index-page">
+
+    <div class="login-container dark-card">
+        
+        <h1 class="login-title">Speler Details</h1>
+        <p class="login-subtitle">Stap 2 van 2: Sportieve info</p>
+
+        {% if error %}
+            <div class="login-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('register_player_step2') }}" enctype="multipart/form-data">
+
+            <label for="ranking" class="login-label">Je P-Ranking</label>
+            <select name="ranking" id="ranking" required class="login-input">
+                <option value="" disabled selected>Kies je ranking...</option>
+                <option value="Geen">Geen ranking (Beginner)</option>
+                <option value="P50">P50</option>
+                <option value="P100">P100</option>
+                <option value="P200">P200</option>
+                <option value="P300">P300</option>
+                <option value="P400">P400</option>
+                <option value="P500">P500</option>
+                <option value="P700">P700</option>
+                <option value="P1000">P1000</option>
+            </select>
+
+            <label for="hand_preference" class="login-label">Speelhand</label>
+            <select name="hand_preference" id="hand_preference" required class="login-input">
+                <option value="" disabled selected>Maak een keuze</option>
+                <option value="rechts">Rechts</option>
+                <option value="links">Links</option>
+                <option value="beide">Beide</option>
+            </select>
+
+            <label for="gender" class="login-label">Geslacht</label>
+            <select name="gender" id="gender" required class="login-input">
+                <option value="" disabled selected>Kies je geslacht...</option>
+                <option value="man">Man</option>
+                <option value="vrouw">Vrouw</option>
+                <option value="anders">Anders</option>
+            </select>
+
+            <label class="login-label">Geboortedatum</label>
+            <input type="date" name="dob" required class="login-input">
+
+            <label for="lesson_type_preference" class="login-label">Welke lessen volg je het liefst?</label>
+            <select id="lesson_type_preference" name="lesson_type_preference" required class="login-input">
+                <option value="" disabled selected>Maak een keuze...</option>
+                <option value="group">Groepslessen</option>
+                <option value="individual">Individuele lessen</option>
+            </select>
+
+            <label for="playing_intensity" class="login-label">Context</label>
+            <select id="playing_intensity" name="playing_intensity" required class="login-input">
+                <option value="" disabled selected>Maak een keuze...</option>
+                <option value="recreational">Recreatief / ontspanning</option>
+                <option value="competitive">Serieus / competitief</option>
+            </select>
+
+            <label class="login-label">Profielfoto uploaden</label>
+            <input type="file" name="image" accept="image/*" class="login-input" style="padding: 10px;">
+
+            <button type="submit" class="login-btn">
+                Registratie Afronden
+            </button>
+        </form>
+
+        <div class="back-home">
+            <a href="{{ url_for('register_player_step1') }}">← Terug naar stap 1</a>
+        </div>
+
+    </div>
+</body>
+</html>

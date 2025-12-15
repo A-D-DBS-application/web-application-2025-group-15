@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profiel Bewerken | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="index-page">
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo">
+            </a>
+            <ul class="navbar-menu">
+                {% if session.get('role') == 'coach' %}
+                    <li><a href="{{ url_for('coach_dashboard') }}" class="nav-link">Dashboard</a></li>
+                    <li><a href="{{ url_for('add_player') }}" class="nav-link">Speler toevoegen</a></li>
+                    <li><a href="{{ url_for('coach_availability') }}" class="nav-link">Beschikbaarheid</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('player_dashboard') }}" class="nav-link">Dashboard</a></li>
+                    <li><a href="{{ url_for('request_lesson_type') }}" class="nav-link">Les aanvragen</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="login-container dark-card" style="margin-top: 120px; max-width: 600px;">
+        <h1 class="login-title" style="color: white;">Profiel Bewerken</h1>
+        
+        <form method="POST" enctype="multipart/form-data">
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="{{ profile.profile_image or url_for('static', filename='default_profile.png') }}" 
+                     style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #555; display: inline-block;"
+                     onerror="this.src='{{ url_for('static', filename='default_profile.png') }}';">
+                <div style="margin-top: 10px;">
+                     <label for="file-upload" style="cursor: pointer; color: #E10600; font-size: 13px; font-weight: bold;">
+                        Wijzig Foto
+                     </label>
+                     <input id="file-upload" type="file" name="image" accept="image/*" style="display: none;" onchange="alert('Foto geselecteerd! Klik op Opslaan.')">
+                </div>
+            </div>
+
+            <div class="profile-toggle-container">
+                <button type="button" class="toggle-btn active" onclick="switchTab('persoonlijk')">Persoonlijk</button>
+                <button type="button" class="toggle-btn" onclick="switchTab('sportief')">Sportief</button>
+            </div>
+
+            <div id="sectie-persoonlijk">
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <label class="login-label" style="text-align: left; display: block; color: white;">Voornaam</label>
+                        <input type="text" name="first_name" value="{{ profile.first_name }}" required class="login-input">
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="login-label" style="text-align: left; display: block; color: white;">Achternaam</label>
+                        <input type="text" name="last_name" value="{{ profile.last_name }}" required class="login-input">
+                    </div>
+                </div>
+                <label class="login-label" style="text-align: left; display: block; color: white;">E-mailadres</label>
+                <input type="email" name="email" value="{{ profile.email }}" required class="login-input">
+                <label class="login-label" style="text-align: left; display: block; color: white;">Telefoonnummer</label>
+                <input type="text" name="phone" value="{{ profile.phone or '' }}" class="login-input">
+            </div>
+
+            <div id="sectie-sportief" style="display: none;">
+                
+                <div style="background: #333; padding: 10px; margin-bottom: 15px; border-radius: 5px; font-size: 12px; color: #aaa;">
+                    <strong>Huidige waarden in Database:</strong><br>
+                    Ranking: <span style="color: white;">{{ profile.ranking }}</span><br>
+                    Stijl: <span style="color: white;">{{ profile.playing_intensity }}</span><br>
+                    Les: <span style="color: white;">{{ profile.lesson_type_preference }}</span>
+                </div>
+
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <label class="login-label" style="text-align: left; display: block; color: white;">Ranking</label>
+                        <select name="ranking" class="login-input">
+                            <option value="">Geen</option>
+                            <option value="P50" {% if profile.ranking == 'P50' %}selected{% endif %}>P50</option>
+                            <option value="P100" {% if profile.ranking == 'P100' %}selected{% endif %}>P100</option>
+                            <option value="P200" {% if profile.ranking == 'P200' %}selected{% endif %}>P200</option>
+                            <option value="P300" {% if profile.ranking == 'P300' %}selected{% endif %}>P300</option>
+                            <option value="P400" {% if profile.ranking == 'P400' %}selected{% endif %}>P400</option>
+                            <option value="P500" {% if profile.ranking == 'P500' %}selected{% endif %}>P500</option>
+                            <option value="P700" {% if profile.ranking == 'P700' %}selected{% endif %}>P700</option>
+                            <option value="P1000" {% if profile.ranking == 'P1000' %}selected{% endif %}>P1000</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="login-label" style="text-align: left; display: block; color: white;">Speelstijl</label>
+                        <select name="playing_intensity" class="login-input">
+                            <option value="">Maak een keuze</option>
+                            <option value="recreational" {% if profile.playing_intensity == 'recreational' %}selected{% endif %}>Recreatief</option>
+                            <option value="competitive" {% if profile.playing_intensity == 'competitive' %}selected{% endif %}>Competitief</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label class="login-label" style="text-align: left; display: block; color: white;">Voorkeur Les</label>
+                <select name="lesson_type_preference" class="login-input">
+                    <option value="">Maak een keuze</option>
+                    <option value="individual" {% if profile.lesson_type_preference == 'individual' %}selected{% endif %}>Individueel</option>
+                    <option value="group" {% if profile.lesson_type_preference == 'group' %}selected{% endif %}>Groepslessen</option>
+                </select>
+            </div>
+
+            <button type="submit" class="cta-btn" style="width: 100%; border: none; margin-top: 30px;">Opslaan</button>
+        </form>
+
+        <div class="back-home" style="margin-top: 20px;">
+             {% if session.get('role') == 'coach' %}
+                <a href="{{ url_for('coach_dashboard') }}" style="color: #ccc;">← Terug naar Dashboard</a>
+             {% else %}
+                <a href="{{ url_for('player_dashboard') }}" style="color: #ccc;">← Terug naar Dashboard</a>
+             {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            const personalSection = document.getElementById('sectie-persoonlijk');
+            const sportSection = document.getElementById('sectie-sportief');
+            const buttons = document.querySelectorAll('.toggle-btn');
+
+            if (tabName === 'persoonlijk') {
+                personalSection.style.display = 'block';
+                sportSection.style.display = 'none';
+                buttons[0].classList.add('active');
+                buttons[1].classList.remove('active');
+            } else {
+                personalSection.style.display = 'none';
+                sportSection.style.display = 'block';
+                buttons[0].classList.remove('active');
+                buttons[1].classList.add('active');
+            }
+        }
+    </script>
+
+</body>
+</html>

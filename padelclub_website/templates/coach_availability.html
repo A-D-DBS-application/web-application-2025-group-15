@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beschikbaarheid | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Extra CSS voor mooie Toggle Knoppen ipv saaie checkboxes */
+        .slot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .slot-checkbox {
+            display: none; /* Verberg de standaard checkbox */
+        }
+
+        .slot-label {
+            display: block;
+            padding: 15px;
+            background: #2A2A2A;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: #ccc;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        /* Als de checkbox AANGEVINKT is: */
+        .slot-checkbox:checked + .slot-label {
+            background: #E10600;
+            border-color: #E10600;
+            color: white;
+        }
+
+        .slot-label:hover {
+            border-color: #E10600;
+        }
+
+        /* NIEUW: Stijl voor de 'Alles Selecteren' knop */
+        .toggle-btn {
+            background: transparent;
+            border: 1px solid #666;
+            color: #ccc;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+        }
+        
+        .toggle-btn:hover {
+            border-color: #E10600;
+            color: #E10600;
+        }
+    </style>
+</head>
+
+<body class="index-page">
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('coach_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('add_player') }}" class="nav-link">Speler toevoegen</a></li>
+                <li><a href="{{ url_for('coach_availability') }}" class="nav-link">Beschikbaarheid</a></li>
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 800px;">
+        
+        <div class="dashboard-card dark-card">
+            <h1 class="section-title">Mijn Beschikbaarheid</h1>
+            
+            {% if message %}
+                <div style="background: rgba(40, 167, 69, 0.2); color: #4dff4d; padding: 10px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #4dff4d;">
+                    {{ message }}
+                </div>
+            {% endif %}
+            
+            {% if error %}
+                <div style="background: rgba(225, 6, 0, 0.2); color: #ff4d4d; padding: 10px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #ff4d4d;">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="GET" action="{{ url_for('coach_availability') }}" style="margin-bottom: 30px;">
+                <label style="color: white; display: block; margin-bottom: 10px;">Kies een datum om te bewerken:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" name="date" value="{{ date_str or '' }}" required class="login-input" style="margin: 0;">
+                    <button type="submit" class="cta-btn" style="border: none;">Laden</button>
+                </div>
+            </form>
+
+            <hr style="border-color: #333; margin: 30px 0;">
+
+            {% if selected_date %}
+                <h3 style="color: white;">Beschikbare uren voor {{ selected_date.strftime('%d-%m-%Y') }}</h3>
+                <p style="color: #999; font-size: 14px;">Klik op de uren dat je beschikbaar bent (Rood = Beschikbaar).</p>
+
+                <button type="button" class="toggle-btn" onclick="toggleAllSlots()">
+                    Alles Selecteren / Deselecteren
+                </button>
+
+                <form method="POST" action="{{ url_for('coach_availability') }}">
+                    <input type="hidden" name="date" value="{{ date_str }}">
+
+                    <div class="slot-grid">
+                        {% for slot in all_slots %}
+                            <div>
+                                <input type="checkbox" 
+                                       id="slot_{{ slot.id }}" 
+                                       name="slots" 
+                                       value="{{ slot.id }}" 
+                                       class="slot-checkbox"
+                                       {% if slot.id in selected_slot_ids %}checked{% endif %}>
+                                
+                                <label for="slot_{{ slot.id }}" class="slot-label">
+                                    {{ slot.label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div style="margin-top: 30px; text-align: right;">
+                        <button type="submit" class="cta-btn" style="width: 100%; font-size: 18px; border: none;">
+                            Opslaan
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <div style="text-align: center; color: #666; padding: 40px;">
+                    Selecteer eerst een datum hierboven.
+                </div>
+            {% endif %}
+
+        </div>
+        
+        <div class="back-home" style="margin-top: 20px; text-align: center;">
+            <a href="{{ url_for('coach_dashboard') }}" style="color: #ccc;">← Terug naar Dashboard</a>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleAllSlots() {
+            // 1. Zoek alle checkboxes (jouw class is .slot-checkbox)
+            const checkboxes = document.querySelectorAll('.slot-checkbox');
+            
+            // 2. Check: Is ALLES nu aangevinkt?
+            // We kijken of elke checkbox (.checked) true is
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+            // 3. Actie: Doe het tegenovergestelde
+            // Als alles aan staat -> zet alles uit (false)
+            // Als niet alles aan staat -> zet alles aan (true)
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+            });
+        }
+    </script>
+
+</body>
+</html>

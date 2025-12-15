@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registreren | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="index-page">
+
+    <div class="login-container dark-card">
+        
+        <img src="{{ url_for('static', filename='logo.png') }}" 
+             alt="Fit Out Logo" 
+             style="width: 120px; margin: 0 auto 20px auto; display: block;">
+
+        <h1 class="login-title">Registreren</h1>
+        <p class="login-subtitle">Kies je rol om een account aan te maken</p>
+
+        <div class="role-selection">
+            <a href="/register/player" class="choice-card player-btn">
+                Ik ben een Speler
+            </a>
+
+            <a href="/register/coach" class="choice-card coach-btn">
+                Ik ben een Coach
+            </a>
+        </div>
+
+        <div class="login-divider">
+            <span>of</span>
+        </div>
+
+        <div class="register-section">
+            <p>Heb je al een account?</p>
+            <a href="/login" class="register-btn">
+                Inloggen
+            </a>
+        </div>
+        
+        <div class="back-home">
+             <a href="/">← Terug naar start</a>
+        </div>
+
+    </div>
+
+</body>
+</html>

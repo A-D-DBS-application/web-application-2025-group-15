@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betere Match Gevonden | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* --- ALGEMENE PAGINA STIJLEN --- */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+
+        .container-custom {
+            max-width: 1100px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: #bbb;
+            font-size: 1.1em;
+            max-width: 700px;
+            margin: 0 auto 50px auto;
+            line-height: 1.6;
+        }
+
+        /* --- GRID VOOR DE TWEE KAARTEN --- */
+        .comparison-grid {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            align-items: stretch; /* Even hoog maken */
+            flex-wrap: wrap; /* Mobiel vriendelijk */
+        }
+
+        /* --- BASIS KAART STIJL --- */
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 16px;
+            padding: 40px;
+            flex: 1;
+            min-width: 320px;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 2px solid transparent;
+            transition: transform 0.3s ease;
+        }
+
+        /* --- SPECIFIEK: AANBEVOLEN KAART (LINKS) --- */
+        .card.recommended {
+            border-color: #28a745;
+            background: linear-gradient(160deg, rgba(40, 167, 69, 0.15) 0%, #1e1e1e 60%);
+        }
+
+        .card.recommended .card-title { color: #28a745; }
+
+        /* --- SPECIFIEK: ORIGINELE KAART (RECHTS) --- */
+        .card.original {
+            border-color: #444;
+            background-color: #1e1e1e;
+            opacity: 0.9;
+        }
+
+        .card.original .card-title { color: #ccc; }
+        .card.original .coach-name { opacity: 0.8; }
+
+        /* --- INTERNE ELEMENTEN --- */
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .coach-name {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: #E10600;
+            margin-bottom: 30px;
+        }
+
+        /* --- LIJSTJES MET REDENEN (Belangrijk voor leesbaarheid!) --- */
+        .reasons-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 30px 0;
+            text-align: left; /* Links uitlijnen voor leesbaarheid */
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .reasons-list li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.5;
+            color: #ddd;
+            font-size: 1.05em;
+        }
+
+        /* Groen vinkje voor aanbeveling */
+        .card.recommended .reasons-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Grijs bolletje voor origineel */
+        .card.original .reasons-list li::before {
+            content: '•';
+            position: absolute;
+            left: 5px;
+            color: #666;
+            font-size: 1.5em;
+            line-height: 1em;
+        }
+
+        /* --- KNOPPEN --- */
+        .btn-form {
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .btn-select {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-select:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+        .btn-green { background-color: #28a745; color: white; }
+        .btn-green:hover { background-color: #218838; box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4); }
+
+        .btn-grey { background-color: #444; color: white; }
+        .btn-grey:hover { background-color: #555; }
+
+        @media (max-width: 768px) {
+            .comparison-grid { flex-direction: column; align-items: center; }
+            .card { width: 100%; max-width: 400px; }
+            h1 { font-size: 2em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-custom">
+    
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" style="height: 60px; margin-bottom: 20px; opacity: 0.8;">
+
+    <h1>Betere match gevonden!</h1>
+    <p class="subtitle">
+        Op basis van jouw speelstijl (Rank: {{ current_user.ranking }}) en voorkeuren, 
+        denken we dat deze coach een betere match is voor jouw individuele les.
+    </p>
+
+    <div class="comparison-grid">
+
+        <div class="card recommended">
+            <div class="card-icon"></div>
+            <div class="card-title">Aanbeveling</div>
+            <div class="coach-name">{{ recommended_coach.first_name }}</div>
+
+            <ul class="reasons-list">
+                {% for reason in reasons %}
+                    <li>{{ reason }}</li>
+                {% endfor %}
+            </ul>
+
+            <form action="{{ url_for('player_confirm_lesson_choice') }}" method="POST" class="btn-form">
+                <input type="hidden" name="choice" value="recommended">
+                <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
+                <input type="hidden" name="original_coach_id" value="{{ selected_coach.coach_id }}">
+                <input type="hidden" name="date" value="{{ date }}">
+                <input type="hidden" name="slot_id" value="{{ slot_id }}">
+
+                <button type="submit" class="btn-select btn-green">
+                    Kies {{ recommended_coach.first_name }}
+                </button>
+            </form>
+        </div>
+
+        <div class="card original">
+            <div class="card-icon" style="opacity: 0.5;"></div>
+            <div class="card-title">Jouw Keuze</div>
+            <div class="coach-name">{{ selected_coach.first_name }}</div>
+
+            <ul class="reasons-list">
+                <li>Dit was je originele keuze.</li>
+                <li style="color: #888;">Deze coach heeft geen specifieke extra match-voordelen ten opzichte van de aanbevolen coach.</li>
+            </ul>
+
+            <form action="{{ url_for('player_confirm_lesson_choice') }}" method="POST" class="btn-form">
+                <input type="hidden" name="choice" value="original">
+                <input type="hidden" name="recommended_coach_id" value="{{ recommended_coach.coach_id }}">
+                <input type="hidden" name="original_coach_id" value="{{ selected_coach.coach_id }}">
+                <input type="hidden" name="date" value="{{ date }}">
+                <input type="hidden" name="slot_id" value="{{ slot_id }}">
+
+                <button type="submit" class="btn-select btn-grey">
+                    Behoud {{ selected_coach.first_name }}
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

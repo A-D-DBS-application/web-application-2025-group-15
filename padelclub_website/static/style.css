@@ -1,0 +1,884 @@
+/* ==========================================================================
+   1. VARIABELEN & BASIS INSTELLINGEN
+   ========================================================================== */
+:root {
+    /* Kleurenpalet Fit-Out */
+    --brand-red: #E10600;
+    --brand-red-hover: #B30500;
+    --brand-black: #111111;       /* Voor navbar en headers */
+    --brand-dark-bg: #1a1a1a;     /* Voor index/login achtergrond */
+    
+    /* Tekstkleuren */
+    --text-main: #1F2937;         /* Donkergrijs voor dashboards */
+    --text-light: #6B7280;        /* Grijs voor details */
+    --text-white: #FFFFFF;
+    
+    /* Achtergronden App */
+    --bg-dashboard: #F3F4F6;      /* Lichtgrijs voor dashboard */
+    --bg-card: #FFFFFF;           /* Wit voor kaarten */
+    
+    /* UI Elementen */
+    --radius: 12px;
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-deep: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    line-height: 1.6;
+    color: var(--text-main);
+    background-color: var(--bg-dashboard); /* Standaard achtergrond */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a { text-decoration: none; color: inherit; transition: 0.2s; }
+ul { list-style: none; padding: 0; margin: 0; }
+img { max-width: 100%; display: block; }
+
+/* ==========================================================================
+   2. NAVBAR (DASHBOARDS) - ZWART & GROTER
+   ========================================================================== */
+.navbar {
+    background-color: var(--brand-black);
+    height: 80px; /* Iets hoger voor meer presence */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+}
+
+.navbar-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-logo img {
+    height: 48px; /* Logo iets groter */
+    width: auto;
+}
+
+.navbar-menu {
+    display: flex;
+    align-items: center;
+    gap: 40px; /* Meer ruimte tussen items */
+}
+
+.nav-link {
+    color: var(--text-white);
+    font-weight: 600;
+    font-size: 16px; /* Iets grotere tekst */
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+    padding: 5px 0;
+}
+
+.nav-link:hover {
+    color: var(--brand-red);
+    opacity: 1;
+}
+
+.nav-btn-logout {
+    background-color: var(--brand-red);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.nav-btn-logout:hover { background-color: var(--brand-red-hover); }
+
+/* ==========================================================================
+   3. DONKERE PAGINA'S (INDEX, LOGIN, REGISTRATIE)
+   ========================================================================== */
+/* Deze class zet je op de body van login.html, index.html en register_choice.html */
+.index-page, 
+.login-page, 
+.role-page {
+    background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px !important; /* Forceer padding */
+    padding-top: 0 !important; /* Geen ruimte voor navbar nodig */
+}
+
+/* --- Startpagina Specifiek --- */
+.welcome-logo {
+    max-width: 260px;
+    margin-bottom: 40px;
+}
+
+.index-title {
+    color: white;
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-align: center;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.index-links {
+    display: flex;
+    gap: 25px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.index-btn {
+    background-color: var(--brand-red);
+    color: white;
+    padding: 18px 40px;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(225, 6, 0, 0.4);
+    transition: transform 0.2s, background 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.index-btn:hover {
+    background-color: var(--brand-red-hover);
+    transform: translateY(-3px);
+}
+
+.index-footer {
+    position: absolute;
+    bottom: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* --- Keuzepagina (Rol) --- */
+.role-container {
+    background: white;
+    padding: 40px;
+    border-radius: var(--radius);
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+}
+.role-title { color: var(--brand-black); font-size: 28px; font-weight: 800; }
+.role-subtitle { color: #666; margin-bottom: 30px; }
+
+.choice-card {
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; margin-bottom: 15px; border-radius: var(--radius);
+    font-weight: 700; font-size: 18px; color: white;
+    transition: transform 0.2s;
+}
+.choice-card:hover { transform: scale(1.02); }
+.player-btn { background-color: var(--brand-black); }
+.coach-btn { background-color: var(--brand-red); }
+
+/* ==========================================================================
+   4. INLOGSCHERM (DARK MODE KAART)
+   ========================================================================== */
+.login-container.dark-card {
+    background: #1F1F1F;       /* Donkergrijs */
+    color: white;
+    border: 1px solid #333;
+    box-shadow: var(--shadow-deep);
+    padding: 40px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* Typografie Login */
+.login-container.dark-card .login-title {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+.login-container.dark-card .login-subtitle { color: #888; font-size: 14px; margin-bottom: 25px; }
+.login-container.dark-card .login-label {
+    color: #ccc; text-align: left; display: block;
+    margin-bottom: 8px; font-size: 14px; font-weight: 500;
+}
+
+/* Inputs in Dark Mode */
+.login-container.dark-card .login-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: #2A2A2A;
+    border: 1px solid #444;
+    border-radius: 8px;
+    font-size: 15px;
+    color: white;
+    margin-bottom: 20px;
+}
+.login-container.dark-card .login-input:focus {
+    background: #333;
+    border-color: var(--brand-red);
+    outline: none;
+}
+
+/* Login Knop */
+.login-btn {
+    width: 100%;
+    background-color: var(--brand-red);
+    color: white;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.login-btn:hover { background-color: var(--brand-red-hover); }
+
+/* Scheiding & Registratie */
+.login-divider {
+    display: flex; align-items: center; margin: 25px 0; color: #555;
+}
+.login-divider::before, .login-divider::after {
+    content: ""; flex: 1; height: 1px; background: #333;
+}
+.login-divider span { padding: 0 10px; font-size: 12px; text-transform: uppercase; }
+
+.register-section p { color: #aaa; font-size: 14px; margin-bottom: 10px; }
+
+.register-btn {
+    display: block; width: 100%; padding: 12px;
+    background: transparent; border: 2px solid #555;
+    color: white; font-weight: 600; border-radius: 8px;
+    transition: all 0.2s;
+}
+.register-btn:hover { border-color: white; background: rgba(255,255,255,0.05); }
+
+.back-home { margin-top: 25px; }
+.back-home a { color: #666; font-size: 13px; }
+.back-home a:hover { color: #888; }
+.login-error { color: #ff4d4d; background: rgba(255,0,0,0.1); padding: 10px; border-radius: 6px; margin-top: 10px; }
+
+/* ==========================================================================
+   5. DASHBOARD LAYOUT (LIGHT THEME)
+   ========================================================================== */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    /* Belangrijk: Padding-top compenseert de fixed navbar (80px + 30px ruimte) */
+    padding: 110px 20px 40px; 
+}
+
+/* Algemene Cards */
+.dashboard-card, 
+.form-container, 
+.container.card, 
+.evaluation-container,
+.review-container,
+.lesson-choice-container {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 35px;
+    margin-bottom: 30px;
+    border: 1px solid #E5E7EB;
+}
+
+/* Forms centreren op witte pagina's */
+.form-container { max-width: 600px; margin-left: auto; margin-right: auto; }
+
+.profile-pic-dashboard {
+    /* 1. Dwing een vierkant formaat af (essentieel voor een cirkel) */
+    width: 160px !important;
+    height: 160px !important;
+    
+    /* 2. Maak het perfect rond */
+    border-radius: 50% !important;
+    
+    /* 3. Zorg dat de foto de cirkel vult ZONDER vervorming */
+    object-fit: cover !important;
+    
+    /* 4. POSITIE: Dit is de truc. 
+       'center top' pakt het midden van de breedte, maar de bovenkant van de foto.
+       Hierdoor staat het gezicht er meestal perfect op. */
+    object-position: center top !important;
+    
+    /* 5. Afwerking (Rode rand & Ruimte) */
+    border: 4px solid #E10600 !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    margin-right: 30px; /* Ruimte tussen foto en tekst */
+    flex-shrink: 0;     /* Zorgt dat de cirkel niet indrukt op mobiel */
+    background-color: #333; /* Achtergrondkleur voor als de foto laadt */
+}
+.section-title {
+    font-size: 22px; font-weight: 700;
+    color: var(--brand-black);
+    margin: 40px 0 20px 0;
+    border-bottom: 2px solid #E5E7EB;
+    padding-bottom: 10px;
+}
+
+/* Sterktes & Werkpunten */
+.strengths-grid { display: flex; gap: 20px; margin-bottom: 30px; }
+.strength-box {
+    flex: 1; background: #FAFAFA; padding: 20px;
+    border-radius: var(--radius); border-left: 4px solid var(--brand-red);
+}
+.strength-box h4 { margin-top: 0; color: var(--brand-red); }
+
+/* ==========================================================================
+   6. TABELLEN
+   ========================================================================== */
+
+
+td {
+    padding: 16px;
+    border-bottom: 1px solid #F3F4F6;
+    color: var(--text-main);
+    font-size: 15px;
+    vertical-align: middle;
+}
+
+/* Knoppen in tabel */
+.table-btn, .cancel-btn, .ical-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 8px;
+    border: none; cursor: pointer; text-decoration: none;
+}
+.danger-btn, .cancel-btn { background-color: #FEE2E2; color: #DC2626; }
+.danger-btn:hover, .cancel-btn:hover { background-color: #DC2626; color: white; }
+.ical-btn { background-color: #EFF6FF; color: #2563EB; }
+.ical-btn:hover { background-color: #2563EB; color: white; }
+.success-btn { background-color: var(--brand-red); color: white; }
+
+/* ==========================================================================
+   7. ALGEMENE INPUTS & KNOPPEN
+   ========================================================================== */
+/* Gedeelde knopstijl voor formulieren */
+.button, .form-btn, .save-button {
+    background-color: var(--brand-red);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+}
+.button:hover, .form-btn:hover { background-color: var(--brand-red-hover); }
+
+.button.secondary, .back-btn {
+    background-color: #E5E7EB; color: var(--text-main); width: auto;
+}
+.button.secondary:hover, .back-btn:hover { background-color: #D1D5DB; }
+
+/* Inputs (Licht thema) */
+input, select, textarea {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-family: inherit; font-size: 15px;
+    margin-bottom: 20px;
+}
+input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--brand-red);
+}
+label {
+    font-weight: 700; margin-bottom: 8px; display: block; color: var(--text-main);
+}
+
+/* Zoekbalk Dashboard */
+.search-input {
+    width: 250px; padding: 10px 15px; border-radius: 20px; font-size: 14px;
+}
+
+/* Linkjes onderaan forms */
+.back-link, .login-register-link {
+    text-align: center; margin-top: 20px;
+}
+.back-link a, .login-register-link {
+    color: var(--brand-red); font-weight: 600;
+}
+
+/* ==========================================================================
+   8. MOBIELE AANPASSINGEN
+   ========================================================================== */
+@media (max-width: 768px) {
+    .navbar-container { flex-direction: column; padding: 15px; }
+    .navbar { height: auto; }
+    .navbar-menu { 
+        gap: 15px; margin-top: 15px; 
+        flex-wrap: wrap; justify-content: center; 
+    }
+    
+    .container { padding-top: 180px; } /* Compenseer hoge mobiele navbar */
+    
+    .dashboard-header { flex-direction: column; text-align: center; border-left: none; border-top: 5px solid var(--brand-red); }
+    .strengths-grid { flex-direction: column; }
+    
+    .index-page, .login-page { padding-top: 0 !important; }
+}
+
+/* --- Voeg dit toe aan style.css voor de kleine tabel-foto's --- */
+
+.table-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #f3f3f3;
+    display: block;
+}
+
+/* Zorg dat de foto kolom niet te breed is */
+.col-avatar {
+    width: 60px;
+    text-align: center;
+}
+
+/* Header info netjes onder elkaar */
+.header-info h1 {
+    margin-bottom: 5px;
+    color: var(--brand-black);
+}
+
+.header-stats {
+    display: flex;
+    gap: 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-item strong {
+    color: var(--brand-red);
+}
+
+/* ==========================================================================
+   DARK DASHBOARD STYLING (NIEUW)
+   ========================================================================== */
+
+/* 1. Profielfoto: Groot & Verticaal (Portret) */
+.profile-pic-dashboard {
+    width: 220px;          /* Stuk groter/breder */
+    height: 300px;         /* Hoog formaat (Portret) */
+    border-radius: 12px;   /* Licht afgeronde hoeken, NIET rond */
+    object-fit: cover;     /* Zorgt dat de foto niet uitrekt */
+    border: 2px solid #333;
+    flex-shrink: 0;        /* Zorgt dat hij niet krimpt */
+}
+
+/* 2. Donkere Kaarten voor Dashboard */
+.dashboard-card.dark-card, 
+.dashboard-header.dark-card {
+    background: #1F1F1F;       /* Zelfde donkergrijs als login */
+    color: white;
+    border: 1px solid #333;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.section-title {
+    color: white;              /* Titel wit maken */
+    border-bottom: 1px solid #444;
+    display: flex;             /* Nodig voor zoekbalk rechts */
+    align-items: center;
+    justify-content: space-between; /* Spreid titel en zoekbalk */
+}
+
+/* 3. Zoekbalk helemaal rechts */
+.search-input {
+    margin-left: auto;         /* Duwt zichzelf naar rechts */
+    background: #2A2A2A;
+    color: white;
+    border: 1px solid #555;
+    width: 250px;
+}
+.search-input::placeholder { color: #888; }
+.search-input:focus { background: #333; border-color: var(--brand-red); }
+
+/* 4. Tabellen in Dark Mode */
+.dark-card table {
+    background: transparent;
+    color: white;
+}
+
+.dark-card th {
+    background-color: #111;    /* Diep zwart voor header */
+    color: white;
+    text-align: center;        /* CENTREREN VAN TITELS */
+    border-bottom: 2px solid #444;
+}
+
+.dark-card td {
+    border-bottom: 1px solid #333;
+    color: #ddd;               /* Iets lichter grijs voor leesbaarheid */
+    vertical-align: middle;    /* Verticaal centreren */
+    /* text-align: center;        <-- Optioneel: als je ook de data wil centreren, haal commentaar weg */ 
+}
+
+.dark-card tr:hover td {
+    background-color: #2A2A2A; /* Hover effect donker */
+}
+
+/* Knoppen in tabel netjes houden */
+.table-btn {
+    justify-content: center;   /* Icoon en tekst centreren in knop */
+}
+
+/* Links in tabel (namen) */
+.player-link {
+    color: var(--brand-red);
+    font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.player-link:hover { text-decoration: underline; color: #ff4d4d; }
+
+/* Kleine avatars in tabel */
+.table-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #555;
+    background: #333;
+}
+
+/* ==========================================================================
+   FIXES VOOR DARK MODE DASHBOARD (Onderaan toevoegen)
+   ========================================================================== */
+
+/* 1. Zorg dat tekst in donkere kaarten WIT is */
+.dashboard-card.dark-card, 
+.dashboard-header.dark-card {
+    background-color: #1F1F1F !important; /* Forceer donkergrijs */
+    color: #FFFFFF !important;            /* Forceer witte tekst */
+    border: 1px solid #333;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Specifiek de headers in de kaarten wit maken */
+.dashboard-card.dark-card h1,
+.dashboard-card.dark-card h2,
+.dashboard-card.dark-card .section-title,
+.dashboard-header.dark-card h1 {
+    color: #FFFFFF !important;
+}
+
+.header-stats {
+    color: #ccc !important; /* Lichtgrijs voor de statistieken */
+}
+
+/* 2. TABELLEN: Maak ze donker en leesbaar */
+.dark-card table {
+    background-color: transparent !important; /* Weg met de witte achtergrond */
+    color: #FFFFFF !important;
+}
+
+.dark-card th {
+    background-color: #000000 !important; /* Zwarte header balk */
+    color: #FFFFFF !important;
+    border-bottom: 2px solid #444;
+    text-align: center !important; /* Centreren! */
+    padding: 15px;
+}
+
+.dark-card td {
+    background-color: transparent !important;
+    color: #ddd !important; /* Iets lichter grijs voor leesbaarheid */
+    border-bottom: 1px solid #333;
+    text-align: center !important; /* Centreren! */
+    vertical-align: middle;
+    padding: 15px;
+}
+
+.dark-card tr:hover td {
+    background-color: #2A2A2A !important; /* Donkere hover kleur */
+}
+
+/* 3. PROFIELFOTO'S (Correcties) */
+
+/* De kleine ronde foto in de tabel */
+.table-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #666;
+    background-color: #333;
+    display: block;
+    margin: 0 auto; /* Centreren */
+}
+
+/* De grote rechthoekige foto bovenaan */
+.profile-pic-dashboard {
+    width: 220px !important;
+    height: 300px !important;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid #444;
+    margin-right: 30px;
+}
+
+/* ==========================================================================
+   DEFINITIEVE FIXES V2 (HEADER, TABEL & KNOPPEN)
+   ========================================================================== */
+
+/* 1. Header Layout */
+.dashboard-header.dark-card {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 40px !important;
+    text-align: left !important;
+}
+
+
+
+.header-info {
+    flex: 1;
+    color: white !important;
+}
+
+/* 2. TABEL: Breedte & Centreren */
+.table-scroll {
+    width: 100% !important;
+    overflow-x: auto;
+    display: block;
+}
+
+.dashboard-card.dark-card table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background-color: transparent !important;
+    margin: 0 !important;
+}
+
+/* HEADER CENTREREN */
+.dashboard-card.dark-card th {
+    background-color: #000000 !important;
+    color: white !important;
+    font-weight: 700;
+    padding: 16px !important;
+    text-align: center !important; /* GECENTREERD */
+    border-bottom: 2px solid #444 !important;
+}
+
+/* CELLEN INHOUD CENTREREN */
+.dashboard-card.dark-card td {
+    padding: 16px !important;
+    text-align: center !important; /* OOK GECENTREERD */
+    border-bottom: 1px solid #333 !important;
+    color: #eee !important;
+    background-color: transparent !important;
+    white-space: nowrap;
+    vertical-align: middle !important;
+}
+
+/* 3. KNOPPEN STIJLING (ROOD) */
+
+/* De iCal knop - Nu ROOD (#E10600) ipv blauw */
+.ical-btn {
+    background-color: #E10600 !important;
+    color: white !important;
+    border: 1px solid #E10600 !important;
+    padding: 8px 15px !important;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.ical-btn:hover {
+    background-color: #b30500 !important; /* Iets donkerder rood bij hover */
+    color: white !important;
+}
+
+/* De 'Speler Toevoegen' knop - Extra opvallend rood */
+.cta-btn {
+    background-color: #E10600 !important;
+    color: white !important;
+    padding: 14px 30px !important;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 8px;
+    display: inline-block;
+    text-align: center;
+    border: 2px solid #E10600 !important;
+    transition: 0.2s;
+    text-decoration: none; /* Geen onderlijning */
+}
+.cta-btn:hover {
+    background-color: #b30500 !important; 
+    border-color: #b30500 !important;
+    color: white !important;
+}
+
+/* Zorg dat de sectie-titel wit is en breed */
+.section-title {
+    width: 100%;
+    color: white !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --- TOGGLE BUTTONS PROFIEL --- */
+.profile-toggle-container {
+    display: flex;
+    background: #2A2A2A;
+    border-radius: 8px;
+    padding: 5px;
+    margin-bottom: 25px;
+    border: 1px solid #444;
+}
+
+.toggle-btn {
+    flex: 1;
+    background: transparent;
+    color: #888;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.toggle-btn.active {
+    background-color: #E10600; /* Fit-Out Rood */
+    color: white;
+    box-shadow: 0 2px 10px rgba(225, 6, 0, 0.3);
+}
+
+.toggle-btn:hover:not(.active) {
+    color: white;
+}
+
+
+/* ==========================================================================
+   HEADER & PROFIELFOTO CORRECTIE 
+   ========================================================================== */
+
+
+.dashboard-header.dark-card {
+    padding-left: 10px !important;  
+    padding-right: 30px;
+    
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 25px !important;           /* Afstand tussen foto en tekst */
+}
+
+/* 2. De Foto: Nette cirkel, focus op het midden */
+.profile-pic-dashboard {
+    width: 150px !important;
+    height: 150px !important;
+    border-radius: 50% !important;  
+    
+    /* Zorgt dat de cirkel volledig GEVULD is */
+    object-fit: cover !important;
+    
+    /* BELANGRIJK: 'center center' pakt het midden van de foto. 
+       Als hij nog steeds te hoog kijkt, verander dit naar 'center 20%' */
+    object-position: center center !important; 
+    
+    border: 4px solid #E10600 !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    
+    margin: 0 !important;
+    flex-shrink: 0;
+    background-color: #333; /* Achtergrond voor als foto laadt */
+}
+
+.option-icon { 
+    font-size: 40px; 
+    margin-bottom: 15px;
+    
+    /* Wit maken van de emoticons voor betere leesbaarheid*/
+    filter: grayscale(100%) brightness(1000%); 
+}
+
+<style>
+    /* ... je bestaande CSS ... */
+
+    /* SPECIFIEK VOOR PRINTEN / PDF MAKEN */
+    @media print {
+        /* Verberg elementen die je niet op papier wilt */
+        .navbar, .no-print, .back-link {
+            display: none !important;
+        }
+
+        /* Zet kleuren om naar printervriendelijk (wit papier, zwarte tekst) */
+        body {
+            background-color: white !important;
+            color: black !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container-custom {
+            min-height: auto;
+            display: block;
+            padding: 0;
+        }
+
+        /* Maak de kaart 'plat' voor op papier */
+        .form-card {
+            background-color: white !important;
+            color: black !important;
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Zorg dat titels duidelijk zwart zijn */
+        h1, h2, h3, h4, label {
+            color: #000 !important;
+        }
+        
+        /* Eventueel evaluatieblokken een randje geven voor duidelijkheid */
+        .evaluation-section {
+            border: 1px solid #ccc;
+            page-break-inside: avoid; /* Voorkom dat een blok half wordt afgebroken */
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+    }
+</style>

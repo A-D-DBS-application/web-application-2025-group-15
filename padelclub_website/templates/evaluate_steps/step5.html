@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluatie Stap 5/5 | Overzicht & Bevestigen</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* BASIS STIJLEN (Hetzelfde als de andere stappen) */
+        body { background-color: #121212; color: white; font-family: sans-serif; margin: 0; padding: 20px; min-height: 100vh; }
+        .container { max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
+        .eval-card { background-color: #1e1e1e; padding: 30px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h1 { text-align: center; margin-bottom: 5px; color: white; }
+        .step-indicator { text-align: center; color: #E10600; font-weight: bold; margin-bottom: 30px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* OVERZICHT SPECIFIEK */
+        .summary-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .summary-section:last-child { border-bottom: none; }
+
+        .section-title {
+            color: #E10600;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: 1fr auto; /* Links de naam, rechts de score */
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .score-label { color: #ccc; }
+        .score-value { 
+            font-weight: bold; 
+            color: white; 
+            background: #333; 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            min-width: 25px;
+            text-align: center;
+        }
+
+        .opmerking-box {
+            background-color: #252525;
+            padding: 10px;
+            border-radius: 6px;
+            font-style: italic;
+            color: #aaa;
+            margin-top: 10px;
+            font-size: 13px;
+            border-left: 3px solid #666;
+        }
+
+        /* KNOPPEN */
+        .btn-container { display: flex; justify-content: space-between; margin-top: 40px; }
+        .btn-save { background-color: #28a745; color: white; padding: 14px 24px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 16px; width: 100%; text-align: center;}
+        .btn-save:hover { background-color: #218838; }
+        .btn-back { background-color: transparent; color: #888; padding: 14px 24px; border: 1px solid #444; border-radius: 6px; text-decoration: none; margin-right: 15px; }
+        .btn-back:hover { color: white; border-color: white; }
+
+        .error-msg { background: rgba(225, 6, 0, 0.2); color: #ff4d4d; padding: 10px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #ff4d4d; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="eval-card">
+        <h1>Overzicht</h1>
+        <div class="step-indicator">Stap 5 van 5</div>
+
+        {% if error %}
+            <div class="error-msg">{{ error }}</div>
+        {% endif %}
+
+        <div style="text-align: center; margin-bottom: 30px; color: #ccc;">
+            Kijk alles nog even na voor je definitief opslaat.
+        </div>
+
+        {% if evaluation.techniek %}
+        <div class="summary-section">
+            <div class="section-title">Techniek</div>
+            <div class="score-grid">
+                <div class="score-label">Forehand</div>      <div class="score-value">{{ evaluation.techniek.forehand }}</div>
+                <div class="score-label">Backhand</div>      <div class="score-value">{{ evaluation.techniek.backhand }}</div>
+                <div class="score-label">Volley</div>        <div class="score-value">{{ evaluation.techniek.volley }}</div>
+                <div class="score-label">Smash</div>         <div class="score-value">{{ evaluation.techniek.smash }}</div>
+                <div class="score-label">Bandeja/Vibora</div><div class="score-value">{{ evaluation.techniek.bandeja }}</div>
+                <div class="score-label">Service</div>       <div class="score-value">{{ evaluation.techniek.service }}</div>
+            </div>
+            {% if evaluation.techniek.opmerking %}
+                <div class="opmerking-box">"{{ evaluation.techniek.opmerking }}"</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if evaluation.tactiek %}
+        <div class="summary-section">
+            <div class="section-title">Tactiek</div>
+            <div class="score-grid">
+                <div class="score-label">Positie kiezen</div>    <div class="score-value">{{ evaluation.tactiek.positiespel }}</div>
+                <div class="score-label">Bal-keuzes</div>        <div class="score-value">{{ evaluation.tactiek.keuze_slagen }}</div>
+                <div class="score-label">Samenwerking</div>      <div class="score-value">{{ evaluation.tactiek.samenwerking }}</div>
+                <div class="score-label">Netspel</div>           <div class="score-value">{{ evaluation.tactiek.netspel }}</div>
+                <div class="score-label">Verdediging</div>       <div class="score-value">{{ evaluation.tactiek.verdediging }}</div>
+            </div>
+            {% if evaluation.tactiek.opmerking %}
+                <div class="opmerking-box">"{{ evaluation.tactiek.opmerking }}"</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if evaluation.fysiek %}
+        <div class="summary-section">
+            <div class="section-title">Fysiek</div>
+            <div class="score-grid">
+                <div class="score-label">Snelheid/Voetenwerk</div> <div class="score-value">{{ evaluation.fysiek.snelheid }}</div>
+                <div class="score-label">Uithouding</div>          <div class="score-value">{{ evaluation.fysiek.uithouding }}</div>
+                <div class="score-label">Kracht/Explosiviteit</div><div class="score-value">{{ evaluation.fysiek.kracht }}</div>
+                <div class="score-label">Mobiliteit</div>          <div class="score-value">{{ evaluation.fysiek.mobiliteit }}</div>
+            </div>
+            {% if evaluation.fysiek.opmerking %}
+                <div class="opmerking-box">"{{ evaluation.fysiek.opmerking }}"</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if evaluation.mentaal %}
+        <div class="summary-section">
+            <div class="section-title">Mentaal</div>
+            <div class="score-grid">
+                <div class="score-label">Focus/Concentratie</div>  <div class="score-value">{{ evaluation.mentaal.focus }}</div>
+                <div class="score-label">Inzet/Motivatie</div>     <div class="score-value">{{ evaluation.mentaal.inzet }}</div>
+                <div class="score-label">Sportiviteit</div>        <div class="score-value">{{ evaluation.mentaal.sportiviteit }}</div>
+                <div class="score-label">Veerkracht</div>          <div class="score-value">{{ evaluation.mentaal.veerkracht }}</div>
+            </div>
+            {% if evaluation.mentaal.opmerking %}
+                <div class="opmerking-box">"{{ evaluation.mentaal.opmerking }}"</div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('evaluate_lesson', record_id=lesson.id, step=5) }}">
+            <div class="btn-container">
+                <a href="{{ url_for('evaluate_lesson', record_id=lesson.id, step=4) }}" class="btn-back">← Vorige</a>
+                <button type="submit" class="btn-save">Definitief Opslaan </button>
+            </div>
+        </form>
+
+    </form></div>
+</div>
+
+</body>
+</html>

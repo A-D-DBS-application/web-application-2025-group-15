@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Dashboard | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* --- ALGEMENE LAYOUT --- */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        /* HEADER */
+        .dashboard-header.dark-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-pic-dashboard {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #E10600;
+        }
+
+        /* TABELLEN & KAARTEN */
+        .dashboard-card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .section-title {
+            color: white;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: #ccc; padding: 10px; border-bottom: 1px solid #444; }
+        td { padding: 12px 10px; border-bottom: 1px solid #333; color: white; }
+        tr:last-child td { border-bottom: none; }
+
+        /* --- KNOPPEN STYLING --- */
+        .dashboard-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 13px;
+            text-align: center;
+            border: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* ROOD (Standaard actie: iCal, Evalueren) */
+        .btn-red {
+            background-color: #E10600;
+            color: white;
+        }
+        .btn-red:hover {
+            background-color: #b30500;
+        }
+
+        /* GRIJS (Secundair: Bekijken) */
+        .btn-grey {
+            background-color: #444;
+            color: white;
+        }
+        .btn-grey:hover {
+            background-color: #555;
+        }
+
+        /* STUDENTEN GRID */
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .student-card {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #444;
+            transition: transform 0.2s;
+            text-decoration: none;
+            color: white;
+        }
+        .student-card:hover {
+            transform: translateY(-3px);
+            border-color: #E10600;
+        }
+        .student-name { font-weight: bold; display: block; margin-bottom: 5px; }
+        .student-rank { color: #888; font-size: 13px; }
+
+        @media (max-width: 768px) {
+            .dashboard-header.dark-card { flex-direction: column; text-align: center; }
+            .profile-pic-dashboard { margin-right: 0; margin-bottom: 20px; }
+        }
+    </style>
+</head>
+
+<body class="index-page">
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" style="max-height: 40px;">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('coach_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('add_player') }}" class="nav-link">Speler Toevoegen</a></li>
+                <li><a href="{{ url_for('coach_availability') }}" class="nav-link">Beschikbaarheid</a></li>
+                <li><a href="{{ url_for('schedule_individual_lesson') }}" class="nav-link">Les Inplannen</a></li>
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="dashboard-header dark-card">
+            <img src="{{ user.profile_image or url_for('static', filename='default.png') }}" 
+            alt="Profiel" 
+            class="profile-pic-dashboard"
+            onerror="this.onerror=null;this.src='{{ url_for('static', filename='default.png') }}';">
+            
+            <div class="header-info">
+                <h1 style="margin: 0; color: white;">Coach {{ user.first_name }}</h1>
+                <p style="color: #ccc; margin: 5px 0;">{{ user.email }}</p>
+                <p style="color: #E10600; font-weight: bold;">{{ students|length }} Spelers</p>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h2 class="section-title">Mijn Spelers</h2>
+            {% if students %}
+                <div class="students-grid">
+                    {% for student in students %}
+                        <a href="{{ url_for('coach_player_detail', player_id=student.player_id) }}" class="student-card">
+                            <span class="student-name">{{ student.first_name }} {{ student.last_name }}</span>
+                            <span class="student-rank">{{ student.ranking or 'Geen ranking' }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: #888; font-style: italic;">Je hebt nog geen spelers gekoppeld.</p>
+                <a href="{{ url_for('add_player') }}" style="color: #E10600;">Speler toevoegen →</a>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-card">
+            <h2 class="section-title">Komende Lessen</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Tijd</th>
+                            <th>Speler(s)</th>
+                            <th>Type</th>
+                            <th>Actie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if upcoming_lessons %}
+                            {% for lesson in upcoming_lessons %}
+                            <tr>
+                                <td>{{ lesson.date }}</td>
+                                <td>{{ lesson.start_time }} - {{ lesson.end_time }}</td>
+                                <td>{{ lesson.players }}</td>
+                                <td>{{ lesson.lesson_type }}</td>
+                                <td>
+                                    <a href="{{ url_for('download_ics', lesson_id=lesson.lesson_id) }}" class="dashboard-btn btn-red">
+                                        iCal
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="color: #888; text-align: center; padding: 20px;">
+                                    Geen lessen gepland.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h2 class="section-title">Afgeronde Lessen (Evaluaties)</h2>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Tijd</th>
+                            <th>Speler</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if past_lessons %}
+                            {% for lesson in past_lessons %}
+                            <tr>
+                                <td>{{ lesson.date }}</td>
+                                <td>{{ lesson.start_time }} - {{ lesson.end_time }}</td>
+                                <td>{{ lesson.player_name }}</td>
+                                <td>
+                                    {% if lesson.has_evaluation %}
+                                        <a href="{{ url_for('view_evaluation', record_id=lesson.id) }}" class="dashboard-btn btn-grey">
+                                            Bekijk Rapport
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('evaluate_lesson', record_id=lesson.id, step=1) }}" class="dashboard-btn btn-red">
+                                            Evalueer Nu
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" style="color: #888; text-align: center; padding: 20px;">
+                                    Nog geen afgeronde lessen.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inloggen | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="index-page">
+
+    <div class="login-container dark-card">
+        
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" class="login-logo">
+
+        <h1 class="login-title">Welkom terug</h1>
+        <p class="login-subtitle">Log in om je lessen te beheren</p>
+
+        <form method="POST" action="/login">
+            <label for="email" class="login-label">E-mailadres</label>
+            <input type="email" id="email" name="email" 
+                   required placeholder="jouw@email.com"
+                   class="login-input">
+
+            <button type="submit" class="login-btn">Inloggen</button>
+
+            {% if error %}
+            <div class="login-error">
+                ⚠ {{ error }}
+            </div>
+            {% endif %}
+        </form>
+
+        <div class="login-divider">
+            <span>of</span>
+        </div>
+
+        <div class="register-section">
+            <p>Nog geen lid bij Fit Out Padel?</p>
+            <a href="{{ url_for('register') }}" class="register-btn">
+                Nieuw account aanmaken
+            </a>
+        </div>
+        
+        <div class="back-home">
+             <a href="/">← Terug naar start</a>
+        </div>
+
+    </div>
+
+</body>
+</html>

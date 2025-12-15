@@ -1,0 +1,52 @@
+# -------------------------
+# PYTHON / FLASK
+# -------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Flask instance folder (config, DB)
+instance/
+*.db
+*.sqlite3
+
+# Never push secrets
+.env
+config.py
+config_local.py
+
+# -------------------------
+# MACOS
+# -------------------------
+.DS_Store
+
+# -------------------------
+# EDITORS
+# -------------------------
+.vscode/
+.idea/
+
+# -------------------------
+# SUPABASE
+# -------------------------
+.supabase/
+
+# -------------------------
+# UPLOADED FILES
+# -------------------------
+static/uploads/
+profile_pictures/
+profile_pictures/*
+
+# -------------------------
+# CACHE / LOGS
+# -------------------------
+*.log
+.cache/

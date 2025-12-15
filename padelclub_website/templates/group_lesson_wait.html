@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wachtlijst Groepsles | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* --- DARK MODE STYLING --- */
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        .container-custom {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+
+        .form-card {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        h1 { margin-bottom: 15px; color: white; }
+        
+        .status-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        /* Info Box */
+        .info-box {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: left;
+            margin: 30px 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #444;
+            padding: 10px 0;
+        }
+        .info-row:last-child { border-bottom: none; }
+
+        .label { color: #ccc; }
+        .value { color: white; font-weight: bold; }
+
+        /* Highlight voor aantal spelers */
+        .highlight-text {
+            font-size: 18px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+        .count-badge {
+            color: #E10600;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .primary-btn {
+            background-color: #E10600;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s;
+            box-sizing: border-box;
+        }
+        .primary-btn:hover { background-color: #b30500; }
+
+    </style>
+</head>
+<body class="index-page">
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo" style="max-height: 40px;">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('player_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('request_lesson_type') }}" class="nav-link">Les aanvragen</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-custom">
+        <div class="form-card">
+            
+            <span class="status-icon">⏳</span>
+            <h1>Aanvraag Ontvangen!</h1>
+            
+            <p class="highlight-text">
+                We zoeken nog <span class="count-badge">{{ remaining }}</span> speler(s).
+            </p>
+            <p style="color: #888; font-size: 14px;">
+                Zodra de groep compleet is, krijg je automatisch bericht en wordt de les ingepland.
+            </p>
+
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="label">Datum:</span>
+                    <span class="value">{{ date }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Tijd:</span>
+                    <span class="value">{{ time }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Onderwerp:</span>
+                    <span class="value" style="color: #E10600;">{{ focus }}</span>
+                </div>
+            </div>
+
+            <a href="{{ url_for('player_dashboard') }}" class="primary-btn">
+                Terug naar Dashboard
+            </a>
+
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Les geannuleerd</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container" style="margin-top: 80px; text-align: center;">
+
+    <h1>Les succesvol geannuleerd</h1>
+
+    <p>De les werd verwijderd uit je planning.</p>
+
+    <a href="{{ url_for('player_dashboard') }}" class="button">
+        Terug naar dashboard
+    </a>
+
+</div>
+
+</body>
+</html>

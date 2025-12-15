@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speler Zoeken | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="index-page">
+
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fit Out Logo">
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="{{ url_for('coach_dashboard') }}" class="nav-link">Dashboard</a></li>
+                <li><a href="{{ url_for('add_player') }}" class="nav-link">Speler toevoegen</a></li>
+                <li><a href="{{ url_for('coach_availability') }}" class="nav-link">Beschikbaarheid</a></li>
+                <li><a href="{{ url_for('edit_profile') }}" class="nav-link">Profiel</a></li>
+                <li><a href="{{ url_for('logout') }}" class="nav-btn-logout">Uitloggen</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 800px;">
+        
+        <div class="dashboard-card dark-card">
+            <h1 class="section-title">🔍 Speler Zoeken</h1>
+            <p style="color: #ccc; margin-bottom: 20px;">Zoek een bestaande speler op naam om deze te koppelen.</p>
+
+            <form method="GET" action="{{ url_for('add_player') }}" style="display: flex; gap: 10px;">
+                <input type="text" name="q" placeholder="Typ naam of email..." 
+                       value="{{ q or '' }}" class="login-input" style="margin-bottom: 0;">
+                
+                <button type="submit" class="cta-btn" style="border: none;">Zoeken</button>
+            </form>
+        </div>
+
+        {% if spelers %}
+        <div class="dashboard-card dark-card">
+            <h2 class="section-title">Resultaten</h2>
+            
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Foto</th>
+                            <th>Naam</th>
+                            <th>Email</th>
+                            <th>Actie</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for speler in spelers %}
+                        <tr>
+                            <td>
+                                <img src="{{ speler.profile_image or url_for('static', filename='default.png') }}" 
+                                class="table-avatar" 
+                                alt="Foto"
+                                onerror="this.onerror=null;this.src='{{ url_for('static', filename='default.png') }}';">
+                            </td>
+
+                            <td style="font-weight: 600; color: white;">
+                                {{ speler.first_name }} {{ speler.last_name }}
+                            </td>
+
+                            <td>{{ speler.email }}</td>
+
+                            <td>
+                                <form method="POST" action="{{ url_for('assign_coach', player_id=speler.player_id) }}">
+                                    <button type="submit" class="cta-btn" style="padding: 6px 15px; font-size: 14px; border: none;">
+                                        + Koppelen
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% elif q %}
+            <div class="dashboard-card dark-card" style="text-align: center; color: #999;">
+                <p>Geen spelers gevonden die nog niet aan jou gekoppeld zijn.</p>
+            </div>
+        {% endif %}
+
+        <div class="back-home" style="margin-top: 20px; text-align: center;">
+            <a href="{{ url_for('coach_dashboard') }}" style="color: #ccc;">← Terug naar Dashboard</a>
+        </div>
+
+    </div>
+
+</body>
+</html>

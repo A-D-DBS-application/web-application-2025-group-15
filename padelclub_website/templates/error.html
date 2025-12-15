@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foutmelding | Fit Out Padel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            margin: 0;
+        }
+
+        .error-container {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 1px solid #333;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .emoji { font-size: 50px; margin-bottom: 20px; display: block; }
+        h1 { color: #E10600; margin-bottom: 15px; }
+        p { color: #ccc; margin-bottom: 30px; line-height: 1.6; }
+
+        .btn-primary {
+            background-color: #E10600;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background 0.3s;
+            display: inline-block;
+        }
+        .btn-primary:hover { background-color: #b30500; }
+    </style>
+</head>
+<body>
+
+    <div class="error-container">
+        <span class="emoji">⚠️</span>
+        <h1>Oeps! Er ging iets mis</h1>
+        <p>{{ message or "Er is een onbekende fout opgetreden." }}</p>
+
+        {% if session.get('role') == 'coach' %}
+            <a href="{{ url_for('coach_dashboard') }}" class="btn-primary">Terug naar Dashboard</a>
+        {% elif session.get('role') == 'player' %}
+            <a href="{{ url_for('player_dashboard') }}" class="btn-primary">Terug naar Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="btn-primary">Terug naar Login</a>
+        {% endif %}
+    </div>
+
+</body>
+</html>
