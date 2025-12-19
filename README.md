@@ -38,6 +38,10 @@ http://127.0.0.1:5000
 
 # Links naar andere zaken
 
+**Link to IP-assignment**:
+
+https://drive.google.com/file/d/185MOJRBfGyVrYTuQ3BeRKm6ThpnexK0L/view?usp=sharing
+
 **Link to lovable (prototype UI)**:
 
 https://lovable.dev/projects/ea531ec2-1191-4007-87b9-1ae532bc50ba
